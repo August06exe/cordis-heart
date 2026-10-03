@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSH 的心脏 · 组件沙盒设计稿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:       oklch(0.984 0.004 106.5);      /* 纸白 #FAFAF7 */
+    --fg:       oklch(0.449 0.182 265);        /* 全页唯一墨色：钴蓝 #2148B8 */
+    --ink:      var(--fg);
+    --ink-14:   oklch(0.449 0.182 265 / .14);  /* 基座色块 · 熄灭块（装饰豁免） */
+    --ink-20:   oklch(0.449 0.182 265 / .20);  /* 分隔细线（装饰豁免） */
+    --ink-70:   oklch(0.449 0.182 265 / .70);  /* 依赖线与箭头，图解线 ≥3:1 */
+    --ink-78:   oklch(0.449 0.182 265 / .78);  /* 小字注脚 · folio ≥4.5:1 */
+    --ink-80:   oklch(0.449 0.182 265 / .80);  /* 图内编号小字 */
+    --ink-82:   oklch(0.449 0.182 265 / .82);  /* 正文 · 动作日志 ≥4.5:1 */
+    --paper:    var(--bg);
+    --serif: "Noto Serif SC","Songti SC","SimSun",serif;
+    --sans:  "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    --mono:  "IBM Plex Mono",ui-monospace,"Cascadia Mono",monospace;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font:400 14px/1.7 var(--sans);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  ::selection{ background:var(--ink-14); }
+  :focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+
+  /* ── 印刷开本：四缘细墨线框，满高 ───────────── */
+  .sheet{
+    position:relative;
+    min-height:calc(100vh - 44px);
+    min-height:calc(100dvh - 44px);
+    margin:22px;
+    border:1px solid var(--ink-20);
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ── 顶部工具栏 ≤80px 单行 ─────────────────── */
+  .toolbar{
+    height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    padding:0 28px;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .wordmark{ display:flex; align-items:baseline; gap:16px; min-width:0; }
+  .wordmark .latin{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:19px;
+    letter-spacing:.34em;
+  }
+  .wordmark .zh{
+    font:500 13px/1 var(--sans);
+    letter-spacing:.18em;
+    color:var(--ink-82);
+  }
+  .toolbar-right{ display:flex; align-items:center; gap:18px; }
+  .folio{
+    font-size:12px;
+    letter-spacing:.22em;
+    color:var(--ink-78);
+    white-space:nowrap;
+  }
+
+  /* ── 按钮：2px 实墨线勾勒，hover 反白 ───────── */
+  .btn{
+    height:44px;
+    padding:0 20px;
+    background:var(--paper);
+    color:var(--ink);
+    border:2px solid var(--ink);
+    font:500 13px/1 var(--sans);
+    letter-spacing:.1em;
+    cursor:pointer;
+    transition:background-color .15s ease, color .15s ease;
+  }
+  .btn:hover:not(:disabled){ background:var(--ink); color:var(--paper); }
+  .btn:active:not(:disabled){ transform:translateY(1px); }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn-sm{ padding:0 16px; font-size:12px; }
+
+  /* ── 三栏工作区：220 ｜ 自适应 ｜ 280 ───────── */
+  .workbench{
+    flex:1;
+    display:grid;
+    grid-template-columns:220px minmax(0,1fr) 280px;
+    min-height:calc(100vh - 182px);
+    min-height:calc(100dvh - 182px);
+  }
+  .tray{
+    border-right:1px solid var(--ink-20);
+    padding:18px 16px;
+    min-width:0;
+  }
+  .canvas{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:26px;
+    min-width:0;
+    min-height:0;
+  }
+  .canvas svg{ width:100%; height:100%; min-height:0; user-select:none; display:block; }
+  .sidebar{
+    border-left:1px solid var(--ink-20);
+    padding:18px 16px;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* 面板：一律 2px 实墨线勾勒、纸白填充 */
+  .panel{
+    border:2px solid var(--ink);
+    background:var(--paper);
+    padding:14px 16px 14px;
+  }
+  .panel + .panel{ margin-top:14px; }
+  .panel-h{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    font:500 12px/1 var(--sans);
+    letter-spacing:.22em;
+    color:var(--ink-78);
+    padding-bottom:10px;
+    border-bottom:1px solid var(--ink-20);
+    margin-bottom:12px;
+  }
+  .panel-h .en{ font-family:var(--mono); font-size:10px; letter-spacing:.24em; }
+
+  /* 托盘缩略块 */
+  .pieces{ display:flex; flex-direction:column; gap:10px; }
+  .piece{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    height:44px;
+    padding:0 12px;
+    background:var(--paper);
+    border:2px solid var(--ink);
+    border-radius:10px;
+    color:var(--ink);
+    text-align:left;
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease, background-color .12s ease, border-color .12s ease;
+  }
+  .piece .p-idx{ font:500 10.5px/1 var(--mono); letter-spacing:.12em; color:var(--ink-80); }
+  .piece .p-name{ font:700 12px/1.3 var(--sans); letter-spacing:.03em; }
+  .piece:hover{ transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--ink-14); }
+  .piece.sel{ background:var(--ink-14); }
+  .piece.out{ border-color:var(--ink-20); background:var(--ink-14); }
+  .piece.out .p-idx{ color:var(--ink); }
+  .piece.ghost{
+    border-style:dashed;
+    border-color:var(--ink-70);
+    color:var(--ink-78);
+    font:500 11px/1 var(--sans);
+    letter-spacing:.2em;
+    justify-content:center;
+    cursor:default;
+  }
+  .piece.ghost:hover{ transform:none; box-shadow:none; }
+
+  /* 检查器 */
+  .insp-name{ font:700 14px/1.3 var(--sans); padding:2px 0 8px; }
+  .insp-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    padding:7px 0;
+    border-bottom:1px solid var(--ink-20);
+    font-size:12.5px;
+  }
+  .insp-row:last-child{ border-bottom:none; }
+  .insp-row dt{ color:var(--ink-78); letter-spacing:.14em; font-size:11.5px; }
+  .insp-row dd{ font-weight:500; text-align:right; }
+
+  /* 动作日志 */
+  .panel-log{ flex:1; min-height:0; display:flex; flex-direction:column; }
+  #log{
+    flex:1;
+    min-height:110px;
+    overflow-y:auto;
+    font:400 11px/1.95 var(--mono);
+    color:var(--ink-82);
+  }
+  .log-line .ts{ color:var(--ink-78); margin-right:8px; }
+
+  /* 注解 */
+  #note{
+    font-size:12.5px;
+    line-height:1.9;
+    color:var(--ink-82);
+    transition:opacity .18s ease;
+  }
+  .nojs{
+    position:absolute;
+    left:28px; top:24px;
+    font-size:11.5px;
+    letter-spacing:.08em;
+    color:var(--ink-78);
+  }
+
+  /* ── 底部控制条 ────────────────────────────── */
+  .controlbar{
+    height:64px;
+    border-top:1px solid var(--ink-20);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    padding:0 28px;
+  }
+  .btns{ display:flex; gap:10px; flex-wrap:wrap; }
+  .hint{ font-size:11.5px; letter-spacing:.12em; color:var(--ink-78); white-space:nowrap; }
+
+  /* ── 第二屏：六拍交互分镜带 ─────────────────── */
+  .board{
+    border-top:1px solid var(--ink-20);
+    padding:56px 48px 52px;
+  }
+  .board-head{ max-width:880px; margin-bottom:44px; }
+  .kicker{
+    font:500 12px/1 var(--sans);
+    letter-spacing:.42em;
+    color:var(--ink-78);
+    margin-bottom:20px;
+  }
+  h1.headline{
+    font:900 58px/1.32 var(--serif);
+    letter-spacing:.015em;
+    text-wrap:balance;
+  }
+  .lead{
+    margin-top:20px;
+    font-size:15px;
+    line-height:2;
+    color:var(--ink-82);
+    max-width:34em;
+  }
+  .cells{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    border-top:1px solid var(--ink-20);
+    border-left:1px solid var(--ink-20);
+  }
+  .cell{
+    border-right:1px solid var(--ink-20);
+    border-bottom:1px solid var(--ink-20);
+    padding:24px 24px 20px;
+  }
+  .cell-svg{ width:100%; height:auto; display:block; margin-bottom:16px; }
+  .cell-head{ display:flex; align-items:baseline; gap:12px; margin-bottom:10px; }
+  .cell-no{ font:500 11.5px/1 var(--sans); letter-spacing:.2em; color:var(--ink-78); white-space:nowrap; }
+  .cell-rule{ flex:1; height:1px; background:var(--ink-20); }
+  .cell-name{ font:700 13px/1 var(--sans); letter-spacing:.14em; white-space:nowrap; }
+  .cell-cap{ font-size:11.5px; line-height:1.9; color:var(--ink-78); }
+  .cap-strong{ font-weight:700; color:var(--ink-82); }
+
+  /* ── SVG 图解词汇（与首页 hero 同款） ────────── */
+  .box{ fill:var(--paper); stroke:var(--ink); stroke-width:2; }
+  .lab{ font:700 15px/1 var(--sans); letter-spacing:.06em; fill:var(--ink); text-anchor:middle; }
+  .lab.core{ font-size:17px; }
+  .idx{ font:500 10px/1 var(--sans); letter-spacing:.18em; fill:var(--ink-80); }
+  .dep{ fill:none; stroke:var(--ink-70); stroke-width:1.6; }
+  .dep-arrow{ fill:var(--ink-70); }
+  .plinth{ fill:var(--ink-14); }
+  .scene-note{ font:500 11px/1 var(--sans); letter-spacing:.24em; fill:var(--ink-78); }
+  .sel-ring{ fill:none; stroke:var(--ink-70); stroke-width:1.5; stroke-dasharray:5 5; opacity:0; }
+  .blk{ cursor:pointer; }
+  .blk:focus-visible{ outline:none; }
+  .blk.off{ pointer-events:none; visibility:hidden; }
+  .blk.sel .sel-ring, .blk:focus-visible .sel-ring{ opacity:1; }
+  .blk:focus-visible .sel-ring{ stroke:var(--ink); stroke-width:2; stroke-dasharray:none; }
+  .cell-svg .lab{ font-size:13px; }
+  .cell-svg .lab.core{ font-size:15px; }
+  .cell-svg .idx{ font-size:9.5px; }
+  #stage-root{ transition:opacity .24s ease; }
+
+  /* ── 设计说明 ──────────────────────────────── */
+  .notes{ border-top:1px solid var(--ink-20); padding:44px 48px 22px; }
+  .notes h2{ font:900 22px/1.4 var(--serif); letter-spacing:.04em; margin-bottom:10px; }
+  .note-row{
+    display:grid;
+    grid-template-columns:96px 1fr;
+    gap:18px;
+    padding:14px 0;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .note-row dt{ font:500 12px/1.9 var(--sans); letter-spacing:.22em; color:var(--ink-78); }
+  .note-row dd{ font-size:13.5px; line-height:1.95; color:var(--ink-82); max-width:62ch; }
+  .colophon{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:24px;
+    flex-wrap:wrap;
+    padding:22px 0 10px;
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+
+  /* ── 响应式：<960px 塌单栏，禁止横向溢出 ─────── */
+  @media (max-width:960px){
+    .sheet{ margin:14px; }
+    .toolbar{ padding:12px 20px; height:auto; min-height:64px; flex-wrap:wrap; }
+    .workbench{ display:block; min-height:0; }
+    .tray{ border-right:none; border-bottom:1px solid var(--ink-20); }
+    .pieces{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .canvas{ border-bottom:1px solid var(--ink-20); padding:20px 14px; }
+    .canvas svg{ height:auto; }
+    .sidebar{ border-left:none; }
+    .controlbar{ height:auto; min-height:64px; padding:14px 20px; flex-wrap:wrap; }
+    .board{ padding:44px 24px 40px; }
+    .cells{ grid-template-columns:1fr; }
+    .notes{ padding:36px 24px 16px; }
+    .note-row{ grid-template-columns:84px 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet" data-od-id="page-sheet">
+
+  <!-- 顶部工具栏 -->
+  <header class="toolbar" data-od-id="sandbox-toolbar">
+    <div class="wordmark">
+      <span class="latin">CORDIS</span>
+      <span class="zh">组件沙盒</span>
+    </div>
+    <div class="toolbar-right">
+      <span class="folio">SANDBOX · 组件工作台</span>
+      <button class="btn btn-sm" type="button" id="btn-share" title="分享布局待定，此为占位">分享</button>
+    </div>
+  </header>
+
+  <!-- 三栏工作区 -->
+  <div class="workbench" data-od-id="sandbox-workbench">
+
+    <!-- 左：积木托盘 -->
+    <aside class="tray" data-od-id="block-tray" aria-label="积木托盘">
+      <div class="panel">
+        <div class="panel-h"><span>积木托盘</span><span class="en">TRAY</span></div>
+        <div class="pieces" id="pieces">
+          <button class="piece" type="button" data-block="b_db"><span class="p-idx">03</span><span class="p-name">提供者 · 数据库驱动</span></button>
+          <button class="piece" type="button" data-block="b_alt"><span class="p-idx">06</span><span class="p-name">提供者 · 备用源</span></button>
+          <button class="piece" type="button" data-block="b_query"><span class="p-idx">04</span><span class="p-name">消费者 · 查询插件</span></button>
+          <button class="piece" type="button" data-block="b_chat"><span class="p-idx">05</span><span class="p-name">消费者 · 聊天插件</span></button>
+          <button class="piece" type="button" data-block="b_theme"><span class="p-idx">01</span><span class="p-name">独立 · 主题皮肤</span></button>
+          <button class="piece" type="button" data-block="b_logger"><span class="p-idx">02</span><span class="p-name">独立 · 日志器</span></button>
+          <div class="piece ghost" aria-hidden="true">拖入画布</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 中：画布 -->
+    <section class="canvas" data-od-id="sandbox-canvas" aria-label="沙盒画布">
+      <noscript><p class="nojs">画布演示需要 JavaScript；下方六拍分镜带是完整静态版。</p></noscript>
+      <svg id="stage" viewBox="0 0 960 620" role="img" aria-labelledby="stage-title" data-od-id="stage-svg"
+           xmlns="http://www.w3.org/2000/svg">
+        <title id="stage-title">组件沙盒画布：五件积木立于运行时基座，演示一次提供者热替换的六拍过程</title>
+        <defs>
+          <marker id="ah0" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" class="dep-arrow"/>
+          </marker>
+        </defs>
+        <g id="stage-root">
+          <!-- 依赖线（先画，压在积木下层） -->
+          <g id="g_deps" data-od-id="dependency-lines">
+            <path id="dep_q" class="dep" d="M 534 470 C 556 470, 572 488, 592 500"
+                  marker-end="url(#ah0)" stroke-dasharray="2000" stroke-dashoffset="2000"/>
+            <path id="dep_c" class="dep" d="M 534 446 C 612 352, 716 366, 742 458"
+                  marker-end="url(#ah0)" stroke-dasharray="2000" stroke-dashoffset="2000"/>
+            <text class="scene-note" x="600" y="370">依赖</text>
+          </g>
+
+          <!-- 01 独立 · 主题皮肤 -->
+          <g class="blk off" id="b_theme" opacity="0" tabindex="0" role="button"
+             aria-label="积木 01 独立 主题皮肤" data-od-id="block-theme">
+            <rect class="sel-ring" x="50" y="446" width="146" height="116" rx="13"/>
+            <rect class="box" x="56" y="452" width="134" height="104" rx="10"/>
+            <text class="idx" x="70" y="470">01</text>
+            <text class="lab" x="123" y="509">主题皮肤</text>
+          </g>
+
+          <!-- 02 独立 · 日志器 -->
+          <g class="blk off" id="b_logger" opacity="0" tabindex="0" role="button"
+             aria-label="积木 02 独立 日志器" data-od-id="block-logger">
+            <rect class="sel-ring" x="200" y="474" width="118" height="88" rx="13"/>
+            <rect class="box" x="206" y="480" width="106" height="76" rx="10"/>
+            <text class="idx" x="220" y="498">02</text>
+            <text class="lab" x="259" y="523">日志器</text>
+          </g>
+
+          <!-- 03 提供者 · 数据库驱动（中央核心，块最高） -->
+          <g class="blk off" id="b_db" opacity="0" tabindex="0" role="button"
+             aria-label="积木 03 提供者 数据库驱动" data-od-id="block-database">
+            <rect class="sel-ring" x="360" y="394" width="180" height="168" rx="13"/>
+            <rect class="box" x="366" y="400" width="168" height="156" rx="10"/>
+            <text class="idx" x="380" y="420">03</text>
+            <text class="lab core" x="450" y="484">数据库驱动</text>
+          </g>
+
+          <!-- 06 提供者 · 备用源（热替换的新源，与 03 同槽位） -->
+          <g class="blk off" id="b_alt" opacity="0" tabindex="0" role="button"
+             aria-label="积木 06 提供者 备用源" data-od-id="block-alt">
+            <rect class="sel-ring" x="360" y="394" width="180" height="168" rx="13"/>
+            <rect class="box" x="366" y="400" width="168" height="156" rx="10"/>
+            <text class="idx" x="380" y="420">06</text>
+            <text class="lab core" x="450" y="484">备用源</text>
+          </g>
+
+          <!-- 04 消费者 · 查询插件 -->
+          <g class="blk off" id="b_query" opacity="0" tabindex="0" role="button"
+             aria-label="积木 04 消费者 查询插件" data-od-id="block-query">
+            <rect class="sel-ring" x="590" y="454" width="130" height="108" rx="13"/>
+            <rect class="box" x="596" y="460" width="118" height="96" rx="10"/>
+            <text class="idx" x="610" y="478">04</text>
+            <text class="lab" x="655" y="513">查询插件</text>
+          </g>
+
+          <!-- 05 消费者 · 聊天插件 -->
+          <g class="blk off" id="b_chat" opacity="0" tabindex="0" role="button"
+             aria-label="积木 05 消费者 聊天插件" data-od-id="block-chat">
+            <rect class="sel-ring" x="734" y="426" width="134" height="136" rx="13"/>
+            <rect class="box" x="740" y="432" width="122" height="124" rx="10"/>
+            <text class="idx" x="754" y="450">05</text>
+            <text class="lab" x="801" y="500">聊天插件</text>
+          </g>
+
+          <!-- 浅墨基座 -->
+          <rect class="plinth" x="24" y="556" width="912" height="8" rx="4" data-od-id="stage-plinth"/>
+          <text class="scene-note" x="24" y="592">运行中的软件 · 运行时</text>
+          <text class="scene-note" x="936" y="592" text-anchor="end">CORDIS RUNTIME</text>
+        </g>
+      </svg>
+    </section>
+
+    <!-- 右：状态侧栏 -->
+    <aside class="sidebar" data-od-id="status-sidebar" aria-label="状态侧栏">
+      <div class="panel" data-od-id="inspector-panel">
+        <div class="panel-h"><span>检查器</span><span class="en">INSPECT</span></div>
+        <div class="insp-name" id="insp-name">数据库驱动</div>
+        <dl class="insp">
+          <div class="insp-row"><dt>类型</dt><dd id="insp-type">提供者</dd></div>
+          <div class="insp-row"><dt>依赖数</dt><dd id="insp-deps">0（被依赖 2）</dd></div>
+          <div class="insp-row"><dt>运行状态</dt><dd id="insp-status">待接入</dd></div>
+        </dl>
+      </div>
+      <div class="panel panel-log" data-od-id="log-panel">
+        <div class="panel-h"><span>动作日志</span><span class="en">LOG</span></div>
+        <div id="log" aria-live="polite"></div>
+      </div>
+      <div class="panel" data-od-id="note-panel">
+        <div class="panel-h"><span>注解</span><span class="en">NOTE</span></div>
+        <p id="note">画布是空的。按底部「播放六拍」，看一次完整的热替换。</p>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 底部控制条 -->
+  <footer class="controlbar" data-od-id="control-bar">
+    <div class="btns">
+      <button id="btn-play" class="btn" type="button">播放六拍</button>
+      <button id="btn-pause" class="btn" type="button" disabled>暂停</button>
+      <button id="btn-replay" class="btn" type="button">重播</button>
+      <button id="btn-reset" class="btn" type="button">复原</button>
+    </div>
+    <p class="hint">Ctrl+Z 撤销 · 优先交给沙盒撤销栈</p>
+  </footer>
+
+  <!-- 第二屏：六拍交互分镜带 -->
+  <section class="board" data-od-id="storyboard-band">
+    <header class="board-head">
+      <p class="kicker" data-od-id="board-kicker">交互分镜 · 六拍时间轴</p>
+      <h1 class="headline" data-od-id="board-headline">六拍，讲完一次热替换</h1>
+      <p class="lead" data-od-id="board-lead">画布里的每次播放都按这六拍走；下面是同一时间轴的静态快照，供评审逐拍对照。</p>
+    </header>
+
+    <div class="cells">
+      <!-- 分镜 01 -->
+      <figure class="cell" data-od-id="cell-01">
+        <svg class="cell-svg" viewBox="0 0 480 300" role="img" aria-labelledby="c1t" xmlns="http://www.w3.org/2000/svg">
+          <title id="c1t">分镜 01 静态快照：五件积木自托盘落位，依赖线尚未画出</title>
+          <g>
+            <rect class="box" x="28" y="224" width="68" height="52" rx="10"/><text class="idx" x="38" y="238">01</text><text class="lab" x="62" y="255">主题皮肤</text>
+          </g>
+          <g>
+            <rect class="box" x="104" y="240" width="54" height="36" rx="10"/><text class="idx" x="114" y="253">02</text><text class="lab" x="131" y="263">日志器</text>
+          </g>
+          <g>
+            <rect class="box" x="183" y="198" width="84" height="78" rx="10"/><text class="idx" x="193" y="212">03</text><text class="lab core" x="225" y="243">数据库驱动</text>
+          </g>
+          <g>
+            <rect class="box" x="298" y="228" width="59" height="48" rx="10"/><text class="idx" x="308" y="242">04</text><text class="lab" x="327" y="257">查询插件</text>
+          </g>
+          <g>
+            <rect class="box" x="370" y="214" width="61" height="62" rx="10"/><text class="idx" x="380" y="228">05</text><text class="lab" x="400" y="250">聊天插件</text>
+          </g>
+          <rect class="plinth" x="12" y="276" width="456" height="4" rx="2"/>
+        </svg>
+        <figcaption>
+          <div class="cell-head"><span class="cell-no">分镜 01</span><span class="cell-rule"></span><span class="cell-name">拖入积木</span></div>
+          <p class="cell-cap">五件积木自托盘落位，落点各带一次过冲回弹；提供者与两块消费者是这次热替换的主角。</p>
+        </figcaption>
+      </figure>
+
+      <!-- 分镜 02 -->
+      <figure class="cell" data-od-id="cell-02">
+        <svg class="cell-svg" viewBox="0 0 480 300" role="img" aria-labelledby="c2t" xmlns="http://www.w3.org/2000/svg">
+          <title id="c2t">分镜 02 静态快照：两条贝塞尔依赖线从消费者锚点生长到提供者锚点</title>
+          <defs>
+            <marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 Z" class="dep-arrow"/>
+            </marker>
+          </defs>
+          <path class="dep" d="M 267 232 C 280 232, 286 246, 296 252" marker-end="url(#ah2)"/>
+          <path class="dep" d="M 267 220 C 306 170, 356 178, 368 222" marker-end="url(#ah2)"/>
+          <g>
+            <rect class="box" x="28" y="224" width="68" height="52" rx="10"/><text class="idx" x="38" y="238">01</text><text class="lab" x="62" y="255">主题皮肤</text>
+          </g>
+          <g>
+            <rect class="box" x="104" y="240" width="54" height="36" rx="10"/><text class="idx" x="114" y="253">02</text><text class="lab" x="131" y="263">日志器</text>
+          </g>
+          <g>
+            <rect class="box" x="183" y="198" width="84" height="78" rx="10"/><text class="idx" x="193" y="212">03</text><text class="lab core" x="225" y="243">数据库驱动</text>
+          </g>
+          <g>
+            <rect class="box" x="298" y="228" width="59" height="48" rx="10"/><text class="idx" x="308" y="242">04</text><text class="lab" x="327" y="257">查询插件</text>
+          </g>
+          <g>
+            <rect class="box" x="370" y="214" width="61" height="62" rx="10"/><text class="idx" x="380" y="228">05</text><text class="lab" x="400" y="250">聊天插件</text>
+          </g>
+          <rect class="plinth" x="12" y="276" width="456" height="4" rx="2"/>
+        </svg>
+        <figcaption>
+          <div class="cell-head"><span class="cell-no">分镜 02</span><span class="cell-rule"></span><span class="cell-name">连线</span></div>
+          <p class="cell-cap">从消费者锚点向提供者锚点拖出贝塞尔依赖线，描线动画让连线从锚点生长出来。</p>
+        </figcaption>
+      </figure>
+
+      <!-- 分镜 03 -->
+      <figure class="cell" data-od-id="cell-03">
+        <svg class="cell-svg" viewBox="0 0 480 300" role="img" aria-labelledby="c3t" xmlns="http://www.w3.org/2000/svg">
+          <title id="c3t">分镜 03 静态快照：数据库驱动被抬起抽出基座，依赖线开始变淡</title>
+          <defs>
+            <marker id="ah3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 Z" class="dep-arrow"/>
+            </marker>
+          </defs>
+          <g opacity=".3">
+            <path class="dep" d="M 267 232 C 280 232, 286 246, 296 252" marker-end="url(#ah3)"/>
+            <path class="dep" d="M 267 220 C 306 170, 356 178, 368 222" marker-end="url(#ah3)"/>
+          </g>
+          <g>
+            <rect class="box" x="28" y="224" width="68" height="52" rx="10"/><text class="idx" x="38" y="238">01</text><text class="lab" x="62" y="255">主题皮肤</text>
+          </g>
+          <g>
+            <rect class="box" x="104" y="240" width="54" height="36" rx="10"/><text class="idx" x="114" y="253">02</text><text class="lab" x="131" y="263">日志器</text>
+          </g>
+          <g transform="translate(0 -22)" opacity=".32">
+            <rect class="box" x="183" y="198" width="84" height="78" rx="10"/><text class="idx" x="193" y="212">03</text><text class="lab core" x="225" y="243">数据库驱动</text>
+          </g>
+          <g>
+            <rect class="box" x="298" y="228" width="59" height="48" rx="10"/><text class="idx" x="308" y="242">04</text><text class="lab" x="327" y="257">查询插件</text>
+          </g>
+          <g>
+            <rect class="box" x="370" y="214" width="61" height="62" rx="10"/><text class="idx" x="380" y="228">05</text><text class="lab" x="400" y="250">聊天插件</text>
+          </g>
+          <rect class="plinth" x="12" y="276" width="456" height="4" rx="2"/>
+        </svg>
+        <figcaption>
+          <div class="cell-head"><span class="cell-no">分镜 03</span><span class="cell-rule"></span><span class="cell-name">热替换提供者</span></div>
+          <p class="cell-cap">旧提供者数据库驱动被抬起抽出基座，熄灭波纹开始沿依赖线逐级传导。</p>
+        </figcaption>
+      </figure>
+
+      <!-- 分镜 04 -->
+      <figure class="cell" data-od-id="cell-04">
+        <svg class="cell-svg" viewBox="0 0 480 300" role="img" aria-labelledby="c4t" xmlns="http://www.w3.org/2000/svg">
+          <title id="c4t">分镜 04 静态快照：查询插件与聊天插件连锁熄灭，两块独立积木保持点亮</title>
+          <defs>
+            <marker id="ah4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 Z" class="dep-arrow"/>
+            </marker>
+          </defs>
+          <g opacity=".12">
+            <path class="dep" d="M 267 232 C 280 232, 286 246, 296 252" marker-end="url(#ah4)"/>
+            <path class="dep" d="M 267 220 C 306 170, 356 178, 368 222" marker-end="url(#ah4)"/>
+          </g>
+          <g>
+            <rect class="box" x="28" y="224" width="68" height="52" rx="10"/><text class="idx" x="38" y="238">01</text><text class="lab" x="62" y="255">主题皮肤</text>
+          </g>
+          <g>
+            <rect class="box" x="104" y="240" width="54" height="36" rx="10"/><text class="idx" x="114" y="253">02</text><text class="lab" x="131" y="263">日志器</text>
+          </g>
+          <g transform="translate(0 4)" opacity=".14">
+            <rect class="box" x="298" y="228" width="59" height="48" rx="10"/><text class="idx" x="308" y="242">04</text><text class="lab" x="327" y="257">查询插件</text>
+          </g>
+          <g transform="translate(0 4)" opacity=".14">
+            <rect class="box" x="370" y="214" width="61" height="62" rx="10"/><text class="idx" x="380" y="228">05</text><text class="lab" x="400" y="250">聊天插件</text>
+          </g>
+          <rect class="plinth" x="12" y="276" width="456" height="4" rx="2"/>
+        </svg>
+        <figcaption>
+          <div class="cell-head"><span class="cell-no">分镜 04</span><span class="cell-rule"></span><span class="cell-name">连锁熄灭</span></div>
+          <p class="cell-cap"><strong class="cap-strong">查询插件与聊天插件</strong>已连锁熄灭，整块降至墨 .14 并微微下沉；主题皮肤与日志器保持点亮，只有声明过的依赖会被传导。</p>
+        </figcaption>
+      </figure>
+
+      <!-- 分镜 05 -->
+      <figure class="cell" data-od-id="cell-05">
+        <svg class="cell-svg" viewBox="0 0 480 300" role="img" aria-labelledby="c5t" xmlns="http://www.w3.org/2000/svg">
+          <title id="c5t">分镜 05 静态快照：备用源落位接管槽位，依赖线重新画出，消费者复明</title>
+          <defs>
+            <marker id="ah5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 Z" class="dep-arrow"/>
+            </marker>
+          </defs>
+          <path class="dep" d="M 267 232 C 280 232, 286 246, 296 252" marker-end="url(#ah5)"/>
+          <path class="dep" d="M 267 220 C 306 170, 356 178, 368 222" marker-end="url(#ah5)"/>
+          <g>
+            <rect class="box" x="28" y="224" width="68" height="52" rx="10"/><text class="idx" x="38" y="238">01</text><text class="lab" x="62" y="255">主题皮肤</text>
+          </g>
+          <g>
+            <rect class="box" x="104" y="240" width="54" height="36" rx="10"/><text class="idx" x="114" y="253">02</text><text class="lab" x="131" y="263">日志器</text>
+          </g>
+          <g>
+            <rect class="box" x="183" y="198" width="84" height="78" rx="10"/><text class="idx" x="193" y="212">06</text><text class="lab core" x="225" y="243">备用源</text>
+          </g>
+          <g>
+            <rect class="box" x="298" y="228" width="59" height="48" rx="10"/><text class="idx" x="308" y="242">04</text><text class="lab" x="327" y="257">查询插件</text>
+          </g>
+          <g>
+            <rect class="box" x="370" y="214" width="61" height="62" rx="10"/><text class="idx" x="380" y="228">05</text><text class="lab" x="400" y="250">聊天插件</text>
+          </g>
+          <rect class="plinth" x="12" y="276" width="456" height="4" rx="2"/>
+        </svg>
+        <figcaption>
+          <div class="cell-head"><span class="cell-no">分镜 05</span><span class="cell-rule"></span><span class="cell-name">换源复明</span></div>
+          <p class="cell-cap"><strong class="cap-strong">备用源</strong>落进同一个槽位，复明波纹沿原路径反向走一遍，依赖线重新画出，消费者依次复明。</p>
+        </figcaption>
+      </figure>
+
+      <!-- 分镜 06 -->
+      <figure class="cell" data-od-id="cell-06">
+        <svg class="cell-svg" viewBox="0 0 480 300" role="img" aria-labelledby="c6t" xmlns="http://www.w3.org/2000/svg">
+          <title id="c6t">分镜 06 静态快照：动作回滚完成，画布回到空基座</title>
+          <rect class="plinth" x="12" y="276" width="456" height="4" rx="2"/>
+        </svg>
+        <figcaption>
+          <div class="cell-head"><span class="cell-no">分镜 06</span><span class="cell-rule"></span><span class="cell-name">复原</span></div>
+          <p class="cell-cap">动作原样退回去：积木回到托盘，画布回到空基座，对应全站主题「让运行中的软件换零件，还能原样退回去」。</p>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 设计说明 -->
+  <section class="notes" data-od-id="design-notes">
+    <h2>设计说明</h2>
+    <dl>
+      <div class="note-row">
+        <dt>配色</dt>
+        <dd>全页唯一墨色为钴蓝 #2148B8，压在纸白 #FAFAF7 上；层次只靠透明度阶梯 .14、.20、.70、.78、.82 与实印，淡墨只承担基座色块与细线，不作文字。</dd>
+      </div>
+      <div class="note-row">
+        <dt>字体</dt>
+        <dd>Noto Serif SC 900 立起分镜标题，Noto Sans SC 承担正文、积木标签与界面小字，IBM Plex Mono 承担动作日志、面板英文小标与托盘编号这类数据标注场景；display 全档固定 58px，对最小功能字 11.5px 恒为 5.04 倍跳变，不设豁免。</dd>
+      </div>
+      <div class="note-row">
+        <dt>构图</dt>
+        <dd>满高工作台以 220px 托盘与 280px 侧栏夹住中央空纸，五件积木只占基座上方一条窄带，留白是主角；第二屏六格分镜带用 hairline 分格，编号与图注承担阅读顺序，不做成卡片墙。</dd>
+      </div>
+      <div class="note-row">
+        <dt>动效分镜</dt>
+        <dd>六拍时间轴只动 transform 与 opacity，描线以 stroke-dashoffset 为唯一例外；prefers-reduced-motion 下跳过时间轴直出终态，播放钮改为终态与拔除中态之间的淡切。</dd>
+      </div>
+      <div class="note-row">
+        <dt>附注</dt>
+        <dd>工具栏「分享」为占位按钮，分享布局待定；状态机建模与连锁规则细节属 M5.5 评审范围，本稿不预设实现；Ctrl+Z 已接到画布的「复原」动作。</dd>
+      </div>
+    </dl>
+    <footer class="colophon" data-od-id="colophon">
+      <span>deepseek-harness / Cordis 支撑框架 · 组件沙盒视觉稿</span>
+      <span>视觉稿 · 单墨编辑印刷</span>
+    </footer>
+  </section>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+  var RM = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* ── 词汇表 ─────────────────────────────────── */
+  var BLOCKS = {
+    b_db:    { name:'数据库驱动', type:'提供者', deps:'0（被依赖 2）' },
+    b_alt:   { name:'备用源',     type:'提供者', deps:'0（被依赖 2）' },
+    b_query: { name:'查询插件',   type:'消费者', deps:'1' },
+    b_chat:  { name:'聊天插件',   type:'消费者', deps:'1' },
+    b_theme: { name:'主题皮肤',   type:'独立',   deps:'0' },
+    b_logger:{ name:'日志器',     type:'独立',   deps:'0' }
+  };
+  var BLOCK_IDS = ['b_db','b_alt','b_query','b_chat','b_theme','b_logger'];
+  var DEP_IDS = ['dep_q','dep_c'];
+  var status = {};
+  BLOCK_IDS.forEach(function(id){ status[id] = '待接入'; });
+  var sel = 'b_db';
+  var T = {
+    s0:'画布是空的。按底部「播放六拍」，看一次完整的热替换。',
+    s0rm:'画布已回到空基座。底部按钮在「查看终态」与「查看拔除中」之间切换，随时回看两个状态。',
+    s1:'积木从托盘落进画布，落在运行时基座上，落点带一次过冲回弹。',
+    s2:'消费者各自拖出一条依赖线，指向提供者的锚点。',
+    s3:'数据库驱动被抬起抽出基座，熄灭波纹开始沿依赖线逐级传导。',
+    s4:'查询插件与聊天插件已连锁熄灭；主题皮肤与日志器没有声明依赖，保持点亮。',
+    s5:'备用源落进同一个槽位，复明波纹沿原路反向走一遍，消费者逐个复明。',
+    s6:'动作原样退回去：积木回到托盘，画布回到空基座。',
+    rmMid:'拔除中态：数据库驱动已被抬起，熄灭波纹正在沿依赖线传导。',
+    rmFinal:'终态：备用源已接管槽位，两块消费者复明，运行恢复。'
+  };
+
+  /* ── 动画记录与绘制 ──────────────────────────── */
+  var R = {};
+  BLOCK_IDS.forEach(function(id){
+    R[id] = { el:$(id), tx:0, ty:0, o:0, isPath:false };
+  });
+  DEP_IDS.forEach(function(id){
+    var p = $(id);
+    var L = p.getTotalLength();
+    p.style.strokeDasharray = L;
+    R[id] = { el:p, L:L, off:L, o:1, isPath:true };
+  });
+  function paint(r){
+    if (r.isPath) {
+      r.el.style.strokeDashoffset = r.off;
+      r.el.setAttribute('opacity', r.o);
+    } else {
+      r.el.setAttribute('transform', 'translate(' + r.tx + ' ' + r.ty + ')');
+      r.el.setAttribute('opacity', r.o);
+    }
+  }
+
+  /* ── 缓动 ───────────────────────────────────── */
+  function easeOutCubic(p){ return 1 - Math.pow(1 - p, 3); }
+  function easeInCubic(p){ return p * p * p; }
+  function easeInOutCubic(p){ return p < .5 ? 4*p*p*p : 1 - Math.pow(-2*p + 2, 3) / 2; }
+  function easeOutBack(p){
+    var c1 = 1.70158, c3 = c1 + 1;
+    return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2);
+  }
+
+  /* ── 补间引擎：虚拟时钟，支持暂停 ─────────────── */
+  var Eng = {
+    list:[], raf:0, vt:0, last:0, paused:false,
+    kick:function(){ if (!this.raf) this.raf = requestAnimationFrame(this.tick.bind(this)); },
+    tick:function(ts){
+      this.raf = 0;
+      if (!this.last) this.last = ts;
+      var dt = ts - this.last;
+      this.last = ts;
+      if (!this.paused) this.vt += dt;
+      var keep = [];
+      for (var i = 0; i < this.list.length; i++) {
+        var t = this.list[i];
+        if (t.dead) continue;
+        var p = (this.vt - t.t0) / t.dur;
+        if (p < 0) { keep.push(t); continue; }
+        if (p > 1) p = 1;
+        t.up(t.ease(p));
+        if (p === 1) { t.dead = true; if (t.done) t.done(); }
+        else keep.push(t);
+      }
+      this.list = keep;
+      if (this.list.length) this.kick();
+    },
+    add:function(t){ this.list.push(t); this.kick(); },
+    pause:function(){ this.paused = true; },
+    resume:function(){ if (!this.paused) return; this.paused = false; this.last = 0; this.kick(); },
+    cancel:function(){ this.list.forEach(function(t){ t.dead = true; }); this.list = []; }
+  };
+  function tw(rec, target, opt){
+    opt = opt || {};
+    var keys = Object.keys(target), from = {};
+    keys.forEach(function(k){ from[k] = rec[k]; });
+    Eng.add({
+      t0: Eng.vt + (opt.delay || 0),
+      dur: opt.dur || 500,
+      ease: opt.ease || easeOutCubic,
+      dead: false,
+      up: function(p){
+        keys.forEach(function(k){ rec[k] = from[k] + (target[k] - from[k]) * p; });
+        paint(rec);
+      },
+      done: opt.done
+    });
+  }
+  function dummy(delay, done){
+    Eng.add({ t0: Eng.vt + delay, dur: 1, ease: function(p){ return p; }, dead:false, up:function(){}, done: done });
+  }
+
+  /* ── UI 引用与辅助 ───────────────────────────── */
+  var logEl = $('log'), noteEl = $('note'), stageRoot = $('stage-root');
+  var btnPlay = $('btn-play'), btnPause = $('btn-pause'),
+      btnReplay = $('btn-replay'), btnReset = $('btn-reset');
+  var gen = 0, playing = false, paused = false, rmState = 'final';
+  function gd(g, fn){ return function(){ if (g === gen && fn) fn(); }; }
+  function log(msg){
+    var d = new Date();
+    var ts = [d.getHours(), d.getMinutes(), d.getSeconds()]
+      .map(function(n){ return String(n).padStart(2, '0'); }).join(':');
+    var line = document.createElement('div');
+    line.className = 'log-line';
+    var t = document.createElement('span');
+    t.className = 'ts'; t.textContent = ts;
+    line.appendChild(t);
+    line.appendChild(document.createTextNode(msg));
+    logEl.appendChild(line);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  function logAt(delay, msg){ var g = gen; dummy(delay, gd(g, function(){ log(msg); })); }
+  function note(txt){
+    if (RM.matches) { noteEl.textContent = txt; return; }
+    noteEl.style.opacity = '0';
+    setTimeout(function(){ noteEl.textContent = txt; noteEl.style.opacity = '1'; }, 180);
+  }
+  function show(id){ R[id].el.classList.remove('off'); }
+  function hide(id){ R[id].el.classList.add('off'); }
+  function trayOut(id, out){
+    var piece = document.querySelector('.piece[data-block="' + id + '"]');
+    if (piece) piece.classList.toggle('out', out);
+  }
+  function setStatus(id, s){ status[id] = s; if (id === sel) renderInsp(); }
+  function renderInsp(){
+    var b = BLOCKS[sel];
+    $('insp-name').textContent = b.name;
+    $('insp-type').textContent = b.type;
+    $('insp-deps').textContent = b.deps;
+    $('insp-status').textContent = status[sel];
+  }
+  function select(id){
+    sel = id;
+    document.querySelectorAll('.blk').forEach(function(g){
+      g.classList.toggle('sel', g.id === id);
+    });
+    document.querySelectorAll('.piece').forEach(function(p){
+      p.classList.toggle('sel', p.dataset.block === id);
+    });
+    renderInsp();
+  }
+
+  /* ── 状态预设 ────────────────────────────────── */
+  function applyInitial(){
+    BLOCK_IDS.forEach(function(id){
+      var r = R[id];
+      r.tx = 0; r.ty = 0; r.o = 0;
+      hide(id); paint(r);
+      status[id] = '待接入'; trayOut(id, false);
+    });
+    DEP_IDS.forEach(function(id){
+      var r = R[id]; r.off = r.L; r.o = 1; paint(r);
+    });
+    renderInsp();
+  }
+  var PRESETS = {
+    final: {
+      blocks: { b_db:{o:0}, b_alt:{o:1}, b_query:{o:1,ty:0}, b_chat:{o:1,ty:0}, b_theme:{o:1}, b_logger:{o:1} },
+      depOff: 0, depO: 1, trayOutAll: true, note: T.rmFinal,
+      statuses: { b_db:'已移除', b_alt:'运行中', b_query:'运行中', b_chat:'运行中', b_theme:'运行中', b_logger:'运行中' }
+    },
+    mid: {
+      blocks: { b_db:{o:.3, ty:-46}, b_alt:{o:0}, b_query:{o:1,ty:0}, b_chat:{o:1,ty:0}, b_theme:{o:1}, b_logger:{o:1} },
+      depOff: 0, depO: .35, trayOutAll: true, note: T.rmMid,
+      statuses: { b_db:'已移除', b_alt:'待接入', b_query:'运行中', b_chat:'运行中', b_theme:'运行中', b_logger:'运行中' }
+    }
+  };
+  function applyPreset(name){
+    var p = PRESETS[name];
+    BLOCK_IDS.forEach(function(id){
+      var r = R[id], s = p.blocks[id] || {};
+      r.tx = 0; r.ty = ('ty' in s) ? s.ty : 0; r.o = ('o' in s) ? s.o : 1;
+      if (r.o === 0) hide(id); else show(id);
+      paint(r);
+      status[id] = p.statuses[id];
+      trayOut(id, p.trayOutAll);
+    });
+    DEP_IDS.forEach(function(id){
+      var r = R[id]; r.off = p.depOff; r.o = p.depO; paint(r);
+    });
+    renderInsp();
+    note(p.note);
+  }
+
+  /* ── 六拍分镜 ────────────────────────────────── */
+  function land(id, fx, fy, delay, landLog, logDelay){
+    var g = gen, r = R[id];
+    show(id); trayOut(id, true);
+    r.tx = fx; r.ty = fy; r.o = 0; paint(r);
+    tw(r, { tx:0 }, { dur:680, delay:delay, ease:easeOutCubic });
+    tw(r, { ty:0 }, { dur:680, delay:delay, ease:easeOutBack,
+      done: gd(g, function(){ setStatus(id, '运行中'); }) });
+    tw(r, { o:1 }, { dur:220, delay:delay });
+    logAt(delay + logDelay, landLog);
+  }
+  function drawDep(id, delay){
+    var r = R[id];
+    r.off = r.L; paint(r);
+    tw(r, { off:0 }, { dur:640, delay:delay, ease:easeInOutCubic });
+  }
+
+  var SCENES = [
+    function s1(done){
+      var g = gen;
+      note(T.s1);
+      land('b_db', -300, -220, 0,   '数据库驱动 落位', 420);
+      land('b_query', -260, -190, 140, '查询插件 落位', 560);
+      land('b_chat', -230, -160, 280,  '聊天插件 落位', 700);
+      land('b_theme', -250, -130, 430, '主题皮肤 落位', 850);
+      land('b_logger', -210, -100, 560,'日志器 落位', 980);
+      dummy(1300, gd(g, done));
+    },
+    function s2(done){
+      var g = gen;
+      note(T.s2);
+      drawDep('dep_q', 100); logAt(320, '查询插件 声明依赖');
+      drawDep('dep_c', 520); logAt(740, '聊天插件 声明依赖');
+      dummy(1500, gd(g, done));
+    },
+    function s3(done){
+      var g = gen, r = R.b_db;
+      note(T.s3);
+      tw(r, { ty:-46 }, { dur:520, ease:easeInCubic, done: gd(g, function(){
+        tw(r, { o:0 }, { dur:300, ease:easeOutCubic, done: gd(g, function(){
+          hide('b_db');
+          setStatus('b_db', '已移除');
+          log('数据库驱动 已移除');
+        }) });
+      }) });
+      tw(R.dep_q, { o:.35 }, { dur:600, delay:180 });
+      tw(R.dep_c, { o:.35 }, { dur:600, delay:260 });
+      dummy(1250, gd(g, done));
+    },
+    function s4(done){
+      var g = gen;
+      note(T.s4);
+      tw(R.dep_q, { o:.12 }, { dur:340 });
+      tw(R.b_query, { o:.14, ty:6 }, { dur:560, delay:120, ease:easeInOutCubic,
+        done: gd(g, function(){ setStatus('b_query', '已熄灭'); log('查询插件 连锁熄灭'); }) });
+      tw(R.dep_c, { o:.12 }, { dur:340, delay:620 });
+      tw(R.b_chat, { o:.14, ty:6 }, { dur:560, delay:740, ease:easeInOutCubic,
+        done: gd(g, function(){ setStatus('b_chat', '已熄灭'); log('聊天插件 连锁熄灭'); }) });
+      logAt(1500, '主题皮肤 未受影响');
+      logAt(1660, '日志器 未受影响');
+      dummy(2000, gd(g, done));
+    },
+    function s5(done){
+      var g = gen, r = R.b_alt;
+      note(T.s5);
+      show('b_alt');
+      r.ty = -170; r.o = 0; paint(r);
+      tw(r, { ty:0 }, { dur:720, ease:easeOutBack,
+        done: gd(g, function(){ setStatus('b_alt', '运行中'); }) });
+      tw(r, { o:1 }, { dur:240 });
+      logAt(500, '备用源 已接入');
+      var rq = R.dep_q, rc = R.dep_c;
+      rq.off = rq.L; rc.off = rc.L; paint(rq); paint(rc);
+      tw(rq, { off:0 }, { dur:620, delay:680, ease:easeInOutCubic });
+      tw(rc, { off:0 }, { dur:620, delay:860, ease:easeInOutCubic });
+      tw(rq, { o:1 }, { dur:500, delay:680 });
+      tw(rc, { o:1 }, { dur:500, delay:860 });
+      tw(R.b_query, { o:1, ty:0 }, { dur:520, delay:1150, ease:easeInOutCubic,
+        done: gd(g, function(){ setStatus('b_query', '运行中'); log('查询插件 已复明'); }) });
+      tw(R.b_chat, { o:1, ty:0 }, { dur:520, delay:1420, ease:easeInOutCubic,
+        done: gd(g, function(){ setStatus('b_chat', '运行中'); log('聊天插件 已复明'); }) });
+      dummy(2200, gd(g, done));
+    },
+    function s6(done){
+      var g = gen;
+      note(T.s6);
+      logAt(60, '动作回滚');
+      tw(R.b_alt, { ty:-46, o:0 }, { dur:480, ease:easeInCubic,
+        done: gd(g, function(){ hide('b_alt'); setStatus('b_alt', '待接入'); }) });
+      [['b_query',-240,-170], ['b_chat',-210,-140], ['b_theme',-260,-110], ['b_logger',-220,-80]]
+        .forEach(function(it, i){
+          var r = R[it[0]];
+          tw(r, { tx:it[1], ty:it[2], o:0 }, { dur:560, delay:160 + i * 110, ease:easeInCubic,
+            done: gd(g, function(){ hide(it[0]); setStatus(it[0], '待接入'); trayOut(it[0], false); }) });
+        });
+      tw(R.dep_q, { o:0 }, { dur:420, delay:200 });
+      tw(R.dep_c, { o:0 }, { dur:420, delay:290 });
+      logAt(1150, '积木已放回托盘');
+      logAt(1400, '画布已复原');
+      dummy(1700, gd(g, function(){
+        DEP_IDS.forEach(function(id){ var r = R[id]; r.o = 1; r.off = r.L; paint(r); });
+        setStatus('b_db', '待接入');
+        trayOut('b_db', false);
+        done();
+      }));
+    }
+  ];
+
+  /* ── 播放控制 ────────────────────────────────── */
+  function run(i, g){
+    SCENES[i](function(){
+      if (g !== gen) return;
+      if (i < SCENES.length - 1) run(i + 1, g);
+      else { playing = false; paused = false; syncBtns(); }
+    });
+  }
+  function start(){
+    gen++;
+    Eng.cancel(); Eng.paused = false;
+    playing = true; paused = false;
+    applyInitial();
+    syncBtns();
+    run(0, gen);
+  }
+  function resetAll(){
+    gen++;
+    Eng.cancel(); Eng.paused = false;
+    playing = false; paused = false;
+    if (RM.matches) {
+      applyInitial();
+      rmState = 'mid';
+      note(T.s0rm);
+    } else {
+      applyInitial();
+      note(T.s0);
+    }
+    log('画布已复原');
+    syncBtns();
+  }
+  function syncBtns(){
+    if (RM.matches) {
+      btnPause.style.display = 'none';
+      btnReplay.style.display = 'none';
+      btnPlay.textContent = rmState === 'final' ? '查看拔除中' : '查看终态';
+      btnPlay.disabled = false;
+      return;
+    }
+    btnPause.style.display = '';
+    btnReplay.style.display = '';
+    btnPlay.textContent = '播放六拍';
+    btnPlay.disabled = playing && !paused;
+    btnPause.disabled = !playing || paused;
+  }
+
+  btnPlay.addEventListener('click', function(){
+    if (RM.matches) {
+      var target = rmState === 'final' ? 'mid' : 'final';
+      rmState = target;
+      stageRoot.style.opacity = '0';
+      setTimeout(function(){
+        applyPreset(target);
+        stageRoot.style.opacity = '1';
+        log(target === 'mid' ? '预览 拔除中态' : '预览 终态');
+        syncBtns();
+      }, 240);
+      return;
+    }
+    if (paused) { paused = false; Eng.resume(); syncBtns(); return; }
+    if (playing) return;
+    start();
+  });
+  btnPause.addEventListener('click', function(){
+    paused = true; Eng.pause(); syncBtns();
+  });
+  btnReplay.addEventListener('click', start);
+  btnReset.addEventListener('click', resetAll);
+  /* 对外暴露的播放接口：play / pause / restart */
+  window.SandboxScenes = {
+    play: function(){ btnPlay.click(); },
+    pause: function(){ btnPause.click(); },
+    restart: start
+  };
+  window.addEventListener('keydown', function(e){
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey &&
+        String(e.key).toLowerCase() === 'z') {
+      e.preventDefault();
+      resetAll();
+    }
+  });
+
+  /* 选择：画布积木 + 托盘条目 */
+  document.querySelectorAll('.blk').forEach(function(g){
+    g.addEventListener('click', function(){ select(g.id); });
+    g.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(g.id); }
+    });
+  });
+  document.querySelectorAll('.piece[data-block]').forEach(function(p){
+    p.addEventListener('click', function(){ select(p.dataset.block); });
+  });
+
+  /* 降级模式切换 */
+  function syncMode(){
+    gen++;
+    Eng.cancel(); Eng.paused = false;
+    playing = false; paused = false;
+    if (RM.matches) { rmState = 'final'; applyPreset('final'); }
+    else { applyInitial(); note(T.s0); }
+    syncBtns();
+  }
+  if (RM.addEventListener) RM.addEventListener('change', syncMode);
+  else if (RM.addListener) RM.addListener(syncMode);
+
+  /* ── 初始化 ─────────────────────────────────── */
+  applyInitial();
+  select('b_db');
+  note(T.s0);
+  log('沙盒待命');
+  if (RM.matches) {
+    rmState = 'final';
+    applyPreset('final');
+    ['数据库驱动 已移除', '备用源 已接入', '查询插件 已复明', '聊天插件 已复明']
+      .forEach(function(m){ log(m); });
+  }
+  syncBtns();
+})();
+</script>
+</body>
+</html>

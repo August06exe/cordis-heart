@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>序章 · 为什么 | Cordis 思想图鉴</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:     oklch(0.984 0.004 106.5);      /* 纸白 #FAFAF7 */
+    --fg:     oklch(0.449 0.182 265);        /* 钴蓝 #2148B8，全页唯一墨 */
+    --ink:    var(--fg);
+    --paper:  var(--bg);
+    --ink-14: oklch(0.449 0.182 265 / .14);  /* 基座色块 */
+    --ink-20: oklch(0.449 0.182 265 / .20);  /* 分隔细线 */
+    --ink-70: oklch(0.449 0.182 265 / .70);  /* 图解线 · ≥3:1 */
+    --ink-78: oklch(0.449 0.182 265 / .78);  /* 小字注脚 · ≥4.5:1 */
+    --ink-82: oklch(0.449 0.182 265 / .82);  /* 正文 · ≥4.5:1 */
+    --serif: "Noto Serif SC","Songti SC","SimSun",serif;
+    --sans:  "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    --mono:  "IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    animation: page-in .6s ease-out both;
+  }
+  @keyframes page-in{ from{ opacity:0; } to{ opacity:1; } }
+  ::selection{ background: var(--ink-14); }
+
+  /* 印刷开本：页面四缘一圈细墨线，页边距桌面 22px */
+  .sheet{
+    position:relative;
+    min-height:100vh;
+    min-height:100dvh;
+    margin:22px;
+    border:1px solid var(--ink-20);
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ── 报头 masthead ─────────────────────────── */
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:24px;
+    padding:24px 48px 20px;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .wordmark{ display:flex; align-items:baseline; gap:16px; }
+  .wordmark .latin{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:19px;
+    letter-spacing:.34em;
+  }
+  .wordmark .zh{
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:.18em;
+    color:var(--ink-82);
+  }
+  .masthead .folio{
+    font-size:12px;
+    letter-spacing:.22em;
+    color:var(--ink-78);
+    white-space:nowrap;
+  }
+
+  /* ── 版面公共件 ─────────────────────────────── */
+  .pad-x{ padding-left:clamp(28px, 6vw, 96px); padding-right:clamp(28px, 6vw, 96px); }
+  .act{ padding-top:clamp(76px, 9vw, 128px); padding-bottom:clamp(76px, 9vw, 128px); }
+  .act-inner{ max-width:1360px; margin:0 auto; }
+
+  .kicker{
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.42em;
+    color:var(--ink-78);
+  }
+  .act-title{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:clamp(58px, 5vw, 76px);
+    line-height:1.18;
+    letter-spacing:.01em;
+    text-wrap:balance;
+  }
+  .body-p{
+    font-size:16px;
+    line-height:2.0;
+    color:var(--ink-82);
+    max-width:26em;
+    margin-top:1.7em;
+  }
+  .act-title + .body-p{ margin-top:2.2em; }
+  .body-p strong{ font-weight:700; color:var(--ink); }
+  .body-p code{
+    font-family:var(--mono);
+    font-size:.88em;
+    letter-spacing:0;
+    color:var(--ink);
+  }
+  .small{ font-size:11.5px; letter-spacing:.2em; color:var(--ink-78); }
+  .rule{ flex:1; height:1px; background:var(--ink-20); min-width:40px; }
+
+  /* 可靠度徽标：三级用墨的密度做印刷隐喻 */
+  .badge{ display:inline-flex; align-items:center; gap:9px; }
+  .badge .swatch{ width:12px; height:12px; flex:none; display:block; }
+  .sw-solid{ fill:var(--ink); }
+  .ht-dot{ fill:var(--ink); }
+  .sw-empty{ fill:none; stroke:var(--ink-20); }
+  .badge-label{ font-size:11.5px; letter-spacing:.2em; color:var(--ink-78); white-space:nowrap; }
+  .badge-row{ margin-top:44px; }
+
+  /* 图注：图号 + 细线 + 出处，沿用 hero 的 footnote 族 */
+  .figcaption{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin-top:28px;
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+  figure{ margin:0; }
+  .figure svg{ width:100%; height:auto; display:block; }
+
+  /* ── 序 ────────────────────────────────────── */
+  .prologue{ padding-top:84px; padding-bottom:76px; }
+  .pro-row{ display:flex; align-items:center; gap:28px; max-width:1360px; margin:0 auto; }
+  .pro-rule{ width:1px; height:14px; background:var(--ink-20); flex:none; }
+  .lead{ font-size:12px; letter-spacing:.14em; color:var(--ink-82); }
+
+  /* ── 幕一：左文右图 40/60 ───────────────────── */
+  .act1-grid{ display:grid; grid-template-columns:40fr 60fr; }
+  .act1-copy{ border-right:1px solid var(--ink-20); padding-right:clamp(36px, 4vw, 72px); }
+  .act1-fig{ padding-left:clamp(36px, 4vw, 72px); }
+  .act1-fig .figure{ max-width:680px; }
+
+  /* 图 01 下方三小注：细线分隔，不做卡片 */
+  .notes-row{
+    display:flex;
+    align-items:center;
+    gap:20px;
+    margin-top:26px;
+    font-size:11px;
+    letter-spacing:.24em;
+    color:var(--ink-78);
+  }
+  .notes-row .nr-rule{ width:1px; height:12px; background:var(--ink-20); }
+  .analogy-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px 18px;
+    margin-top:20px;
+  }
+
+  /* ── SVG 图解词汇（同 hero 一族） ────────────── */
+  .block-box{ fill:var(--paper); stroke:var(--ink); stroke-width:2; }
+  .dep-curve{ fill:none; stroke:var(--ink); stroke-width:1.6; opacity:.7; }
+  .dep-arrow{ fill:var(--ink); opacity:.7; }
+  .plinth{ fill:var(--ink); opacity:.14; }
+  .scene-note{
+    font-family:var(--sans);
+    font-weight:500;
+    font-size:11px;
+    letter-spacing:.24em;
+    fill:var(--ink);
+    opacity:.78;
+  }
+  .harness-label{ font-family:var(--mono); font-weight:500; font-size:17px; letter-spacing:.12em; fill:var(--ink); }
+  .chip-label{ font-family:var(--sans); font-weight:700; font-size:13px; letter-spacing:.14em; fill:var(--ink); }
+  .cell-label{ font-family:var(--sans); font-weight:700; font-size:11px; letter-spacing:.18em; fill:var(--ink); }
+
+  /* 描线：pathLength=1 归一，默认终态完整可见 */
+  .draw{ fill:none; stroke:var(--ink); stroke-dasharray:1; stroke-dashoffset:0; }
+  .p-frame, .p-base, .p-term, .p-blade, .p-bulbframe{ stroke-width:2; }
+  .p-gridv, .p-gridh{ stroke-width:1.2; }
+  .p-handle{ stroke-width:5; stroke-linecap:round; }
+  .p-bulbframe{ fill:var(--paper); }
+  .bulb-core{ fill:var(--ink); }
+  /* 扫过处楼体格线降为墨 .14：格线本身 .70，整组落到 .2 即等效 .14 */
+  .grid-lines{ opacity:.2; }
+  .grid-lines path{ opacity:.7; }
+
+  /* ── 幕二：全宽数字带 ───────────────────────── */
+  .stat-band{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    border-top:1px solid var(--ink-20);
+    border-bottom:1px solid var(--ink-20);
+    padding:clamp(40px, 4.5vw, 64px) 0;
+    margin-top:clamp(40px, 4.5vw, 64px);
+  }
+  .stat-col{ min-width:0; }
+  .stat-col:first-child{ padding-right:clamp(28px, 4vw, 64px); }
+  .stat-col + .stat-col{ border-left:1px solid var(--ink-20); padding-left:clamp(28px, 4vw, 64px); }
+  .stat-num{
+    font-family:var(--mono);
+    font-weight:500;
+    color:var(--ink);
+    line-height:1;
+    white-space:nowrap;
+  }
+  .stat-num .num{ font-size:clamp(64px, 8.5vw, 118px); letter-spacing:-.02em; font-feature-settings:"tnum"; }
+  .stat-num .denom{ font-size:clamp(18px, 2vw, 30px); letter-spacing:0; color:var(--ink-78); margin-left:8px; }
+  .stat-desc{
+    font-size:11.5px;
+    letter-spacing:.2em;
+    line-height:2.0;
+    color:var(--ink-78);
+    margin-top:22px;
+    max-width:40em;
+  }
+  .stat-desc code{ font-family:var(--mono); font-size:.95em; letter-spacing:0; color:var(--ink); }
+  .cellband{
+    display:grid;
+    grid-template-columns:repeat(20, 1fr);
+    gap:3px;
+    margin-top:26px;
+  }
+  .cellband i{ display:block; height:12px; border:1px solid var(--ink-70); }
+  .cellband i.on{ background:var(--ink); border-color:var(--ink); }
+  .source-row{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-top:22px;
+  }
+  .act2-body{ margin-top:56px; }
+
+  /* ── 幕三：左图右文 60/40 ───────────────────── */
+  .act3-grid{ display:grid; grid-template-columns:60fr 40fr; }
+  .act3-fig{ border-right:1px solid var(--ink-20); padding-right:clamp(36px, 4vw, 72px); }
+  .act3-fig .figure{ max-width:640px; }
+  .act3-copy{ padding-left:clamp(36px, 4vw, 72px); }
+
+  /* ── 钩子 ──────────────────────────────────── */
+  .hook{ padding-bottom:0; }
+  .hook-inner{ max-width:1360px; margin:0 auto; margin-left:max(clamp(28px, 6vw, 96px), calc((100% - 1360px) / 2 + 10vw)); padding-right:clamp(28px, 6vw, 96px); }
+  .hook-q{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:clamp(62px, 7vw, 100px);
+    line-height:1.14;
+    letter-spacing:.01em;
+    text-wrap:balance;
+  }
+  .hook-next{ font-size:12.5px; letter-spacing:.2em; color:var(--ink-78); margin-top:36px; }
+  .hook-rule{
+    display:block;
+    width:1px;
+    height:clamp(72px, 14vh, 150px);
+    background:var(--ink-20);
+    margin-top:46px;
+  }
+
+  /* ── 带走物槽位（每页结尾带走一件 · 先留位 · 零动画） ──
+     形态按 PRD 三选一（AI 话 / 知识卡 / 勾选清单），内容由 M3 定；2px 墨线空框占位 */
+  .takeaway-zone{ padding-top:clamp(32px, 4vw, 56px); padding-bottom:clamp(64px, 8vw, 104px); }
+  .takeaway{
+    max-width:1360px;
+    margin:0 auto;
+    border:2px solid var(--ink-20);
+    padding:20px 24px;
+  }
+  .takeaway p{ font-size:11.5px; letter-spacing:.2em; color:var(--ink-78); }
+
+  /* ── 页脚（release zone · 零动画） ───────────── */
+  .colophon{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:24px;
+    padding:18px 48px 22px;
+    border-top:1px solid var(--ink-20);
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+
+  :focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+
+  @media (prefers-reduced-motion: reduce){
+    body{ animation:none; }
+  }
+
+  /* ── 响应式：<960px 塌单栏，页边距 14px ──────── */
+  @media (max-width: 960px){
+    .sheet{ margin:14px; }
+    .masthead{ padding:18px 22px 14px; flex-wrap:wrap; row-gap:6px; }
+    .wordmark{ gap:12px; }
+    .wordmark .latin{ font-size:16px; letter-spacing:.26em; }
+    .wordmark .zh{ font-size:12px; letter-spacing:.1em; }
+    .prologue{ padding-top:56px; padding-bottom:52px; }
+    .pro-row{ flex-wrap:wrap; gap:16px 20px; }
+    .act{ padding-top:64px; padding-bottom:64px; }
+    .act1-grid, .act3-grid{ grid-template-columns:1fr; }
+    .act1-copy{ border-right:none; border-bottom:1px solid var(--ink-20); padding-right:0; padding-bottom:44px; }
+    .act1-fig{ padding-left:0; padding-top:44px; }
+    .act3-fig{ border-right:none; border-bottom:1px solid var(--ink-20); padding-right:0; padding-bottom:44px; }
+    .act3-copy{ padding-left:0; padding-top:44px; }
+    .stat-band{ grid-template-columns:1fr; }
+    .stat-col:first-child{ padding-right:0; }
+    .stat-col + .stat-col{ border-left:none; border-top:1px solid var(--ink-20); padding-left:0; margin-top:40px; padding-top:40px; }
+    .cellband i{ height:11px; }
+    .act2-body{ margin-top:44px; }
+    .hook-inner{ margin-left:clamp(28px, 6vw, 96px); }
+    .hook-q{ font-size:clamp(58px, 15vw, 76px); }
+    .notes-row{ flex-wrap:wrap; gap:12px 16px; }
+    .colophon{ padding:16px 22px 20px; flex-wrap:wrap; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 徽标网屏点纹（全站件 · 可靠度徽标）共享图案 -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+  <defs>
+    <pattern id="ht-dots" width="3.6" height="3.6" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+      <circle class="ht-dot" cx="1.4" cy="1.4" r="0.85"/>
+    </pattern>
+  </defs>
+</svg>
+
+<div class="sheet" data-od-id="page-sheet">
+
+  <!-- 报头 -->
+  <header class="masthead" data-od-id="masthead">
+    <div class="wordmark">
+      <span class="latin">CORDIS</span>
+      <span class="zh">DSH 的心脏 · 思想图鉴</span>
+    </div>
+    <span class="folio">序章 · 为什么</span>
+  </header>
+
+  <main>
+    <!-- 序 -->
+    <section class="prologue pad-x" data-od-id="prologue">
+      <div class="pro-row">
+        <p class="kicker" data-fade data-od-id="kicker">立项证据 · 论文第 1 章</p>
+        <span class="pro-rule" aria-hidden="true"></span>
+        <p class="lead" data-fade data-od-id="lead">动态组装人人都在做，理论地基却几乎是空的。</p>
+      </div>
+    </section>
+
+    <!-- 幕一 · 重启的代价：左文右图 40/60 -->
+    <section class="act pad-x act1" id="act1" data-od-id="act-restart">
+      <div class="act-inner act1-grid">
+        <div class="act1-copy" data-od-id="act1-copy">
+          <h2 class="act-title" data-od-id="act1-title">重启的代价</h2>
+          <p class="body-p" data-od-id="act1-p1">软件的老手艺是拼积木，但那是静态的：谁调用谁、谁导入谁，程序开跑之前就定死。今天的零件要在运行中途装上、拆下、改配置；为动态组装托底的理论，几乎还是空的。</p>
+          <p class="body-p" data-od-id="act1-p2">没有理论的时代靠土办法：操作系统拿整个进程给时间维度兜底，容器编排器拿整个服务给空间维度兜底。换一个部件，进程里攒的状态全部作废，重建要几秒到几分钟，还得养一份冗余副本专职待命。<strong>粒度错配了</strong>：换一个灯泡，拉下整栋楼的电闸。</p>
+          <div class="badge-row" data-od-id="act1-badge">
+            <span class="badge">
+              <svg class="swatch" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><rect class="sw-solid" x="0.75" y="0.75" width="10.5" height="10.5"/></svg>
+              <span class="badge-label">论文原文核实 · 论文 1.2.3 节</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="act1-fig" id="fig01-wrap" data-od-id="fig01-wrap">
+          <figure class="figure" data-od-id="figure-01">
+            <svg id="fig01" viewBox="0 0 760 560" role="img" aria-labelledby="fig01-title"
+                 xmlns="http://www.w3.org/2000/svg">
+              <title id="fig01-title">单墨线稿：一栋楼里只有一格灯泡亮着，闸刀拉开后电流扫过全楼，楼体格线尽数熄灭</title>
+
+              <!-- 基座 -->
+              <rect class="plinth fade-early" x="40" y="524" width="720" height="8" rx="4"/>
+
+              <!-- 楼体外框（立于基座上，底部开放） -->
+              <path class="draw p-frame" pathLength="1" d="M60,524 V60 H360 V524"/>
+
+              <!-- 楼体格线：扫过处降为墨 .14（组透明度 .2 × 线 .70） -->
+              <g class="grid-lines" data-od-id="fig01-grid">
+                <path class="draw p-gridv" pathLength="1" d="M135,60 V524"/>
+                <path class="draw p-gridv" pathLength="1" d="M210,60 V524"/>
+                <path class="draw p-gridv" pathLength="1" d="M285,60 V524"/>
+                <path class="draw p-gridh" pathLength="1" d="M60,118 H360"/>
+                <path class="draw p-gridh" pathLength="1" d="M60,176 H360"/>
+                <path class="draw p-gridh" pathLength="1" d="M60,234 H360"/>
+                <path class="draw p-gridh" pathLength="1" d="M60,292 H360"/>
+                <path class="draw p-gridh" pathLength="1" d="M60,350 H360"/>
+                <path class="draw p-gridh" pathLength="1" d="M60,408 H360"/>
+                <path class="draw p-gridh" pathLength="1" d="M60,466 H360"/>
+              </g>
+
+              <!-- 电闸到楼体的进线 -->
+              <path class="dep-curve draw p-mains" pathLength="1" d="M360,430 H491"/>
+
+              <!-- 自闸刀扫过全楼的细线（终点楼体左上角，不切灯泡格） -->
+              <path class="dep-curve draw p-sweep" pathLength="1" d="M480,380 C400,345 330,305 255,235 C195,185 130,145 72,78"/>
+              <path class="dep-arrow sweep-head" d="M64.2,70.4 L75.5,73.6 L69.3,80.4 Z"/>
+
+              <!-- 闸刀开关（开启位） -->
+              <g data-od-id="fig01-switch">
+                <path class="draw p-base" pathLength="1" d="M478,436 H702"/>
+                <path class="draw p-term" pathLength="1" d="M493,424 h12 v12 h-12 Z"/>
+                <path class="draw p-term" pathLength="1" d="M633,424 h12 v12 h-12 Z"/>
+                <path class="draw p-blade" pathLength="1" d="M499,424 L612,352"/>
+                <path class="draw p-handle" pathLength="1" d="M612,352 L630,341"/>
+                <text class="scene-note fill-late" x="640" y="320">电闸</text>
+              </g>
+
+              <!-- 亮着的一格：灯泡（右下角单元，与格线严格对齐） -->
+              <g data-od-id="fig01-bulb">
+                <path class="draw p-frame-bg p-bulbframe" pathLength="1" d="M285,466 H360 V524 H285 Z"/>
+                <rect class="bulb-core fill-late" x="315.5" y="488" width="14" height="14"/>
+                <text class="cell-label fill-late" x="322.5" y="517" text-anchor="middle">灯泡</text>
+              </g>
+            </svg>
+
+            <div class="notes-row" id="notes01" data-od-id="fig01-notes">
+              <span>状态清零</span>
+              <i class="nr-rule" aria-hidden="true"></i>
+              <span>副本待命</span>
+              <i class="nr-rule" aria-hidden="true"></i>
+              <span>任务打断</span>
+            </div>
+
+            <div class="analogy-row" data-od-id="fig01-analogy">
+              <span class="small">类比：为换一只灯泡，拉下整栋楼的电闸。</span>
+              <span class="badge">
+                <svg class="swatch" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><rect x="0.75" y="0.75" width="10.5" height="10.5" fill="url(#ht-dots)"/></svg>
+                <span class="badge-label">合理解读</span>
+              </span>
+            </div>
+
+            <figcaption class="figcaption" data-od-id="fig01-caption">
+              <span>图 01 粗粒度重启</span>
+              <span class="rule" aria-hidden="true"></span>
+              <span>类比出自笔记作者</span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 幕二 · VSCode 的两个统计：全宽数字带（focal event） -->
+    <section class="act pad-x act2" id="act2" data-od-id="act-vscode">
+      <div class="act-inner">
+        <h2 class="act-title" data-od-id="act2-title">VSCode 的两个统计</h2>
+
+        <div class="stat-band" data-od-id="stat-band">
+          <div class="stat-col" id="stat-a" data-od-id="stat-a">
+            <p class="stat-num"><span class="num" data-count="87">87</span><span class="denom"> / 100</span></p>
+            <p class="stat-desc">安装量前 100 的扩展里，87 个含可执行代码，卸载或禁用都得重启整个扩展宿主。</p>
+            <div class="cellband" id="band-a" role="img" aria-label="100 格统计带，87 格实墨填充，其余空框"></div>
+          </div>
+          <div class="stat-col" id="stat-b" data-od-id="stat-b">
+            <p class="stat-num"><span class="num" data-count="7">7</span><span class="denom"> / 100</span></p>
+            <p class="stat-desc">对非内置扩展声明过依赖的，只有 7 个。<code>extensionDependencies</code> 字段几乎无人使用。</p>
+            <div class="cellband" id="band-b" role="img" aria-label="100 格统计带，7 格实墨填充，其余空框"></div>
+          </div>
+        </div>
+
+        <div class="source-row" data-od-id="stat-source">
+          <span class="small">论文统计 · 取自 2026-06-09 的 VSCode 市场</span>
+          <span class="rule" aria-hidden="true"></span>
+          <span class="badge">
+            <svg class="swatch" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><rect class="sw-solid" x="0.75" y="0.75" width="10.5" height="10.5"/></svg>
+            <span class="badge-label">论文原文核实</span>
+          </span>
+        </div>
+
+        <p class="body-p act2-body" data-od-id="act2-body">时间维度：所有扩展共居一个 <code>extension host</code>，激活过的代码无法在运行中单独摘除，<code>deactivate</code> 钩子只在宿主整体关闭时充当善后回调。空间维度：扩展只对宿主说话；少数想互相调用的，走 <code>getExtension().exports</code>，返回值没有任何类型约束。论文补了一句：这两个局限是插件系统的通病，程度不同而已。</p>
+      </div>
+    </section>
+
+    <!-- 幕三 · 自进化的 Agent：左图右文 60/40 -->
+    <section class="act pad-x act3" id="act3" data-od-id="act-agent">
+      <div class="act-inner act3-grid">
+        <div class="act3-fig" data-od-id="fig02-wrap">
+          <figure class="figure fade-seq" data-od-id="figure-02">
+            <svg id="fig02" viewBox="0 0 720 540" role="img" aria-labelledby="fig02-title"
+                 xmlns="http://www.w3.org/2000/svg">
+              <title id="fig02-title">线稿图：agent harness 积木通过自我修改回路给自己更换部件，底部持续服务箭头与回环线并行不交</title>
+              <defs>
+                <marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5"
+                        markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 Z" class="dep-arrow"/>
+                </marker>
+              </defs>
+
+              <!-- 大积木：agent harness -->
+              <rect class="block-box" x="150" y="174" width="360" height="230" rx="10"/>
+              <text class="harness-label" x="330" y="296" text-anchor="middle">agent harness</text>
+
+              <!-- 积木自身的另一小块：自我修改（顶部右侧独立小块） -->
+              <rect class="block-box" x="452" y="108" width="160" height="66" rx="10"/>
+              <text class="chip-label" x="532" y="147" text-anchor="middle">自我修改</text>
+
+              <!-- 自积木顶部伸出、绕回指向自我的回环线，箭头方向向内 -->
+              <path class="dep-curve" d="M330,174 C330,74 380,40 480,40 C566,40 532,66 532,106" marker-end="url(#ah2)"/>
+
+              <!-- 基座 -->
+              <rect class="plinth" x="70" y="404" width="580" height="8" rx="4"/>
+              <text class="scene-note" x="70" y="440">运行中 · 服务不中断</text>
+
+              <!-- 持续服务：与回环线并行不交 -->
+              <text class="scene-note" x="80" y="470">持续服务</text>
+              <path class="dep-curve" d="M80,486 H620" marker-end="url(#ah2)"/>
+            </svg>
+
+            <figcaption class="figcaption" data-od-id="fig02-caption">
+              <span>图 02 一边服务，一边给自己动手术</span>
+              <span class="rule" aria-hidden="true"></span>
+              <span class="badge">
+                <svg class="swatch" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><rect class="sw-solid" x="0.75" y="0.75" width="10.5" height="10.5"/></svg>
+                <span class="badge-label">论文原文核实 · 论文 1.2.2 节</span>
+              </span>
+            </figcaption>
+          </figure>
+        </div>
+
+        <div class="act3-copy" data-od-id="act3-copy">
+          <h2 class="act-title fade-seq" data-od-id="act3-title">自进化的 Agent，更等不起</h2>
+          <p class="body-p fade-seq" data-od-id="act3-p1">现代 Agent 依赖运行时 harness：装配工具、管权限、记会话状态、编排子 Agent。未来的 harness 要一边持续服务，一边给自己换部件、升级部件；模型自己合成可复用工具，就是<strong>组件级自我修改</strong>的前兆。</p>
+          <p class="body-p fade-seq" data-od-id="act3-p2">缺时间维度的保证，每次修改都得整体重启：缓存、连接、算到一半的任务全部作废；最坏的情况，一次出错的修改把负责恢复的进程自己弄瘫。缺空间维度的保证，每个模块只能用土办法自己盯着上游变化，一次粗暴的替换悄悄弄坏下游。改动频率越高，土办法崩得越快。这是比插件系统更急的灾情。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 钩子 -->
+    <section class="act pad-x hook" id="hook" data-od-id="hook">
+      <div class="hook-inner">
+        <p class="hook-q" data-od-id="hook-question">有没有更好的办法？</p>
+        <p class="hook-next" data-od-id="hook-next">机制篇：改动自带撤销说明书，依赖进门先交需求清单。</p>
+        <span class="hook-rule" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <!-- 带走物槽位（定稿：AI 话；文案按 30-site/content/why.md「可带走物」小节回填，M3.5） -->
+    <section class="pad-x takeaway-zone" data-od-id="takeaway-slot" aria-label="带走物">
+      <div class="takeaway">
+        <p>带走物是一段可以直接复制给 AI 助手的话。它把论文的动机压缩成一段背景简报，先贴给它，对方就能接住话题。我在读一篇关于动态组装的论文：《A Programming Paradigm for Spatiotemporal Composability》（时空可组装性的一种编程范式），作者来自北京大学与 DeepSeek-AI。它说的是：现代软件大量在做动态组装，插件中途装上卸下、配置随时改、AI Agent 给自己换组件；但为动态组装托底的理论几乎是空的，现在通行的土办法是重启整个进程或容器，代价是状态全部作废、进行中的任务被打断、还得白养一份冗余副本。论文统计过 VSCode 安装量前 100 的扩展：87 个含可执行代码，卸载就得重启；对非内置扩展声明过依赖的只有 7 个。论文把可组装性拆成两个互相独立的维度：时间维度，部件留下的改动要能完整撤销；空间维度，依赖的出现、消失、换人要能被自动感知和响应。请基于这个背景和我讨论接下来的问题。块内 87 与 7 为转引数字，论文作者统计自 2026-06-09 的 VSCode 市场。【转引】</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚（release zone，零动画） -->
+  <footer class="colophon" data-od-id="colophon">
+    <span>deepseek-harness / Cordis 支撑框架</span>
+    <span>思想图鉴 · 单墨编辑印刷</span>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  'use strict';
+
+  /* 统计带 100 格：无论动效与否都先生成终态格 */
+  function fillBand(id, n){
+    var el = document.getElementById(id);
+    if(!el) return;
+    for(var i = 0; i < 100; i++){
+      var c = document.createElement('i');
+      if(i < n) c.className = 'on';
+      el.appendChild(c);
+    }
+  }
+  fillBand('band-a', 87);
+  fillBand('band-b', 7);
+
+  /* 降级（内容零缺失）：GSAP 缺载时全部直出终态（CSS 默认即终态）；
+     prefers-reduced-motion 不再短路，改由下方 gsap.matchMedia 统一包裹运动查询（02-技术方案.md 红线） */
+  if(!window.gsap || !window.ScrollTrigger) return;
+  /* 动效场景控制接口预埋（02-技术方案.md 红线）：每场景对外暴露 play / pause / restart */
+  var scenes = window.cordisScenes = window.cordisScenes || {};
+
+  var numA = document.querySelector('#stat-a .num');
+  var numB = document.querySelector('#stat-b .num');
+
+  function showAll(){
+    try{
+      ScrollTrigger.getAll().forEach(function(t){ t.kill(); });
+      gsap.globalTimeline.clear(true);
+      gsap.set('*', { clearProps:'all' });
+    }catch(e){}
+    if(numA) numA.textContent = '87';
+    if(numB) numB.textContent = '7';
+  }
+
+  try{
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* GSAP a11y 官方配方：全部运动动画包进 no-preference 查询。
+       reduce 时回调整体不执行，页面停留在 CSS 默认终态（数字终值、线稿完整，内容零缺失）。 */
+    gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', function(){
+
+      /* 序：进页一次性淡入 */
+      gsap.set('.prologue [data-fade]', { autoAlpha:0 });
+      gsap.to('.prologue [data-fade]', { autoAlpha:1, duration:.7, stagger:.14, ease:'power1.out', delay:.25 });
+
+      /* 幕一：图 01 单墨线稿描线一遍（约 1.2s），画完即停，三小注随后淡入 */
+      gsap.set('#fig01 .draw', { strokeDashoffset:1 });
+      gsap.set('#fig01 .fade-early, #fig01 .fill-late, #fig01 .sweep-head, .notes-row', { autoAlpha:0 });
+      gsap.set('#fig01 .grid-lines', { opacity:1 });
+      gsap.set('.act1-copy > *', { autoAlpha:0 });
+
+      var tl1 = gsap.timeline({ scrollTrigger:{ trigger:'#act1', start:'top 72%', once:true } });
+      tl1.to('.act1-copy > *',      { autoAlpha:1, duration:.45, stagger:.08, ease:'power1.out' }, 0)
+         .to('#fig01 .fade-early',  { autoAlpha:1, duration:.3, ease:'power1.out' }, 0)
+         .to('#fig01 .p-frame',     { strokeDashoffset:0, duration:.30, ease:'none' }, .05)
+         .to('#fig01 .p-gridv',     { strokeDashoffset:0, duration:.30, stagger:.02, ease:'none' }, .10)
+         .to('#fig01 .p-gridh',     { strokeDashoffset:0, duration:.26, stagger:.014, ease:'none' }, .16)
+         .to('#fig01 .p-mains',     { strokeDashoffset:0, duration:.16, ease:'none' }, .40)
+         .to('#fig01 .p-base',      { strokeDashoffset:0, duration:.12, ease:'none' }, .46)
+         .to('#fig01 .p-term',      { strokeDashoffset:0, duration:.09, stagger:.05, ease:'none' }, .52)
+         .to('#fig01 .p-blade',     { strokeDashoffset:0, duration:.13, ease:'none' }, .60)
+         .to('#fig01 .p-handle',    { strokeDashoffset:0, duration:.07, ease:'none' }, .70)
+         .to('#fig01 .p-bulbframe', { strokeDashoffset:0, duration:.13, ease:'none' }, .76)
+         .to('#fig01 .fill-late',   { autoAlpha:1, duration:.22, stagger:.06, ease:'power1.out' }, .88)
+         .to('#fig01 .p-sweep',     { strokeDashoffset:0, duration:.34, ease:'none' }, .94)
+         .to('#fig01 .sweep-head',  { autoAlpha:1, duration:.15, ease:'power1.out' }, 1.28)
+         /* 描线扫过：楼体格线降为墨 .14 */
+         .to('#fig01 .grid-lines',  { opacity:.2, duration:.45, ease:'power1.inOut' }, 1.30)
+         .to('.notes-row',          { autoAlpha:1, duration:.4, ease:'power1.out' }, 1.46);
+
+      /* 幕二 focal event：87 与 7 各一次 count-up（0.9s 落定），统计带随落定一次性显影 */
+      gsap.set('#act2 .act-title, #act2 .stat-desc, #act2 .act2-body, #act2 .source-row', { autoAlpha:0 });
+      gsap.set('#act2 .cellband', { autoAlpha:0 });
+      if(numA) numA.textContent = '0';
+      if(numB) numB.textContent = '0';
+
+      function countUp(el, target){
+        var v = { n:0 };
+        return gsap.to(v, {
+          n:target, duration:.9, ease:'power1.out',
+          onUpdate:function(){ el.textContent = String(Math.round(v.n)); }
+        });
+      }
+
+      var tl2 = gsap.timeline({ scrollTrigger:{ trigger:'#act2', start:'top 66%', once:true } });
+      tl2.to('#act2 .act-title',  { autoAlpha:1, duration:.5, ease:'power1.out' }, 0)
+         .to('#act2 .stat-desc',  { autoAlpha:1, duration:.45, stagger:.1, ease:'power1.out' }, .12)
+         .to('#act2 .act2-body',  { autoAlpha:1, duration:.5, ease:'power1.out' }, .3)
+         .add(countUp(numA, 87), .18)
+         .add(countUp(numB, 7), .18)
+         .to('#act2 .cellband',   { autoAlpha:1, duration:.45, stagger:.08, ease:'power1.out' }, 1.05)
+         .to('#act2 .source-row', { autoAlpha:1, duration:.45, ease:'power1.out' }, 1.15);
+
+      /* 幕三：节进视口轻入场一次（纯 opacity，与前两幕不重样） */
+      gsap.set('#act3 .fade-seq', { autoAlpha:0 });
+      var tl3 = gsap.timeline({ scrollTrigger:{ trigger:'#act3', start:'top 70%', once:true } });
+      tl3.to('#act3 .fade-seq', { autoAlpha:1, duration:.55, stagger:.09, ease:'power1.out' }, 0);
+
+      /* 钩子：设问大字为最后显影的元素 */
+      gsap.set('.hook-q', { autoAlpha:0, y:22 });
+      gsap.set('.hook-next', { autoAlpha:0 });
+      gsap.set('.hook-rule', { scaleY:0, transformOrigin:'top center' });
+      var tl4 = gsap.timeline({ scrollTrigger:{ trigger:'.hook', start:'top 80%', once:true } });
+      tl4.to('.hook-q',    { autoAlpha:1, y:0, duration:.85, ease:'power2.out' }, 0)
+         .to('.hook-next', { autoAlpha:1, duration:.45, ease:'power1.out' }, .55)
+         .to('.hook-rule', { scaleY:1, duration:.6, ease:'power1.inOut' }, .75);
+
+      /* 场景接口挂载：timeline 原生带 play() / pause() / restart()，
+         window.cordisScenes.act1..hook 即四场景统一控制入口 */
+      scenes.act1 = tl1;
+      scenes.act2 = tl2;
+      scenes.act3 = tl3;
+      scenes.hook = tl4;
+    });
+  }catch(err){
+    showAll();
+  }
+})();
+</script>
+
+<!--
+  设计说明
+  配色：全页唯一墨色钴蓝 #2148B8 对纸白 #FAFAF7，层次只靠透明度阶梯 .14 / .20 / .70 / .78 / .82 / 1，无第二色相。
+  字体：Noto Serif SC 900 立衬线骨架，Noto Sans SC 400 / 500 / 700 承正文与小字，数据数字与代码词用 IBM Plex Mono。
+  构图：印刷开本四缘墨线框，三幕各取一种编辑版式族（左文右图 40/60、全宽数字带、左图右文 60/40），留白约三至四成；钩子后预埋带走物槽位（2px 墨线框，内容已按 30-site/content/why.md「可带走物」小节回填，M3.5），页脚零动画收束。
+  动效分镜：进页整页淡入一次；幕一图 01 描线约 1.2s 画完即停、三小注随后淡入；幕二 87 与 7 各做一次 0.9s count-up、统计带随落定一次性显影；幕三与钩子节进视口轻入场、设问大字最后显影；运动查询统一以 gsap.matchMedia 包裹，prefers-reduced-motion 时全部直出终态；四场景经 window.cordisScenes（act1 / act2 / act3 / hook）暴露 play / pause / restart。
+-->
+</body>
+</html>

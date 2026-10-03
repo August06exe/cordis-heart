@@ -1,0 +1,153 @@
+---
+/**
+ * 图 01 · 语境之门（/limits 第一节场景图，全页唯一场景 SVG）。
+ * 几何、坐标与描边语言照录视觉稿 50-design/视觉稿/limits/cordis-limits.html：
+ * 2px 描边纸白积木立于墨 .14 基座条，实线依赖曲线（墨 .70）经语境之门进入组件区，
+ * 虚线（墨 .70，线型区分语义）绕门直连落在定理保护之外。
+ * 本页动效纪律：常规节轻交叉淡，无描边动画；marker id 加 limits- 前缀防撞号。
+ * 图注文案照录 30-site/src/content/pages/limits.md「图 01」行。
+ */
+---
+<figure class="s1-figure" data-reveal>
+  <div class="svg-scroll">
+    <svg
+      viewBox="0 200 780 390"
+      role="img"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-labelledby="limits-gate-title"
+    >
+      <title id="limits-gate-title">
+        语境之门图解：状态键实线经语境之门进入组件区，受定理保护；一条虚线绕过门直连组件区，落在定理保护之外
+      </title>
+      <defs>
+        <marker
+          id="limits-dep-head"
+          viewBox="0 0 10 10"
+          refX="8"
+          refY="5"
+          markerWidth="7"
+          markerHeight="7"
+          orient="auto-start-reverse"
+        >
+          <path d="M0,0 L10,5 L0,10 Z" class="dep-arrow"></path>
+        </marker>
+        <marker
+          id="limits-bypass-head"
+          viewBox="0 0 10 10"
+          refX="8"
+          refY="5"
+          markerWidth="7"
+          markerHeight="7"
+          orient="auto-start-reverse"
+        >
+          <path d="M0,0 L10,5 L0,10 Z" class="bypass-arrow"></path>
+        </marker>
+      </defs>
+
+      <!-- 绕行虚线（墨 .70 过 3:1 图形线，虚线线型区分语义）：从状态键 C 越过门直连组件区 -->
+      <path class="bypass" d="M 190 380 C 262 236, 560 226, 646 372" marker-end="url(#limits-bypass-head)"></path>
+      <text class="scene-note" x="417" y="254" text-anchor="middle">定理保护之外</text>
+
+      <!-- 受保护曲线：状态键 A / B 经门进入组件区 -->
+      <path class="dep-curve" d="M 138 448 C 250 448, 430 440, 552 443" marker-end="url(#limits-dep-head)"></path>
+      <path class="dep-curve" d="M 242 462 C 330 462, 480 482, 644 480" marker-end="url(#limits-dep-head)"></path>
+      <text class="scene-note" x="492" y="424">受保护</text>
+
+      <!-- 语境之门 -->
+      <g>
+        <rect class="block-box" x="330" y="372" width="26" height="136" rx="8"></rect>
+        <rect class="block-box" x="424" y="372" width="26" height="136" rx="8"></rect>
+        <rect class="block-box" x="312" y="336" width="156" height="36" rx="8"></rect>
+        <text class="block-label gate" x="390" y="430">语境</text>
+      </g>
+
+      <!-- 左：状态键积木（两块落地，一块叠放） -->
+      <g>
+        <rect class="block-box" x="44" y="416" width="92" height="92" rx="10"></rect>
+        <text class="block-index" x="58" y="438">01</text>
+        <text class="block-label" x="90" y="470">状态键 A</text>
+      </g>
+      <g>
+        <rect class="block-box" x="148" y="416" width="92" height="92" rx="10"></rect>
+        <text class="block-index" x="162" y="438">02</text>
+        <text class="block-label" x="194" y="470">状态键 B</text>
+      </g>
+      <g>
+        <rect class="block-box" x="96" y="352" width="92" height="64" rx="10"></rect>
+        <text class="block-index" x="110" y="372">03</text>
+        <text class="block-label" x="142" y="392">状态键 C</text>
+      </g>
+
+      <!-- 右：组件区 -->
+      <g>
+        <text class="zone-label" x="600" y="368">组件区</text>
+        <rect class="block-box" x="540" y="380" width="200" height="128" rx="10"></rect>
+        <rect class="block-box" x="558" y="398" width="78" height="92" rx="8"></rect>
+        <rect class="block-box" x="650" y="398" width="72" height="92" rx="8"></rect>
+      </g>
+
+      <!-- 浅墨基座 -->
+      <rect class="plinth" x="28" y="508" width="724" height="8" rx="4"></rect>
+      <text class="scene-note" x="28" y="542">一切共享状态绑成键</text>
+      <text class="scene-note" x="752" y="542" text-anchor="end">CORDIS RUNTIME</text>
+    </svg>
+  </div>
+  <figcaption class="fig-note gate-caption">
+    <span>图 01</span>
+    <span class="rule" aria-hidden="true"></span>
+    <span>语境之门：实线经门进入组件区，受定理保护；虚线绕过门直连，落在保护之外。</span>
+  </figcaption>
+</figure>
+
+<style>
+  .s1-figure { min-width: 0; }
+  .gate-caption { margin-top: 22px; }
+  .svg-scroll { width: 100%; }
+  .svg-scroll svg { width: 100%; height: auto; display: block; }
+
+  /* 场景词汇取自视觉稿 cordis-limits.html，色值全部走全站令牌（global.css） */
+  .block-box { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+  .block-label {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: .05em;
+    fill: var(--ink);
+    text-anchor: middle;
+  }
+  .block-label.gate { font-family: var(--serif); font-weight: 900; font-size: 21px; }
+  .zone-label {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: .22em;
+    fill: var(--muted);
+    text-anchor: middle;
+  }
+  .block-index {
+    font-family: var(--mono);
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: .16em;
+    fill: var(--muted);
+  }
+  .dep-curve { fill: none; stroke: var(--ink-70); stroke-width: 1.6; }
+  .dep-arrow { fill: var(--ink-70); }
+  /* 绕行线同为墨 .70（3.78:1 过图形线），靠虚线线型区分语义（视觉稿定稿口径） */
+  .bypass { fill: none; stroke: var(--ink-70); stroke-width: 1.6; stroke-dasharray: 7 5; }
+  .bypass-arrow { fill: var(--ink-70); }
+  .plinth { fill: var(--ink-14); }
+  .scene-note {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: .2em;
+    fill: var(--muted);
+  }
+
+  /* <960px：图解在图框内横向滑动，不产生页面级横向滚动（铁律 6） */
+  @media (max-width: 960px) {
+    .svg-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .svg-scroll svg { min-width: 640px; }
+  }
+</style>

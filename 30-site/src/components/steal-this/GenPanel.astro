@@ -1,0 +1,119 @@
+---
+/**
+ * 生成器预览面板：M4 只做视觉壳与占位容器（交互演示本体属 M5，见任务范围边界）。
+ * 面板微文案照录视觉稿定稿（30-site/src/content/pages/steal-this.md「这页怎么用」）：
+ * 计数「已选 n 条」、空态「勾选左侧条目，这里逐条拼出可带走的清单」、按钮「复制」「下载 .md」。
+ * 计数随勾选实时变化（真实计数，页级脚本 steal-this.ts）；mdview 为 M5 挂载点；
+ * 两个按钮 M4 置灰占位，M5 接管生成器逻辑后启用。
+ */
+---
+
+<aside class="genpanel" data-gen-panel aria-label="生成器预览">
+  <div class="ghead">
+    <span class="gtitle">生成器预览</span>
+    <span class="gcount" aria-live="polite" data-gen-count>已选 <b data-gen-num>0</b> 条</span>
+  </div>
+  <!--
+    M5 分镜注记（生成器逻辑，属 M5；本页 M4 只交付视觉壳与占位容器）：
+    1. 拼装：勾选条目后在 [data-md-slot] 内按条目号升序插入对应 markdown 块，
+       每块含四样：条目号与模式名、一句大白话、出处行（带档位）、「复制给 AI」段；
+       数据源 src/components/steal-this/items.ts（文案已逐字照录文稿）。
+    2. 动效（04-定稿 steal-this brief §4）：新增块淡入 240ms（translateY 8px 上移归零）
+       叠加墨 .14 高亮一闪、600ms 内退去（只动 transform 与 opacity）；
+       取消勾选对应块 200ms 淡出后移除，余下块顺序与编号保持。
+    3. 复制：导出全文写入剪贴板，按钮文字就地切「已复制」，两秒切回；
+       下载：导出全文存为 cordis-steal-this.md。
+    4. 初始态：视觉稿预勾选第 01、04、13 条让面板载入即有成果，M5 实装时恢复该口径
+       （M4 壳全不勾，避免「已选 n 条」与空面板互相矛盾）。
+    5. 铁律提醒：M5 若引入 JS 驱动的动效，须用 gsap.matchMedia 包裹
+       prefers-reduced-motion 降级（大位移动画降为轻交叉淡），且内容不缺失。
+  -->
+  <pre class="mdview" data-md-slot><code class="md-empty" data-gen-empty>勾选左侧条目，这里逐条拼出可带走的清单</code></pre>
+  <div class="pactions">
+    <button class="btn" type="button" disabled data-m5="copy" title="生成器逻辑属 M5，当前为占位">复制</button>
+    <button class="btn" type="button" disabled data-m5="download" title="生成器逻辑属 M5，当前为占位">下载 .md</button>
+  </div>
+</aside>
+
+<style>
+  .genpanel {
+    position: sticky;
+    top: 40px;
+    display: flex;
+    flex-direction: column;
+    min-height: 520px;
+    border: 2px solid var(--ink);
+    background: transparent;
+  }
+  .ghead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 15px 20px 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  .gtitle {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .24em;
+    color: var(--muted);
+  }
+  .gcount {
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .gcount b { color: var(--ink); font-weight: 700; }
+
+  .mdview {
+    flex: 1;
+    margin: 0;
+    padding: 22px 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.9;
+    color: var(--text-body);
+    min-height: 300px;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+  .md-empty {
+    display: block;
+    font-family: var(--sans);
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  .pactions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px 20px 18px;
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    appearance: none;
+    height: 46px;
+    border: 2px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: .1em;
+    cursor: pointer;
+    transition: background-color .14s ease, color .14s ease;
+  }
+  .btn:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled {
+    color: var(--ink-70);
+    border-color: var(--ink-70);
+    cursor: default;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn { transition: none; }
+    .btn:active:not(:disabled) { transform: none; }
+  }
+</style>

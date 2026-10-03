@@ -1,0 +1,122 @@
+---
+/**
+ * 出处行 + 依据浮层（词典卡浮层配方，定位在页级脚本 steal-this.ts 内就地实现）。
+ * 触发：hover（鼠标）、键盘 focus、触屏点按均弹出；Esc 收起；点其他处收起。
+ * 浮层形态照录视觉稿：2px 墨线小卡，淡入上浮 8px（只动 transform/opacity），
+ * prefers-reduced-motion 直接显隐（见页级脚本 steal-this.ts 与本组件样式）。
+ * 无障碍：触发钮带 aria-expanded / aria-controls，浮层 role="note"。
+ */
+
+import { LEVEL_NAMES } from './items';
+
+interface Props {
+  /** 可靠度档位：1 论文原文核实 / 2 合理解读 */
+  level: 1 | 2;
+  /** 出处小字 */
+  source: string;
+  /** 浮层依据文案（文稿「浮层：」行） */
+  basis: string;
+  /** row：清单条目出处行（徽标 + 出处小字）；detail：详情块出处行（出处：思想一 · 合理解读） */
+  variant?: 'row' | 'detail';
+  /** 页内唯一 id 片段，用于浮层 aria 关联 */
+  uid: string;
+}
+
+const { level, source, basis, variant = 'row', uid } = Astro.props;
+const popId = `st-pop-${uid}`;
+const levelName = LEVEL_NAMES[level];
+---
+
+<span class:list={['st-src', `st-src-${variant}`]} data-pop-scope>
+  <button
+    type="button"
+    class="st-src-trigger"
+    data-pop-trigger
+    data-pop-id={popId}
+    aria-expanded="false"
+    aria-controls={popId}
+    aria-label={variant === 'row' ? `出处可信度：${levelName}，出处 ${source}` : undefined}
+  >
+    {variant === 'detail' && <span class="st-src-pre">出处：</span>}
+    <span class="src-text">{source}</span>
+    {variant === 'detail' && <span class="st-src-ext"> · {levelName}</span>}
+  </button>
+  <span class="pop" id={popId} role="note" data-pop>
+    <span class="pop-card">{basis}</span>
+  </span>
+</span>
+
+<style>
+  .st-src {
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+  }
+  /* 打法卡出处行：沉底由卡片容器 .st-card 的 margin-top:auto 承担（M4.5 v2 重排），
+     不再缩进对齐勾选行；详情块出处行保持原间距 */
+  .st-src-row { margin-top: 18px; }
+  .st-src-detail { margin-top: 14px; }
+
+  .st-src-trigger {
+    appearance: none;
+    background: none;
+    border: 0;
+    margin: 0;
+    padding: 2px 0;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+  }
+  .st-src-trigger :global(.badge) { cursor: pointer; }
+  .st-src-trigger:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+  .st-src-pre,
+  .st-src-ext,
+  .st-src-trigger :global(.badge) {
+    font-size: 11.5px;
+    letter-spacing: .12em;
+    color: var(--muted);
+  }
+
+  /* 依据浮层：外层由页级脚本 steal-this.ts 定位（开启时写入 left/top，不做动画），
+     内层卡片承载淡入上浮（只动 transform 与 opacity） */
+  .pop {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 6px);
+    z-index: 40;
+    width: min(320px, calc(100vw - 64px));
+    pointer-events: none;
+  }
+  .pop-card {
+    display: block;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text-body);
+    text-align: left;
+    opacity: 0;
+    transform: translateY(8px);
+    visibility: hidden;
+    transition: opacity .15s ease, transform .15s ease, visibility 0s linear .15s;
+  }
+  .pop[data-open='true'] .pop-card {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+
+  /* prefers-reduced-motion：直接显隐，不做位移（brief 8.4） */
+  @media (prefers-reduced-motion: reduce) {
+    .pop-card { transition: none; transform: none; }
+  }
+</style>

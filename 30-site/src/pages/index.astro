@@ -1,0 +1,152 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_PAGES } from '../data/site';
+---
+
+<BaseLayout
+  title="DSH 的心脏 · Cordis 思想图鉴"
+  slug="/"
+  description="DeepSeek 的 Agent 框架 dsh 背后的支撑论文，拆给不懂技术的你：换零件、断供歇业、原样退回去。"
+>
+  <div class="landing">
+
+    <!-- ── 分屏 Hero：左文案 + 右品牌图 ───────────── -->
+    <section class="land-hero">
+      <div>
+        <p class="eyebrow">来自 DeepSeek · 一本开源图鉴</p>
+        <h1>让运行中的软件<span class="alt">换零件</span>，还能原样退回去。</h1>
+        <p class="two">设计原则。<br>生产先例。</p>
+        <p class="sub">写给想给 DeepSeek 的 dsh 开插件、以及想给自己项目偷几招的人。不用会编程。</p>
+        <div class="land-cta">
+          <a class="primary" href="#toc">开始阅读 →</a>
+          <a class="ghost" href="/why/">先看序章</a>
+        </div>
+        <p class="byline">作者：<a href="https://github.com/shigma">石逸凡</a> 等著 · 北京大学 &amp; DeepSeek-AI</p>
+      </div>
+
+      <figure class="hero-fig">
+        <div class="fig-frame">
+          <img src="/images/web/I-01.jpg" alt="单墨钴蓝插画：一座仍在跳动的机械心脏，一个腔室模块正被吊出检修，依赖它的两个腔室熄成淡网屏" width="900" height="1200" loading="eager" />
+        </div>
+        <figcaption>
+          <b>图 01 · 机械心脏换件</b>
+          <span>还在跳动的模块化心脏，一个腔室正被吊出——依赖它的两间已经熄成淡网屏，等它归位。</span>
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ── 统计框 ─────────────────────────────── -->
+    <div class="stats-strip">
+      <div class="st"><b>9</b> 页图鉴，从现象到机制</div>
+      <div class="st"><b>14</b> 张术语卡，全部说人话</div>
+      <div class="st"><b>24 万</b> star 的 dsh，用同款心脏</div>
+    </div>
+
+    <!-- ── 故事板：热度与由来 ────────────────────── -->
+    <section class="story-board">
+      <p class="kicker">幕后 · 一颗跑了七年的心脏</p>
+      <h2>24 万 star 的项目，靠一颗什么心脏？</h2>
+      <p>2026 年 8 月 13 日，DeepSeek 开源 dsh。首日 star 以万计，几天破 15 万，七周 24 万，媒体叫它「GitHub 史上最快涨星项目」。所有人都在拆它，学它的「一切皆插件」。但很少有人细看 README 的第一行：<strong>Powered by Cordis。</strong></p>
+      <p>Cordis 不是临时造的轮子。2019 年底，Shigma（石逸凡）开源聊天机器人框架 Koishi，从第一天起就在解决同一个麻烦：几千个互不相识的人写的插件塞在同一个进程里，怎么才能不把彼此弄死。2022 年，他把最硬的内核拆出来单独开源，就是 Cordis。四年，Cordis 在 Koishi 身上养出 4000 多个插件的生态。2026 年，他把这套跑了七年的东西写成论文；同月，DeepSeek 把它装进 dsh。</p>
+      <p>分工一句话：<strong>论文立论，Cordis 做成框架，Koishi 是先例，dsh 是 agent 时代的地基。</strong>这个站，就是把那篇论文拆成你能摸的东西。</p>
+    </section>
+
+    <!-- ── 全书目录 ─────────────────────────────── -->
+    <section class="sec-head" id="toc">
+      <p class="kicker">从通勤阅读，到动手照抄</p>
+      <h2>全书目录</h2>
+    </section>
+    <nav class="toc-list" aria-label="全书九页">
+      {SITE_PAGES.map((page, i) => (
+        <a class={`toc-row${i === 1 ? ' is-first' : ''}`} href={page.path}>
+          <span class={`no${i === 1 ? ' hot' : ''}`}>{String(i).padStart(2, '0')}</span>
+          <span class="t">
+            <b>{page.nav === '开篇' ? '开篇 · 这颗心脏是什么' : page.title}</b>
+            <span>{['重启的代价，与两个会让你吃惊的统计。', '14 张术语卡，把吓人的词翻译成日常。', '每个思想：问题、解法、类比、例子。', '亲手拔积木，看连锁熄灭与复原。', '论文说的数字，我们去仓库数了一遍。', '15 条打法，勾走你要的，拼成给 AI 的需求书。', '什么时候别用，自查五问。', '哪里靠不住，写在这里。', ''][i] ?? ''}</span>
+          </span>
+          <span class="arr">→</span>
+        </a>
+      ))}
+    </nav>
+
+    <!-- ── 思想的模样：插图走廊 ───────────────────── -->
+    <section class="sec-head">
+      <p class="kicker">思想的模样</p>
+      <h2>三张图，先睹为快</h2>
+    </section>
+    <div class="gal">
+      <a class="gal-card" href="/ideas/">
+        <img src="/images/web/I-02.jpg" alt="回执链母题插画：一串环环相扣的回执，撤销时按相反顺序执行" loading="lazy" />
+        <div class="gal-cap">
+          <b>回执链</b>
+          <span>每份改动都留着一张「怎么复原」的回执，撤销时倒着撕。</span>
+        </div>
+      </a>
+      <a class="gal-card" href="/sandbox/">
+        <img src="/images/web/I-05.jpg" alt="单墨插画：积木工作台上的插件组件与连线" loading="lazy" />
+        <div class="gal-cap">
+          <b>拔积木</b>
+          <span>拔掉一块，看依赖它的积木熄灭、换源、复明。</span>
+        </div>
+      </a>
+      <a class="gal-card" href="/limits/">
+        <img src="/images/web/I-08.jpg" alt="单墨插画：围栏将一块区域圈在保护之内，围栏外的位置无人看管" loading="lazy" />
+        <div class="gal-cap">
+          <b>围墙内外</b>
+          <span>走大门的状态受保护，翻窗的没人赔——边界也是设计。</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- ── CTA 带 ─────────────────────────────── -->
+    <section class="cta-band">
+      <div>
+        <p class="kicker">动手实践，让思想落地</p>
+        <h2>读懂它，再亲手拔一次。</h2>
+      </div>
+      <a class="go" href="/sandbox/">去沙盒拔积木 →</a>
+    </section>
+
+  </div>
+</BaseLayout>
+
+<style>
+  /* ── Hero 品牌图与图注 ── */
+  .hero-fig { margin: 0; }
+  .fig-frame {
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    box-shadow: 12px 12px 0 var(--ink-14);
+    overflow: hidden;
+    line-height: 0;
+  }
+  .fig-frame img { width: 100%; height: auto; display: block; }
+  .hero-fig figcaption {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 12px 4px 0;
+    font-size: 14px; line-height: 1.7;
+  }
+  .hero-fig figcaption b { font-family: var(--serif); font-weight: 900; }
+  .hero-fig figcaption span { opacity: .68; }
+
+  /* ── 插图走廊 ── */
+  .gal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 26px; }
+  .gal-card {
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    box-shadow: 8px 8px 0 var(--ink-14);
+    text-decoration: none; color: var(--text);
+    display: flex; flex-direction: column;
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .gal-card:hover { transform: translate(-3px, -3px); box-shadow: 12px 12px 0 var(--ink-14); }
+  .gal-card img { width: 100%; aspect-ratio: 4 / 4.6; object-fit: cover; display: block; border-bottom: 2px solid var(--ink); }
+  .gal-cap { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .gal-cap b { font-family: var(--serif); font-weight: 900; font-size: 17px; }
+  .gal-cap span { font-size: 14px; opacity: .72; line-height: 1.7; }
+  @media (max-width: 960px) {
+    .gal { grid-template-columns: 1fr; }
+    .land-hero { grid-template-columns: 1fr; }
+    .hero-fig { max-width: 460px; margin: 0 auto; }
+  }
+</style>

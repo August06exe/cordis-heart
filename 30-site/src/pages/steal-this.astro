@@ -1,0 +1,509 @@
+---
+/**
+ * /steal-this 借鉴清单（M4.7 book 壳改造，基准 global.css Book v3 层 + 07-DesignRead-v2.md）。
+ *
+ * 文案一字不改照录 30-site/src/content/pages/steal-this.md（新声音定稿）：
+ * 文稿 H1 进 display，三条用法逐段成节；交互对话例（小周 / AI）以引文块照录；
+ * 「全量 15 条打法」索引行照录文稿。可靠度徽标计数照录 frontmatter badges 行。
+ *
+ * book 壳（本次改造）：
+ * BaseLayout 传 book={true} → 左侧章节边栏 + 阅读栏（720px 栏，global.css .reading）；
+ * 翻页器由 BaseLayout 在阅读栏底部自动追加（BaseLayout.astro「slug && <PagePager/>」，
+ * slug 口径见 PagePager.astro 注释：与 SITE_PAGES.slug 对齐，本页传 'steal-this'），
+ * 页面内不再重复挂载，避免双翻页器。
+ * 原全宽 sheet 版式（标题带 11fr/9fr、工作台 70fr/30fr）随栏宽改单栏堆叠：
+ * 标题带纵排（文案在上、图解通栏在下），工作台卡栅在上、生成器面板通栏沉底
+ * （面板 sticky 随单栏失效，就地 override 为 static）；卡栅保持 2 列。
+ *
+ * 嵌图（M4.7 → r1 补齐）：
+ * 本章 3 张主图 + 2 张小卡生图通道 2026-10-03 白天阻断，曾按失败口径以占位框落地；
+ * 当日通道恢复后本章 5 张全部补齐为真实生图（public/images/web/，单墨钴蓝 2K 图版
+ * 转 web 档 JPG：主图 900×1200、词卡 600×600），占位框全部退役：
+ *   图02 = web/steal-this-3.jpg · 图03 = web/steal-this-1.jpg · 图04 = web/steal-this-2.jpg；
+ *   词卡 = web/cards/steal-this-card1.jpg / steal-this-card2.jpg。
+ * 注意：图03（steal-this-1）首报生成被安全系统过滤（display 行含 STEAL 触发），
+ * 重试时展示行改 FIFTEEN MOVES TO BORROW（借鉴，与本页中文名对齐），其余
+ * 配方构图零改动，prompt 落盘文件已同步。图框沿用占位框同语言：
+ * 2px 钴蓝框体 + 8px 偏移实影，内嵌 <img> 全宽出血（.fig-frame 同 index 首页口径）；
+ * 图注 = 图号·标题 + 一句话说明（14px / 墨 .78 小字档）。本页文稿明言
+ * 「本页无转引数字」，故图注无【转引】标记可标。
+ * 小卡做「动效卡片」：hover translate(-4px,-4px) + 阴影加深，
+ * transition 只动 transform / box-shadow，prefers-reduced-motion 直关。
+ * 页内原有静态示意 SVG 仅 FlowFigure（生成器三步，叙事件非装饰），
+ * 表达力尚可 → 保留原样（积木钴蓝墨线属画布内口径）。
+ *
+ * 动效口径：页级强度 5；无滚动驱动效果，勾选反馈与依据浮层是仅有的交互动效
+ * （小卡 hover 属反馈级）；显影走全站 [data-reveal]，prefers-reduced-motion 直出。
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+import FlowFigure from '../components/steal-this/FlowFigure.astro';
+import IdeaRow from '../components/steal-this/IdeaRow.astro';
+import GenPanel from '../components/steal-this/GenPanel.astro';
+import { STEAL_ITEMS } from '../components/steal-this/items';
+---
+
+<BaseLayout
+  title="借鉴清单：十五条思想，勾走你要的"
+  slug="steal-this"
+  folio="借鉴清单"
+  book={true}
+  description="读到这里，你已经比 99% 的 dsh 围观者更懂它的心脏。这三条用法，让你把懂变成用——全程不需要会编程，只需要会复制粘贴、会向 AI 提要求。"
+  toc={[
+    { id: 'st-u1-title', label: '用法一 · 审你的项目' },
+    { id: 'st-u2-title', label: '用法二 · 生成需求书' },
+    { id: 'st-u3-title', label: '用法三 · 写作和汇报' },
+    { id: 'wordcards', label: '一词一画词卡' },
+  ]}
+>
+  <!-- 页根容器：容器查询基准（book 壳阅读栏内容宽，非视口宽） -->
+  <div class="stpage">
+    <!-- 标题带：单栏纵排（文案在上 / 图解通栏在下，细线切开） -->
+    <section class="titleband">
+      <div class="tb-copy" data-reveal>
+        <p class="kicker">第五节 · 可借鉴思想</p>
+        <h1 class="headline">三条用法，每条带例子</h1>
+        <p class="sub">
+          读到这里，你已经比 99% 的 dsh 围观者更懂它的心脏。这三条用法，让你把懂变成用——全程不需要会编程，只需要会复制粘贴、会向 AI 提要求。
+        </p>
+        <!-- 徽标计数照录文稿 frontmatter「原文核实 1 ｜ 合理解读 3 ｜ 转引未核实 0（…）」 -->
+        <div class="tb-meta">
+          <span class="badges-note">四句验收口径出自论文四大保证；三条用法、AI 对话例与需求书示例为合理解读；本页无转引数字</span>
+        </div>
+      </div>
+      <figure class="tb-fig" data-reveal>
+        <FlowFigure />
+        <figcaption class="fig-note">
+          <span>图 01</span>
+          <span class="rule" aria-hidden="true"></span>
+          <span>生成器三步</span>
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- 用法一 · 拿去审你的项目（文稿第一节，对话例以引文块照录） -->
+    <section class="st-section" data-reveal aria-labelledby="st-u1-title">
+      <h2 class="sec-title" id="st-u1-title">用法一 · 拿去审你的项目</h2>
+      <div class="prose">
+        <p>把序章的背景简报贴给任何 AI，再补一句你的具体情况。看一个完整例子：</p>
+        <blockquote class="dialog">
+          <p><strong>小周 → AI</strong><br />
+          （贴上背景简报）我的 Bot 有三个插件：天气、提醒、管理。我想加一个「定时清理缓存」的新插件，又怕弄坏现有三个。按这篇论文的思想，给我一个安全的做法。</p>
+        </blockquote>
+        <blockquote class="dialog">
+          <p><strong>AI</strong><br />
+          好办。按可逆效应：新插件注册清理任务时，当场写好「如何注销这些任务」。按响应式反效应：向框架声明依赖 scheduler 和 cache，两个都在你才启动，任一下线你就自动歇业，别硬撑。最后按语境原则：别用全局变量记缓存路径，把它注册成配置键。这样：新插件装上立刻生效；出问题只停它自己；卸载时注册的任务随撤销链一起消失，三个老插件全程无感。</p>
+        </blockquote>
+        <p>注意 AI 回复里出现的正是你学过的词：<strong>可逆效应、反效应、语境</strong>。这就是词表页那份「让 AI 跟你说同一种话」的用法：你先给背景，它就按同一套语言回答。</p>
+      </div>
+      <!-- 主图：steal-this-3 同语回声机（3:4 单墨图版，web 档 900×1200） -->
+      <figure class="genfig" data-reveal>
+        <div class="fig-frame">
+          <img
+            src="/images/web/steal-this-3.jpg"
+            alt="单墨钴蓝版画：左手递出折叠卡片喂入台式印刷机，机腹圆窗里三个符号正被读取，机口立起的回执上放大重复着同样的三个符号"
+            width="900"
+            height="1200"
+            loading="lazy"
+          />
+        </div>
+        <figcaption class="gf-cap">
+          <span class="gf-t">图 02 · 同语回声机</span>
+          <span class="gf-d">贴上背景简报，AI 就用你学过的同一套术语回答</span>
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- 用法二 · 勾选打法，生成需求书（文稿第二节；工作台紧随其后） -->
+    <section class="st-section" data-reveal aria-labelledby="st-u2-title">
+      <h2 class="sec-title" id="st-u2-title">用法二 · 勾选打法，生成需求书</h2>
+      <div class="prose">
+        <p>借鉴清单页的 15 条打法可以勾选组合，右侧面板实时拼出一份完整的需求书。演示一次：假设小周勾了三条：</p>
+        <blockquote class="dialog">
+          <p><strong>勾选：01 撤销函数 + 04 依赖清单 + 08 事务热重载</strong><br />
+          面板生成（可直接复制）：</p>
+          <p>「请改造我的项目：一、每个注册动作配一个撤销函数，注册与注销成对出现；二、每个插件进门先声明依赖清单，缺了安静待机、到了自动上线；三、热重载做成事务：先备份、失败整体回滚，永不半新半旧。验收标准：卸载可恢复、不读缺失、断供即歇业、乱序撤销安全。」</p>
+          <p>把这段发给 AI，它就知道改造要做成什么样、按什么标准验收。</p>
+        </blockquote>
+        <p>全量 15 条打法：01 撤销函数 / 02 稳定键名 / 03 能力三件套 / 04 依赖清单 / 05 永不复用编号 / 06 状态只记一本账 / 07 改配置等价于退役加重插 / 08 热重载事务 / 09 会话日志唯一事实源 / 10 权限跟声明走 / 11 审接口承诺 / 12 单一提供者 / 13 卸载次序协议 / 14 失败显式记录不传染 / 15 作用域隔离。</p>
+      </div>
+      <!-- 主图：steal-this-1 勾选拼需求书（3:4 单墨图版，web 档 900×1200） -->
+      <figure class="genfig" data-reveal>
+        <div class="fig-frame">
+          <img
+            src="/images/web/steal-this-1.jpg"
+            alt="单墨钴蓝版画：左侧长列清单上三条勾选行撕下成纸条飞向右侧，叠折成一份裹着空白封带的成文小册"
+            width="900"
+            height="1200"
+            loading="lazy"
+          />
+        </div>
+        <figcaption class="gf-cap">
+          <span class="gf-t">图 03 · 勾选拼需求书</span>
+          <span class="gf-d">15 条打法勾选后撕下，拼装成一份可直接发给 AI 的需求书</span>
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- 主区工作台：打法卡栅（2 列 .card）在上 / 生成器面板通栏沉底（book 栏单栏序） -->
+    <section class="workbench" aria-label="抄作业生成器工作台">
+      <div class="checkcol" data-reveal aria-label="思想清单">
+        <div class="listhead">
+          <span class="lh">思想清单</span>
+          <span class="lh">共 {STEAL_ITEMS.length} 条</span>
+        </div>
+        <div class="legend">
+        </div>
+        <div class="card-grid" data-idea-list>
+          {STEAL_ITEMS.map((item) => <IdeaRow item={item} />)}
+        </div>
+      </div>
+      <aside class="panelcol" data-reveal>
+        <GenPanel />
+      </aside>
+    </section>
+
+    <!-- 用法三 · 拿去写作和汇报（文稿第三节） -->
+    <section class="st-section" data-reveal aria-labelledby="st-u3-title">
+      <h2 class="sec-title" id="st-u3-title">用法三 · 拿去写作和汇报</h2>
+      <div class="prose">
+        <p>这套思想本身就是好素材：「换个灯泡，拉整栋楼的电闸」「每个改动自带撤销说明书」这类说法，可以直接用进你的项目文档、汇报、甚至朋友圈。一份读论文的功夫，产出三样东西：知识、方法论、表达素材。</p>
+      </div>
+      <!-- 主图：steal-this-2 灯泡与总闸（3:4 单墨图版，web 档 900×1200） -->
+      <figure class="genfig" data-reveal>
+        <div class="fig-frame">
+          <img
+            src="/images/web/steal-this-2.jpg"
+            alt="单墨钴蓝版画：窄高楼剪影通体窗格熄成网屏，只亮一扇窗，楼脚总闸拉杆拉到一半，一根细缆沿楼脊只通向那扇亮窗"
+            width="900"
+            height="1200"
+            loading="lazy"
+          />
+        </div>
+        <figcaption class="gf-cap">
+          <span class="gf-t">图 04 · 灯泡与总闸</span>
+          <span class="gf-d">「换个灯泡，拉整栋楼的电闸」——旧机制改一颗灯泡也要重启整个 harness 的类比</span>
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- 一词一画小卡（2 张，1:1 单墨小画 web 档 600×600；动效卡片：hover 位移 + 阴影加深） -->
+    <section class="wordcards" id="wordcards" data-reveal aria-label="一词一画词卡">
+      <p class="kicker wc-kicker">一词一画</p>
+      <div class="wc-grid">
+        <article class="wc-card">
+          <div class="wc-img">
+            <img
+              src="/images/web/cards/steal-this-card1.jpg"
+              alt="单墨钴蓝小画：一只立式灯泡敞线勾勒，玻璃内留纸白，泡顶悬一枚双向更换箭头"
+              width="600"
+              height="600"
+              loading="lazy"
+            />
+          </div>
+          <p class="wc-word">灯泡</p>
+          <p class="wc-note">一词一画 · 换个灯泡不拉总闸</p>
+        </article>
+        <article class="wc-card">
+          <div class="wc-img">
+            <img
+              src="/images/web/cards/steal-this-card2.jpg"
+              alt="单墨钴蓝小画：手绘方框内一道浓墨打勾，笔锋出框，抬笔处散几点网点"
+              width="600"
+              height="600"
+              loading="lazy"
+            />
+          </div>
+          <p class="wc-word">勾选框</p>
+          <p class="wc-note">一词一画 · 勾走的每条都可撤销</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 文稿尾链：先别急着全用（照录，含全角破折号与箭头） -->
+    <section class="nextband">
+      <a class="next-link" href="/limits">先别急着全用——看看什么时候不该用 <span class="arr" aria-hidden="true">→</span></a>
+    </section>
+
+    <!-- 文稿末段（--- 之后的时效句）：小字档 14px / 墨 .78 -->
+    <footer class="coda">
+      <p class="coda-txt">deepseek-harness 目前是 developer preview，接口随时可能变动；本页内容为 2026-10 快照，思路比 API 耐用。</p>
+    </footer>
+  </div>
+</BaseLayout>
+
+<script>
+  // 页面脚本：依据浮层就地定位 + 勾选点亮与计数；生成器逻辑属 M5
+  import '../components/steal-this/steal-this';
+</script>
+
+<style>
+  /* ── 页根：book 壳阅读栏内的版式基准（栏内容宽约 608px，非视口宽） ──────────
+     容器查询以本元素宽为基准：阅读栏内的塌栏判定不能再看视口宽（1440 视口下
+     阅读栏只有 720px），@container 在本页根上取栏宽做断点。 */
+  .stpage {
+    container-type: inline-size;
+    container-name: stpage;
+  }
+
+  /* ── 标题带：单栏纵排，文案在上、图解通栏在下，细线切开 ─────────────────── */
+  .titleband {
+    border-bottom: 1px solid var(--border);
+  }
+  .tb-copy {
+    padding: 4px 0 30px;
+  }
+  .headline {
+    margin-top: 16px;
+    letter-spacing: .015em;
+    max-width: 14em;
+    text-wrap: balance;
+  }
+  .sub {
+    margin-top: 16px;
+    font-size: 17px;
+    line-height: 1.9;
+    color: var(--text-body);
+    max-width: 34em;
+  }
+  .tb-meta {
+    margin-top: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 10px;
+  }
+  .badges-note {
+    flex-basis: 100%;
+    font-size: 14px;
+    line-height: 1.9;
+    letter-spacing: .04em;
+    color: var(--ink-78);
+  }
+  .tb-fig {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 26px 0 32px;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+  .tb-fig :global(svg) { width: 100%; height: auto; display: block; }
+
+  /* ── 用法节：细线分段，正文近黑（--text-body），上下距 ≤72px ─────────────── */
+  .st-section {
+    padding: 40px 0 36px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sec-title {
+    font-size: 24px;
+    line-height: 1.4;
+    letter-spacing: .04em;
+    color: var(--ink);
+  }
+  .prose {
+    margin-top: 12px;
+    max-width: 54em;
+  }
+  .prose p {
+    font-size: 17.5px;
+    line-height: 1.9;
+    color: var(--text-body);
+  }
+  /* 对话 / 演示引文块：3px 实印左缘，正文近黑照录 */
+  .dialog {
+    margin-top: 14px;
+    border-left: 3px solid var(--ink);
+    padding: 2px 0 2px 20px;
+  }
+  .dialog p {
+    max-width: none;
+  }
+  .dialog p + p { margin-top: 12px; }
+  .dialog strong {
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* ── 主图图框（r1 生图补齐口径）：2px 钴蓝框体 + 8px 偏移实影 ──────────────
+     框体与实影沿用占位框同语言（框线属钴蓝保留项），框内 <img> 全宽出血；
+     3:4 竖版画在阅读栏内限宽 440px（全宽 3:4 过高，压成图版比例），
+     左对齐不居中——贴合本页非对称版式。图注走小字档 14px / 墨 .78。 */
+  .genfig {
+    margin: 30px 0 4px;
+  }
+  .fig-frame {
+    max-width: 440px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    box-shadow: 8px 8px 0 var(--ink-14);
+    overflow: hidden;
+    line-height: 0;
+  }
+  .fig-frame img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .gf-cap {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .gf-t {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .18em;
+    color: var(--ink-78);
+  }
+  .gf-d {
+    font-size: 14px;
+    line-height: 1.8;
+    letter-spacing: .02em;
+    color: var(--ink-78);
+  }
+
+  /* ── 主区工作台：卡栅（2 列 .card）在上 / 生成器面板通栏沉底 ─────────────── */
+  .workbench {
+    padding: 36px 0 44px;
+    border-bottom: 1px solid var(--border);
+  }
+  .listhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .lh {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .24em;
+    color: var(--muted);
+  }
+  .legend {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 12px;
+  }
+  /* 15 条打法 2 列卡栅：.card 原语 + 22px 卡距 */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--card-gap);
+    align-items: stretch;
+    padding-top: 14px;
+  }
+  .panelcol {
+    padding-top: 30px;
+  }
+  /* 单栏序下面板不再贴边悬浮：sticky 就地关闭（原双栏右侧贴顶语义已不存在） */
+  .panelcol :global(.genpanel) {
+    position: static;
+    min-height: 0;
+  }
+
+  /* ── 一词一画小卡：动效卡片（hover 位移 + 阴影加深） ───────────────────────
+     transition 只动 transform / box-shadow；阴影加深 = 偏移拉长 + 墨度升档
+     （.14 → .20）。prefers-reduced-motion 下位移与过渡一并直关。
+     卡内 1:1 小画与词行以 2px 墨线切分（同 index 走廊卡口径）。 */
+  .wordcards {
+    padding: 36px 0 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .wc-kicker {
+    color: var(--ink);
+  }
+  .wc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--card-gap);
+    align-items: stretch;
+    margin-top: 16px;
+  }
+  .wc-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    box-shadow: 5px 5px 0 var(--ink-14);
+    transition: transform .16s ease, box-shadow .16s ease;
+  }
+  .wc-card:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 9px 9px 0 var(--ink-20);
+  }
+  .wc-img {
+    border-bottom: 2px solid var(--ink);
+    line-height: 0;
+  }
+  .wc-img img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .wc-word {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 22px;
+    line-height: 1.4;
+    letter-spacing: .06em;
+    color: var(--ink);
+  }
+  .wc-note {
+    margin-top: auto;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--ink-78);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wc-card { transition: none; }
+    .wc-card:hover { transform: none; box-shadow: 5px 5px 0 var(--ink-14); }
+  }
+
+  /* ── 文稿尾链与时效句 ───────────────────────────────────────────────────── */
+  .nextband {
+    padding: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .next-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    padding: 22px 0;
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 19px;
+    line-height: 1.6;
+    letter-spacing: .02em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .next-link:hover .arr { transform: translateX(6px); }
+  .arr {
+    display: inline-block;
+    transition: transform .14s ease;
+  }
+  .coda {
+    padding: 14px 0 4px;
+  }
+  .coda-txt {
+    font-size: 14px;
+    line-height: 1.9;
+    letter-spacing: .04em;
+    color: var(--ink-78);
+  }
+
+  /* ── 响应式（容器查询，基准 = 阅读栏内容宽）：窄栏卡栅与小卡塌单列 ────────── */
+  @container stpage (max-width: 560px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .wc-grid { grid-template-columns: 1fr; }
+  }
+</style>

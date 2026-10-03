@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全书新稿 v3 · DSH 的心脏</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAFAF7; --ink:#2148B8;
+    --ink-20:rgba(33,72,184,.2); --ink-14:rgba(33,72,184,.14);
+    --ink-78:rgba(33,72,184,.78);
+    --serif:"Noto Serif SC","Songti SC",serif;
+    --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17.5px;line-height:1.95;-webkit-font-smoothing:antialiased;}
+  .preview-bar{background:var(--ink);color:var(--paper);font-size:13px;letter-spacing:.15em;text-align:center;padding:9px 16px;position:sticky;top:0;z-index:50;}
+  .preview-bar b{font-weight:700;}
+  nav.toc{max-width:860px;margin:26px auto 0;padding:0 20px;display:flex;gap:10px;flex-wrap:wrap;}
+  nav.toc a{border:2px solid var(--ink);color:var(--ink);text-decoration:none;font-weight:700;font-size:13.5px;padding:6px 14px;background:var(--paper);}
+  nav.toc a:hover{background:var(--ink);color:var(--paper);}
+  main{max-width:860px;margin:0 auto;padding:30px 20px 90px;}
+  section.block{padding:60px 0 30px;}
+  section.block + section.block{border-top:2px solid var(--ink-20);}
+  .page-tag{font-size:13px;letter-spacing:.3em;font-weight:700;color:var(--ink-78);margin-bottom:14px;}
+  h1,h2,h3{font-family:var(--serif);font-weight:900;line-height:1.4;}
+  h1{font-size:clamp(32px,5vw,46px);margin-bottom:26px;}
+  h2{font-size:27px;margin:56px 0 18px;}
+  h2:first-of-type{margin-top:0;}
+  h3{font-size:20px;margin:34px 0 12px;}
+  h3:first-of-type{margin-top:0;}
+  p{margin:0 0 20px;}
+  p.lead{font-size:19px;}
+  strong{font-weight:700;}
+  .em-quote{font-family:var(--serif);font-weight:900;font-size:clamp(22px,3vw,30px);line-height:1.55;border-left:4px solid var(--ink);padding:6px 0 6px 22px;margin:34px 0;}
+  .stats{display:flex;gap:28px;flex-wrap:wrap;margin:34px 0;}
+  .stat{border:2px solid var(--ink);padding:20px 26px 16px;flex:1 1 220px;min-width:220px;box-shadow:8px 8px 0 var(--ink-14);}
+  .stat .num{font-family:var(--serif);font-weight:900;font-size:52px;line-height:1.1;}
+  .stat .cap{font-size:14.5px;color:var(--ink-78);margin-top:8px;line-height:1.7;}
+  .routes{display:flex;flex-direction:column;gap:16px;margin:30px 0;}
+  .route{border:2px solid var(--ink);padding:18px 22px;box-shadow:6px 6px 0 var(--ink-14);}
+  .route .r-title{font-weight:700;font-size:18px;font-family:var(--serif);}
+  .route .r-desc{font-size:15.5px;color:var(--ink-78);margin-top:4px;line-height:1.8;}
+  .cta{display:inline-block;border:2px solid var(--ink);background:var(--ink);color:var(--paper);font-weight:700;font-size:17px;text-decoration:none;padding:12px 30px;margin-top:8px;}
+  .term{border:2px solid var(--ink);padding:20px 24px;margin:20px 0;box-shadow:7px 7px 0 var(--ink-14);}
+  .term h3{margin:0 0 10px;font-size:21px;}
+  .term h3 .no{font-size:13px;letter-spacing:.2em;color:var(--ink-78);margin-right:8px;font-family:var(--sans);font-weight:500;}
+  .term p{font-size:16px;margin-bottom:10px;}
+  .term p:last-child{margin-bottom:0;}
+  .term .label{font-weight:700;}
+  .example{border:2px solid var(--ink);border-style:dashed;padding:18px 22px;margin:22px 0;background:rgba(33,72,184,.04);}
+  .example .ex-tag{font-size:13px;letter-spacing:.25em;font-weight:700;margin-bottom:10px;}
+  .example p{font-size:15.5px;margin-bottom:12px;line-height:1.85;}
+  .example p:last-child{margin-bottom:0;}
+  .story{border-left:4px solid var(--ink);padding:4px 0 4px 20px;margin:26px 0;}
+  .story p{margin-bottom:14px;}
+  .ledger{width:100%;border-collapse:collapse;margin:24px 0;font-size:15.5px;}
+  .ledger th,.ledger td{border:1.5px solid var(--ink-20);padding:10px 14px;text-align:left;vertical-align:top;line-height:1.7;}
+  .ledger th{font-family:var(--serif);font-weight:900;background:var(--ink-14);}
+  .check{list-style:none;margin:24px 0;}
+  .check li{border:2px solid var(--ink);padding:14px 18px;margin-bottom:12px;font-size:16px;box-shadow:5px 5px 0 var(--ink-14);}
+  .check li::before{content:"☐";font-size:19px;margin-right:12px;}
+  .takeaway{border:2px solid var(--ink);background:var(--ink-14);padding:22px 26px;margin:30px 0;}
+  .takeaway h3{margin:0 0 12px;}
+  .takeaway pre{white-space:pre-wrap;font-family:var(--sans);font-size:15px;line-height:1.85;margin-top:12px;}
+  .footnote{font-size:13.5px;color:var(--ink-78);margin-top:10px;line-height:1.8;}
+  .rules{border:2px solid var(--ink);padding:24px 28px;margin-top:40px;}
+  .rules h2{font-size:21px;margin:0 0 14px;}
+  .rules ol{padding-left:22px;}
+  .rules li{margin-bottom:8px;font-size:16px;}
+  .divider-note{text-align:center;font-size:13px;letter-spacing:.3em;color:var(--ink-78);margin:26px 0 0;}
+  .demo-note{font-size:14.5px;border:1.5px dashed var(--ink-20);padding:10px 16px;margin:16px 0;color:var(--ink-78);line-height:1.8;}
+  .slot{background:var(--ink-14);padding:14px 18px;font-size:15px;margin:14px 0;}
+  .chat{margin:20px 0;border:2px solid var(--ink-20);}
+  .chat .msg{padding:14px 18px;font-size:15.5px;line-height:1.85;}
+  .chat .msg.user{background:var(--ink-14);font-weight:500;}
+  .chat .msg.ai{background:var(--paper);border-top:1.5px solid var(--ink-20);}
+  .chat .who{display:block;font-size:12px;letter-spacing:.2em;font-weight:700;margin-bottom:6px;}
+</style>
+</head>
+<body>
+
+<div class="preview-bar">全书新稿 v3 · 按你的骨架重排（引出 → 介绍 → 总结 → 拆解 → 教学 → 怎么用）· 只看文字</div>
+
+<nav class="toc">
+  <a href="#p1">01 引出</a><a href="#p2">02 由来</a><a href="#p3">03 词典</a><a href="#p4">04 一页纸总结</a><a href="#p5">05 拆解思想</a><a href="#p6">06 沙盒</a><a href="#p7">07 怎么用+例子</a><a href="#p8">08 边界</a>
+</nav>
+
+<main>
+
+<!-- ═══════════ 01 引出 ═══════════ -->
+<section class="block" id="p1">
+  <div class="page-tag">页 01 · 引出（首页）</div>
+  <h1>DeepSeek 又出手了，这次不是大模型</h1>
+
+  <p class="lead">8 月 13 日，DeepSeek 悄悄开源了个新东西。（对，就是那个 DeepSeek。）</p>
+  <p>没开发布会，没晒跑分，就丢出一个叫 <strong>deepseek-harness</strong>（大家叫它 dsh）的框架，招牌一句话：「一切皆插件。」</p>
+  <p>然后 GitHub 趋势榜没了悬念：首日 star 以万计，几天破 15 万，七周 24 万，媒体管它叫「史上最快涨星项目」——作为对比，OpenAI 的 Codex CLI 爬到 10 万用了好几年。那阵子，你的群里多半有人晒过它。</p>
+  <p>热闹看完了，说点热闹背后的。dsh 肚子里装着几千个互不相识的人写的插件，随时装上、卸下、互相调用，居然一直没散架。懂行的看到这儿会愣一下：这事，凭什么？</p>
+  <p>答案写在 README 的第一行：<strong>Powered by Cordis。</strong></p>
+
+  <div class="em-quote">一个装着几千个插件的程序，<br>插件随时装上、卸下、互相调用，<br>凭什么不散架？</div>
+
+  <p>答案藏在 README 的第一行：<strong>Powered by Cordis。</strong></p>
+  <p>Cordis 是一个 2022 年就开源的老框架，它背后还有一篇 88 页的论文：《时空可组装性的一种编程范式》。「时空可组装性」这七个字翻译成人话就是：<strong>软件在运行中换零件，时间和空间上都要靠得住</strong>：装上立刻生效，卸掉不留痕迹，谁依赖谁都算数。</p>
+  <p>dsh 的「一切皆插件」敢不是口号，正因为 Cordis 把这七个字做成了机制。这个站，就是把那篇论文和这套机制，拆成不懂技术的人也能读懂、能直接用的一本小书。</p>
+
+  <p class="lead"><strong>这本小书的路线，跟着 DeepSeek 的脚印走：</strong></p>
+  <div class="routes">
+    <div class="route"><div class="r-title">第 1 站 · 由来</div><div class="r-desc">dsh 有多火、Cordis 从哪来：一个 QQ 机器人内核，怎么长成 24 万 star 项目的地基。</div></div>
+    <div class="route"><div class="r-title">第 2 站 · 一页纸总结</div><div class="r-desc">88 页论文，压成一页：它解决什么问题、两句核心、四条保证。</div></div>
+    <div class="route"><div class="r-title">第 3 站 · 词典与拆解</div><div class="r-desc">14 张术语卡 + 五个核心思想，每个思想配一个你能懂的例子。</div></div>
+    <div class="route"><div class="r-title">第 4 站 · 动手与照抄</div><div class="r-desc">亲手拔积木的沙盒、十五条可以勾选的打法、每页一段复制给 AI 的话。</div></div>
+  </div>
+
+  <a class="cta" href="#p2">第 1 站：先认识这颗心脏 →</a>
+  <p class="footnote">数字出处：dsh 仓库 API 实测（241,568 star，2026-10-01 快照）；首日 star 数媒体报道有出入，取「数以万计」口径。正式页面这些收进可靠度徽标。</p>
+</section>
+
+<div class="divider-note">· 页 02 ·</div>
+
+<!-- ═══════════ 02 由来与实证 ═══════════ -->
+<section class="block" id="p2">
+  <div class="page-tag">页 02 · 由来与实证</div>
+  <h1>一颗跑了七年的心脏</h1>
+
+  <p class="lead">先说数字，再说故事。</p>
+  <p>2026 年 10 月 1 日，我们沿 GitHub API 把 dsh 摸了一遍：star 241,568，创建仅七周，最近五条提交全部落在同一天，PR 编号排到四位数。它不是热点过后的空壳，是正在高速运转的活项目。</p>
+  <p>但 dsh 是 8 月才出生的。「一切皆插件」的功夫，不可能七周练成。功夫在哪？在 Cordis 身上。</p>
+
+  <h2>故事的起点，是一个 QQ 机器人</h2>
+  <p>2019 年底，开发者 Shigma（石逸凡）开源了 Koishi——一个跨平台聊天机器人框架。它从第一天起就要面对最凶险的问题：<strong>几千个互不相识的人写的插件，塞在同一个进程里，随时装上、卸下、互相调用，怎么才能不把彼此弄死？</strong></p>
+  <p>这问题听着像行业难题，其实每个人都懂：你给编辑器装了个插件，用腻了想卸载，它说「请重启」。你只是想拿走一个零件，它却把整栋楼断电重开。</p>
+  <p>2022 年，Shigma 把 Koishi 里最硬的那块内核拆出来单独开源，取名 <strong>Cordis</strong>——拉丁语的「心脏」。此后四年，这颗心脏在 Koishi 身上养出了一个 4000 多个插件的生态。</p>
+
+  <h2>心脏的图纸，写成了论文</h2>
+  <p>2026 年，石逸凡（北京大学 &amp; DeepSeek-AI）与合作者把这套跑了七年的东西写成 88 页的论文，就是本站拆解的《时空可组装性的一种编程范式》。同月，DeepSeek 把 Cordis 整个装进 dsh，当Agent 框架的地基。</p>
+  <p>四者的分工一句话说完：<strong>论文立论，Cordis 把论点做成框架，Koishi 是它跑了多年的先例，dsh 拿它做 agent 时代的地基。</strong></p>
+
+  <div class="stats">
+    <div class="stat"><div class="num">4,000+</div><div class="cap">Koishi 社区插件【转引】（论文口径，本站未独立核实）</div></div>
+    <div class="stat"><div class="num">7 年</div><div class="cap">Cordis 思想在生产环境连续服役（2019 至今）</div></div>
+    <div class="stat"><div class="num">241,568</div><div class="cap">dsh 的 star（2026-10-01 勘察值）</div></div>
+  </div>
+
+  <p class="footnote">诚实声明：论文第 70 页自己交代，证据是观察性的（有生态、无对照实验），性能开销未量化。我们把这些一并摆上桌，不藏着。</p>
+
+  <a class="cta" href="#p3">心脏认识了，下一站：88 页论文的一页纸总结 →</a>
+</section>
+
+<div class="divider-note">· 页 03 ·</div>
+
+<!-- ═══════════ 03 一页纸总结 ═══════════ -->
+<section class="block" id="p3">
+  <div class="page-tag">页 03 · 论文一页纸总结（总结论文）</div>
+  <h1>88 页，压成一页</h1>
+
+  <p class="lead">这一页是全书的地图。读完它你就掌握了论文的全部骨架；后面几页，只是把这页的每个格子放大讲透。</p>
+
+  <h2>它解决什么问题</h2>
+  <p>软件大量在做「动态组装」：插件中途装上卸下、配置随手改、AI Agent 给自己换组件。但为动态组装托底的理论几乎是空的，通行的土办法是重启。论文给这件事补上了理论，并做成框架 Cordis。</p>
+
+  <h2>它怎么拆问题：两个维度</h2>
+  <p><strong>时间维度（拆得掉吗）</strong>：组件退场时，它对系统做过的每个改动，都要能完整撤销——论文管「改动」叫效应，管「撤销」叫可逆。</p>
+  <p><strong>空间维度（接得住吗）</strong>：组件依赖的东西出现了、消失了、换人了，组件要能被自动感知和响应——论文管「需求」叫反效应，管「自动响应」叫反应式。</p>
+
+  <h2>两句核心（背下这两句就够）</h2>
+  <div class="em-quote">每个改动自带撤销说明书。<br>每个组件进门先交需求清单。</div>
+
+  <h2>一个地基</h2>
+  <p>上面两条要成立，所有组件和环境的交互必须经过同一个对象：<strong>语境</strong>。它是全系统的总账：状态、撤销办法、依赖登记全记在一本账上，谁也不许绕开。绕开的共享状态，落在论文所有保证之外。</p>
+
+  <h2>四条保证（它能承诺什么）</h2>
+  <p><strong>① 卸载可恢复</strong>：调一次撤销链，环境回到组件进场之前（口径是「像从没来过」，不是逐字节）。<strong>② 不读缺失</strong>：组件只在依赖齐全时运行。<strong>③ 断供即歇业</strong>：缺依赖那一刻被检测到，清理自动发生。<strong>④ 乱序撤销安全</strong>：互不干扰的效应，撤销顺序随便换，结果一样。</p>
+
+  <h2>五个思想的地图（下一站逐个拆）</h2>
+  <div class="ledger">
+    <table class="ledger">
+      <tr><th>思想</th><th>管什么</th><th>对应两句话</th></tr>
+      <tr><td>一 · 可逆效应</td><td>怎么改</td><td>撤销说明书</td></tr>
+      <tr><td>二 · 响应式反效应</td><td>怎么依赖</td><td>需求清单</td></tr>
+      <tr><td>三 · 统一语境</td><td>在哪本账上改和依赖</td><td>一个门</td></tr>
+      <tr><td>四 · 独立性</td><td>互不干扰的条件</td><td>乱序撤销安全</td></tr>
+      <tr><td>五 · 四大保证</td><td>向使用者承诺什么</td><td>验收单</td></tr>
+    </table>
+  </div>
+
+  <p class="footnote">本页每条都能在论文里对回页码（正文页挂徽标，悬停可查）；证据是观察性的：有 Koishi 生态先例，无对照实验。</p>
+
+  <a class="cta" href="#p4">地图在手，先去词典认词 →</a>
+</section>
+
+<div class="divider-note">· 页 04 ·</div>
+
+<!-- ═══════════ 04 词典 ═══════════ -->
+<section class="block" id="p4">
+  <div class="page-tag">页 04 · 词典（教学：14 张卡全量）</div>
+  <h1>术语图鉴</h1>
+
+  <p>先讲现象，再给名字。每张卡固定三段：<strong>一句话 / 一个类比 / 落到你的项目里</strong>。</p>
+
+  <div class="term"><h3><span class="no">01</span>效应<span class="en">effect</span></h3>
+    <p><span class="label">一句话：</span>插件对系统做的每个改动（开的端口、写的配置、注册的命令），论文叫它「效应」，并立了条硬规矩：<strong>动手时，当场交出撤销办法。</strong></p>
+    <p><span class="label">类比：</span>装修留收据。工人每动一处，当场留一张「这里怎么复原」，退租时按倒序一张张执行——现实中装修队要真这么自觉，家装纠纷能少九成。</p>
+    <p class="footnote">你的项目里：Cordis 所有改动走一个门（ctx.effect()），每件自带撤销函数。</p>
+  </div>
+
+  <div class="term"><h3><span class="no">02</span>可逆<span class="en">revertible</span></h3>
+    <p><span class="label">一句话：</span>常见写法把「制造影响」和「清理影响」拆在两个函数里，清理成了靠自觉的义务，忘一句就悄悄漏一份资源。可逆是改动的附赠品：<strong>谁改的，谁当场交撤销函数</strong>，运行时统一保管。</p>
+    <p><span class="label">类比：</span>Ctrl+Z 的历史栈，后发生的先撤销。</p>
+  </div>
+
+  <div class="term"><h3><span class="no">03</span>累加器</h3>
+    <p><span class="label">一句话：</span>撤销说明书越攒越多，谁记得先撕哪张？运行时把它们串成一条链，卸载时<strong>按一次键，全退光</strong>。</p>
+    <p><span class="label">类比：</span>Ctrl+Z 按到底，回到你打开文件的第一秒。</p>
+  </div>
+
+  <div class="term"><h3><span class="no">04</span>反效应<span class="en">coeffect</span></h3>
+    <p><span class="label">一句话：</span>效应说「我对世界做了什么」，反效应说「<strong>世界得先给我什么</strong>」——资源、权限、服务都算。说白了，就是组件进门先交的依赖清单。</p>
+    <p><span class="label">类比：</span>餐馆门口挂牌「本店需要水、电、燃气」。市政停水那一刻，挂牌翻转，餐馆自动贴出暂停营业。</p>
+  </div>
+
+  <div class="term"><h3><span class="no">05</span>响应式<span class="en">reactive</span></h3>
+    <p><span class="label">一句话：</span>怕断供，不用雇人盯电闸。环境每变一次，运行时自动拿每张需求清单对一遍，只有两种变化需要行动：<strong>需求齐了就开机，需求断了就停机并恢复现场</strong>。其余一律不理。</p>
+    <p><span class="label">类比：</span>夜市摊接隔壁的电源。隔壁收摊你自动歇业，隔壁回来你自动开张。</p>
+  </div>
+
+  <div class="term"><h3><span class="no">06</span>依赖注入<span class="en">inject</span></h3>
+    <p><span class="label">一句话：</span>插件自己找依赖（import、判空、重连全写体内），上游一变就得跟着改。inject 是反效应的落地：<strong>组件声明「我要用 ctx.llm」，框架等就绪才启动</strong>。它要么在依赖齐全的语境里运行，要么根本没在运行。</p>
+    <p><span class="label">类比：</span>医院挂号。登记科室、坐着等叫号，叫到才进诊室，不用反复敲门问「到我了没」。（这个句式是不是很眼熟？某些需求排期就是这样。）</p>
+  </div>
+
+  <div class="term"><h3><span class="no">07</span>隔离<span class="en">isolate</span></h3>
+    <p><span class="label">一句话：</span>两个用户共用一份全局配置，这边的改动把那边带跑。隔离指<strong>同名依赖在不同上下文里各指向一份私有值</strong>。多租户、测试环境、沙箱都靠它分开。</p>
+    <p><span class="label">类比：</span>合租屋里隔出的独立储物柜，钥匙各拿各的。</p>
+  </div>
+
+  <div class="term"><h3><span class="no">08</span>拦截<span class="en">intercept</span></h3>
+    <p><span class="label">一句话：</span>想给「依赖的使用」加规矩（限流、审计），常规做法是改上下游代码还得重启。拦截指<strong>在读依赖的动作外面叠一层规则</strong>：外层约束内层，双方代码都不动，改规则不重启。</p>
+    <p><span class="label">类比：</span>商场入口的安检门。顾客照常进出，商场改规矩只换门口那块告示，不用动每家店铺。</p>
+  </div>
+
+  <div class="term"><h3><span class="no">09</span>组件<span class="en">component</span></h3>
+    <p><span class="label">一句话：</span>装一个模块，它要什么、给什么、干什么散在代码各处，读完代码才拼得出来。组件是<strong>一份岗位说明书</strong>：我需要什么、我能提供什么、我上岗后干什么——第三份里的每件事都附撤销办法。</p>
+    <p><span class="label">类比：</span>一份招聘启事：要带什么技能、接手哪些资源、每天干什么活。人可以换，启事不变。（再也不用读完一个人的代码，才搞清他干了什么。）</p>
+  </div>
+
+  <div class="term"><h3><span class="no">10</span>纤维<span class="en">fiber</span></h3>
+    <p><span class="label">一句话：</span>同一份说明书装了两份，那两份跑着的东西各算什么？组件是职位描述，<strong>fiber 是某年某月入职的那位员工</strong>：从入职到离场走固定流程，随身带一本后进先出的撤销清单。</p>
+    <p><span class="label">类比：</span>同一份职位描述，每雇一个人就对应一个 fiber；入职、在岗、离职同一套流程，谁也不能私下改。（听着像大厂规矩，其实是框架自动执行。）</p>
+  </div>
+
+  <div class="term"><h3><span class="no">11</span>语境<span class="en">context</span></h3>
+    <p><span class="label">一句话：</span>前面所有保证要成立，得先有一本共同的账。语境是<strong>全系统共用的一本大账</strong>：当前状态、所有撤销办法、所有依赖登记，全在上面。论文的纲领就一句：组件和环境的每一次交互都经过它，谁也不许绕开。</p>
+    <p><span class="label">类比：</span>酒店前台的总账。住客动任何东西都得记台账，谁也不许私下配钥匙；正因如此，退房验收才能按「下一位客人察觉不出」的标准执行。</p>
+  </div>
+
+  <div class="term"><h3><span class="no">12</span>声明式配置</h3>
+    <p><span class="label">一句话：</span>改配置的常见流程是停机、改文件、重启，半路失败还可能卡在新旧之间。声明式是<strong>写一份愿望清单，加载器负责把现实改成和清单一致</strong>，改多少算多少，不推倒重来。</p>
+    <p><span class="label">类比：</span>手动挡换自动挡。你只写愿望，加载器负责换挡。（比喻来自一位开手动挡开到腿麻的朋友。）</p>
+  </div>
+
+  <div class="term"><h3><span class="no">13</span>热模块替换<span class="en">HMR</span></h3>
+    <p><span class="label">一句话：</span>改一行代码重启整个进程，等半天还可能丢状态。HMR 是<strong>改了源码，程序不重启，原地换零件</strong>。而且是事务性的：先备份，新件贴失败就整体贴回旧的，绝不半新半旧。代价先说清：组件自己的内存状态不保留。</p>
+    <p><span class="label">类比：</span>装修换壁纸。旧壁纸完整收好，新的贴失败原样贴回去。（强迫症看完很舒适。）</p>
+  </div>
+
+  <div class="term"><h3><span class="no">14</span>生命周期<span class="en">lifecycle</span></h3>
+    <p><span class="label">一句话：</span>插件系统能装不能卸；就算能卸，「还有人用着我就不能走」的护栏看着就会死锁。生命周期指零件从装上到拆下的固定阶段：人只下三道命令（插入、退役、移除），<strong>其余全部自动流转</strong>。停用有固定次序：先贴停工告示、停止供货，等依赖方全拆完，自己再倒序清理——死锁从结构上就不会发生。</p>
+    <p><span class="label">类比：</span>拆迁先疏散租户，确认全走了，再动承重墙。（现实中的拆迁要也这么讲流程，天下太平。）</p>
+  </div>
+
+  <h3>还有几个词（快查）</h3>
+  <p><strong>观察等价</strong>：两个状态算「一样」，指任何合法操作跑下来看不出区别。<strong>交换性</strong>：谁先谁后结果一样。<strong>能力接缝</strong>：dsh 的词，接口 + 提供者 + 消费者三件套，接口稳定、实现随便换。<strong>作用域</strong>：每个 agent 一个注册作用域，子 agent 看不到父的私有注册。<strong>Agent harness</strong>：包在 AI 模型外面的骨架，给 AI 用的工具箱加操作系统。</p>
+
+  <div class="takeaway">
+    <h3>可带走物 · 让 AI 跟你说同一种话</h3>
+    <pre>我们在讨论 deepseek-harness（dsh）和它背后的 Cordis 框架，请按这套词表使用术语：
+效应（effect）指程序对外部世界的改动，每个效应自带一份撤销函数。
+反效应（coeffect）指组件要求环境先提供的依赖清单。
+语境（context）是全系统共享状态的唯一入口，每次交互都经过它。
+组件是一份三文件岗位说明书；fiber 是组件的一次具体上岗。
+组件卸载时，撤销函数按后进先出依次执行。
+依赖断供时组件安静休眠，依赖恢复时自动激活，不报错也不轮询。</pre>
+  </div>
+
+  <a class="cta" href="#p5">词认全了，去拆五个思想 →</a>
+</section>
+
+<div class="divider-note">· 页 05 ·</div>
+
+<!-- ═══════════ 05 拆解思想 ═══════════ -->
+<section class="block" id="p5">
+  <div class="page-tag">页 05 · 拆解思想（每个思想带例子）</div>
+  <h1>一句话，拆成五个思想</h1>
+
+  <p>「让运行中的软件换零件，还能原样退回去」，这句话要站得住，得先经得起拆。论文把它拆成五个思想。每个思想都用同一个例子贯穿：<strong>小周的 Bot，装着天气、提醒、管理三个插件。</strong></p>
+
+  <h2>思想一 · 可逆效应：每个改动自带撤销函数</h2>
+  <p><strong>问题：</strong>组件要在运行中装上、卸下，卸下后环境得回到它来之前。这事平时全凭自觉，忘了一句，就有一份资源悄悄漏掉。</p>
+  <p><strong>解法：</strong>组件对外界的每个改动叫「效应」，执行时当场交回两样：新状态 + 撤销函数。运行时把撤销函数串成链，卸载时调一次，环境整体复原；装载走效果迭代器，一步一交，坏一步只回滚到那一步。</p>
+  <p><strong>类比：</strong>装修留收据，退租时按相反顺序执行一遍。</p>
+  <div class="example">
+    <div class="ex-tag">举例子</div>
+    <p>小周的天气插件装上时，注册了一个「每小时刷新天气」的定时任务。按老写法，卸载插件时这个任务经常被忘掉，变成无人认领的幽灵任务，永远在后台白跑。</p>
+    <p>按可逆效应：注册任务的<strong>同一瞬间</strong>，就要交出「怎么注销它」的函数。卸载插件时，运行时拿着这条注销自动执行，幽灵任务根本不会存在。</p>
+    <p>从此，「幽灵任务」在小周的项目里成了都市传说。</p>
+  </div>
+  <p><strong>所以呢：</strong>让你项目里每个工具调用、每次写记忆、每次动外部服务，都返回自己的回滚办法。</p>
+  <div class="demo-note">🎬 演示 01「撤销堆栈」（可玩）：按「注册服务」，动作卡落栈；点撤销，逆序回放；「全部重置」一次清账。</div>
+
+  <h2>思想二 · 响应式反效应：依赖断供，自动歇业</h2>
+  <p><strong>问题：</strong>运行中依赖断了，代码要么报错，要么拿到空值崩在更远处；想提前防，就得手写监控代码盯上游。</p>
+  <p><strong>解法：</strong>组件开张前声明规格：我需要哪些键。环境每变一次，运行时对照规格分三类：前缺后齐就激活；前齐后缺就停用并恢复现场；其余不理会。</p>
+  <p><strong>类比：</strong>餐馆挂牌「本店需要水、电、燃气」。停水自动歇业，来水自动恢复，不派人查水表。</p>
+  <div class="example">
+    <div class="ex-tag">举例子</div>
+    <p>小周的提醒插件声明依赖「数据库」。某天数据库维护下线：提醒插件<strong>没有报错</strong>，自动进入歇业；其他不碰数据库的插件（天气、管理）毫无感知，照常运行。数据库回来，提醒插件自动复工。</p>
+    <p>老写法呢？数据库一断，提醒插件当场抛异常，管理插件因为碰了一下共享状态跟着崩，小周被半夜叫起来重启。（从那以后，他的手机睡觉时放客厅。）</p>
+  </div>
+  <p><strong>所以呢：</strong>让每个模块声明依赖。换数据库后端时，只重启真正用到数据库的那几个，其余原地不动。</p>
+  <div class="demo-note">🎬 演示 02「生命周期状态机」（可玩）：写键、删键、无关变化、断供连锁——看熄灭沿依赖线传两级。</div>
+
+  <h2>思想三 · 统一语境：一切交互都走同一个门</h2>
+  <p><strong>问题：</strong>共享状态散落各处、谁都能绕过去动手的话，账就记不全，前两节的保证罩不住整个系统。</p>
+  <p><strong>解法：</strong>所有组件和环境的交互，都经过同一个对象「语境」：它记着当前状态、撤销链、依赖表。绕开门私接的状态怎么办？论文的补丁很妙：某分配器从语境外的计数器抽号，不合规——<strong>把那个计数器也绑成一个键，就合规了</strong>。</p>
+  <p><strong>类比：</strong>酒店前台的总账。动任何东西都记台账，谁也不许私下配钥匙；正因如此，退房验收才核得出「下一位客人察觉不出」。</p>
+  <div class="example">
+    <div class="ex-tag">举例子</div>
+    <p>小周的管理插件想统计「今天处理了多少条命令」。它偷偷在自己代码里加了个计数变量：这就是绕过门的私接状态，卸载插件时没人知道要清它。</p>
+    <p>改成合规做法：把这个计数器也注册成语境里的一个键。于是它自动获得三件套：有撤销、能被依赖、卸载时随账本一起清干净。（计数器本人：从黑户到转正。）</p>
+  </div>
+  <p><strong>所以呢：</strong>先想清楚你项目里「共享状态的唯一入口在哪」。入口立住了，互不干扰才能拆成逐键的本地条件去检查。</p>
+  <div class="demo-note">🎬 演示 03「万物过前台」（自动循环）：效应和登记两类方块流经同一座柜台，每过一枚，账本落一行账。</div>
+
+  <h2>思想四 · 独立性：互不干扰的确切条件</h2>
+  <p><strong>问题：</strong>门立起来了，凭什么说两个组件互不干扰？还有个更基本的坎：「恢复原状」做不到逐字节：释放内存，堆的布局回不去；生成过名字，撤掉之后来的是新名字。</p>
+  <p><strong>解法：</strong>把「一样」的判定权交给观察者：任何一串合法操作跑下来结果一致，就算恢复。独立性再要两条：交换性（谁先谁后结果一样）+ 不弄坏对方的产出。回报：两两独立的效应，<strong>撤销顺序随便换</strong>。检查便宜：不同键自动独立，同一个键由提供者一次性认证。</p>
+  <p><strong>类比：</strong>出厂合格证。工厂测一次安全，千家万户插电不用各自再测。</p>
+  <div class="example">
+    <div class="ex-tag">举例子</div>
+    <p>小周同时装了「主题皮肤」和「日志器」两个插件，谁也不碰谁：先装谁、卸谁、重装几次，最终状态一模一样——这就是可交换，所以他敢随手乱按（反正能回来，乱按也是一种探索）。</p>
+    <p>反过来，日志器若声明「我必须第一个初始化，否则记录不全」，它就和别的插件不可交换：这种顺序敏感的部分，论文要求明确声明、由框架管序。</p>
+  </div>
+  <p><strong>所以呢：</strong>接口设计就是交换性开关。少承诺一个返回值，就多一批可以乱序执行、独立撤销的操作。</p>
+  <div class="slot">图 01 · 静态对比图（两联）：左联各写各的键，先后无所谓；右联排在同一条有序链上，插队改变对方看到的请求。</div>
+
+  <h2>思想五 · 四大保证：这套体系承诺什么</h2>
+  <p>机制讲完，承诺收成四条，逐条能对回页码：</p>
+  <p><strong>① 卸载可恢复</strong>（口径：像从没来过，不是逐字节）｜<strong>② 不读缺失</strong>｜<strong>③ 断供即歇业</strong>｜<strong>④ 乱序撤销安全</strong>。</p>
+  <p><strong>类比：</strong>交房验收单。每条当场核，核不过不签字；单子写明核的口径，「恢复原样」核的是住客察觉不出。</p>
+  <div class="example">
+    <div class="ex-tag">举例子</div>
+    <p>用这四条验收小周的项目：天气插件卸载后，它注册的定时任务消失了（① 通过）；提醒插件永远不会读到「半个数据库配置」（② 通过）；数据库维护期间只有它歇业，别的照常（③ 通过）；小周某天心血来潮把三个插件按乱序卸了又装，最终状态和按顺序操作完全一致（④ 通过）。</p>
+    <p>四条全绿，这个项目就具备了「换零件不拉电闸」的资格。</p>
+  </div>
+
+  <div class="takeaway">
+    <h3>可带走物 · 四条纪律（复制给你的 AI 编程搭档）</h3>
+    <pre>请按四条纪律改造我的项目：
+一、任何改动外部状态的动作，必须当场连同回滚办法一起交出来，谁改的谁带撤销。
+二、每个模块只声明自己需要什么，不写探测环境和判空的防御代码；依赖齐全才运行，缺了自动停机，恢复自动上线。
+三、全项目的共享状态只留一个入口，绕过入口私接的状态不受任何保护。
+四、接口能不承诺的返回值就不承诺，每砍掉一个承诺，就多一批可以乱序执行、独立撤销的操作。
+改完用四句话验收：卸载可恢复、不读缺失、断供即歇业、乱序撤销安全。</pre>
+  </div>
+
+  <p>思想讲完，剩下的最好交给手。组件沙盒是一张可操作的工作台。</p>
+  <a class="cta" href="#p6">去沙盒，亲手拔一块 →</a>
+</section>
+
+<div class="divider-note">· 页 06 ·</div>
+
+<!-- ═══════════ 06 沙盒 ═══════════ -->
+<section class="block" id="p6">
+  <div class="page-tag">页 06 · 组件沙盒（界面文案稿）</div>
+  <h1>亲手拔一块试试</h1>
+
+  <p>浏览器里搭一个迷你 Cordis。你从托盘拖出积木，连上依赖线，然后把正在供电的提供者拔掉：依赖它的积木逐块熄灭；换上新源，它们按原路复明；最后一步，全部原样退回去。</p>
+  <p>你刚才在上一页读的所有词，在这块画布上全部会发生：<strong>可逆效应、响应式反效应、累加器、生命周期</strong>。你负责动手，画布负责把背后的机制演给你看。</p>
+  <p>这一页与首页并列，是全站动效预算最足的两页：滚动很少，动手很多。别怕按坏——这台机器上每个动作都自带撤销，比现实世界安全一万倍。</p>
+
+  <h3>你会拿到什么</h3>
+  <p><strong>托盘里六个零件</strong>：03 提供者·数据库驱动（主角 A）、06 提供者·备用源（主角 B）、04 消费者·查询插件、05 消费者·聊天插件（都挂在 03 身上）、01 独立·主题皮肤、02 独立·日志器（无依赖线，专门证明连锁只沿声明过的依赖传导）。托盘底还有一块虚线幽灵块：「拖入画布」。</p>
+  <p><strong>你能做的六拍</strong>：拖积木入画布 → 连依赖线 → 拔掉 03 → 看熄灭传导 → 换上 06 看复明 → 一键全部复原。每一步，侧栏都会告诉你论文里这步叫什么。</p>
+
+  <div class="slot">界面占位：控制条四钮 + 检查器与日志侧栏——引擎本体 M5.5 接入，文稿与视觉壳已定。</div>
+
+  <a class="cta" href="#p7">玩过了，去拿能直接抄的作业 →</a>
+</section>
+
+<div class="divider-note">· 页 07 ·</div>
+
+<!-- ═══════════ 07 怎么用 + 例子 ═══════════ -->
+<section class="block" id="p7">
+  <div class="page-tag">页 07 · 怎么用（给不懂技术的你，附完整例子）</div>
+  <h1>三条用法，每条带例子</h1>
+
+  <p>读到这里，你已经比 99% 的 dsh 围观者更懂它的心脏。这三条用法，让你把懂变成用——全程不需要会编程，只需要会复制粘贴、会向 AI 提要求。</p>
+
+  <h2>用法一 · 拿去审你的项目</h2>
+  <p>把序章的背景简报贴给任何 AI，再补一句你的具体情况。看一个完整例子：</p>
+  <div class="chat">
+    <div class="msg user"><span class="who">小周 → AI</span>（贴上背景简报）我的 Bot 有三个插件：天气、提醒、管理。我想加一个「定时清理缓存」的新插件，又怕弄坏现有三个。按这篇论文的思想，给我一个安全的做法。</div>
+    <div class="msg ai"><span class="who">AI</span>好办。按可逆效应：新插件注册清理任务时，当场写好「如何注销这些任务」。按响应式反效应：向框架声明依赖 scheduler 和 cache，两个都在你才启动，任一下线你就自动歇业，别硬撑。最后按语境原则：别用全局变量记缓存路径，把它注册成配置键。这样：新插件装上立刻生效；出问题只停它自己；卸载时注册的任务随撤销链一起消失，三个老插件全程无感。</div>
+  </div>
+  <p>注意 AI 回复里出现的正是你学过的词：<strong>可逆效应、反效应、语境</strong>。这就是词表页那份「让 AI 跟你说同一种话」的用法：你先给背景，它就按同一套语言回答。</p>
+
+  <h2>用法二 · 勾选打法，生成需求书</h2>
+  <p>借鉴清单页的 15 条打法可以勾选组合，右侧面板实时拼出一份完整的需求书。演示一次：假设小周勾了三条：</p>
+  <div class="example">
+    <div class="ex-tag">勾选：01 撤销函数 + 04 依赖清单 + 08 事务热重载</div>
+    <p>面板生成（可直接复制）：</p>
+    <p>「请改造我的项目：一、每个注册动作配一个撤销函数，注册与注销成对出现；二、每个插件进门先声明依赖清单，缺了安静待机、到了自动上线；三、热重载做成事务：先备份、失败整体回滚，永不半新半旧。验收标准：卸载可恢复、不读缺失、断供即歇业、乱序撤销安全。」</p>
+    <p>把这段发给 AI，它就知道改造要做成什么样、按什么标准验收。</p>
+  </div>
+  <p class="footnote">全量 15 条打法：01 撤销函数 / 02 稳定键名 / 03 能力三件套 / 04 依赖清单 / 05 永不复用编号 / 06 状态只记一本账 / 07 改配置等价于退役加重插 / 08 热重载事务 / 09 会话日志唯一事实源 / 10 权限跟声明走 / 11 审接口承诺 / 12 单一提供者 / 13 卸载次序协议 / 14 失败显式记录不传染 / 15 作用域隔离。</p>
+
+  <h2>用法三 · 拿去写作和汇报</h2>
+  <p>这套思想本身就是好素材：「换个灯泡，拉整栋楼的电闸」「每个改动自带撤销说明书」这类说法，可以直接用进你的项目文档、汇报、甚至朋友圈。一份读论文的功夫，产出三样东西：知识、方法论、表达素材。</p>
+
+  <a class="cta" href="#p8">先别急着全用——看看什么时候不该用 →</a>
+</section>
+
+<div class="divider-note">· 页 08 ·</div>
+
+<!-- ═══════════ 08 边界 ═══════════ -->
+<section class="block" id="p8">
+  <div class="page-tag">页 08 · 边界与代价</div>
+  <h1>这套思想，什么时候别用</h1>
+
+  <h2>最大的成本，叫纪律</h2>
+  <p>这套范式有一笔进场费。它的所有保证都建立在一个前提上：<strong>一切共享状态绑成键，一切交互走语境。</strong></p>
+  <p>语境像一栋楼唯一的大门，保安只在这个门执勤；从窗户翻进来的状态，出了事没人赔。把它接进现有系统，动的是结构：共享状态要一件一件绑回键上。最危险的用法是走一半：一半进语境、一半留在外面，你会误以为整套系统都在保护之下，而真正没人管的，恰好是留下来的那一半。</p>
+
+  <h2>六条边界，逐条说清</h2>
+  <p><strong>01 撤销的正确性仍由你负责</strong>——框架像闹钟，到点一定响；响过之后动作对不对，闹钟管不着。它防「忘了写清理」，防不了「写错了清理」。</p>
+  <p><strong>02 内存状态不保留</strong>——字面动作是卸了重装。想留住状态，就把它搬进比组件更长寿的依赖里。</p>
+  <p><strong>03 边界外收不回</strong>，数据一旦发出系统（写盘、发包），撤销函数就够不着了，只剩扣住不发，或事后补偿。</p>
+  <p><strong>04 版本与命名是开放问题</strong>——依赖按名字连接，接口一漂、键名一撞，就是「连接成立但运行出错」：名字对上了，人对错了。</p>
+  <p><strong>05 循环依赖查得出但拆着疼</strong>，能静态检出，不会死锁，只会永久休眠。拆开要新写胶水组件，十个缠在一起的组件，最坏要新写几十个。</p>
+  <p><strong>06 证据是观察性的</strong>，只有一种生态、一种语言的实践，没有对照实验；Koishi 生产环境跑的还是上一代版本，论文讲的是下一代。</p>
+
+  <h2>五个场景，先问纪律，再问开销</h2>
+  <div class="ledger">
+    <table class="ledger">
+      <tr><th>场景</th><th>是否适用</th></tr>
+      <tr><td>一次性脚本、组件集合常年不动的工具</td><td><strong>不适用</strong>：纯开销</td></tr>
+      <tr><td>性能极度敏感且高频触碰共享状态的路径</td><td><strong>不适用</strong>：intercept 和 isolate 的成本还没有数字</td></tr>
+      <tr><td>真正的不可信代码</td><td><strong>不适用</strong>：能力检查拦不住绕过代理的恶意代码</td></tr>
+      <tr><td>团队没把握长期坚持「一切交互都走同一个入口」的纪律</td><td><strong>不适用</strong>：坚持不住，保证就停在纸面上</td></tr>
+      <tr><td>自进化 agent harness（快速替换组件、拓扑频繁变动）</td><td><strong>适用</strong>：快速替换接住「拆得干净」，频繁变动接住「接得稳」</td></tr>
+    </table>
+  </div>
+
+  <div class="takeaway">
+    <h3>可带走物 · 采用前自查五问</h3>
+    <div class="check">
+      <li>共享状态能全部绑成语境键吗？有一条绕行（全局单例、模块级缓存），这条就不过。</li>
+      <li>组件真的需要运行中动态装卸吗？集合常年不动，开销一分都收不回来。</li>
+      <li>热路径会不会高频触碰共享状态？拿到实测数字之前，别把「应该不大」当结论。</li>
+      <li>要跑的代码里有不可信的吗？这套范式不替代独立沙箱。</li>
+      <li>团队真能长期坚持这条纪律吗？所有交互都走同一个入口，一条都不能漏——半途而废，比不用更危险。</li>
+    </div>
+    <p class="footnote">整段发给 AI，让它对着你的代码库逐条回答。</p>
+  </div>
+
+  <a class="cta" href="#p1">全书完 · 回到开头再滚一遍 ↑</a>
+</section>
+
+</main>
+
+</body>
+</html>

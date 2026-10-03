@@ -1,0 +1,540 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+import SceneControls from '../components/SceneControls.astro';
+
+// 文案一字不改照录 30-site/src/content/pages/field-notes.md（2026-10-02 新声音定稿，
+// 与 public/preview-v2.html 页 02「由来与实证」同源）。行内【转引】标记随正文照录；
+// 徽标计数取该文稿 frontmatter：原文核实 4 ｜ 合理解读 3 ｜ 转引未核实 1，
+// 三枚徽标的 basis 均转写自 frontmatter 括号内的口径注记。
+// 版式基准：50-design/07-DesignRead-v2.md。正文实墨（继承 global.css 阶梯）；
+// 节间距上下各 ≤72px（v2 §3 上限）；三枚计数器为 .card 数字卡（大数字 .num-display）；
+// 动效页级 5 档：仅三枚计数器进视口 count-up 一次即静止（field-notes-motion.ts，
+// 场景 id stats，铁律 5 控制条齐备），其余各节走 [data-reveal] 轻显影，
+// 题注与快照行为 release zone 零动效。
+//
+// ── M4.7 书页化改造（2026-10-03）──────────────────────────────────────────
+// 1. book={true}：BaseLayout 切左侧章节边栏 + 720px 阅读栏；章节翻页器由
+//    BaseLayout 在阅读栏底部按 slug 自动挂载（PagePager 基座），本页不另设。
+// 2. 嵌图（M47 批次）：图 01 六幕分镜「拔掉→熄灭」与 图 02「换源→复明」并排双联，
+//    插在节 1（编辑器插件类比所在节）正文之后；一词一画小卡「插头」随后，hover
+//    动效卡片（translate(-4px,-4px) + 阴影加深，transition 只动 transform/box-shadow，
+//    故 data-reveal 挂在网格容器上避免过渡属性打架）。
+//    框体统一 2px 钴蓝 + 8px 偏移实影（.card 同款墨线语言）。
+//    2026-10-03 生图通道故障期曾以点阵占位框代替；当日 17:11-17:12 补跑成功，
+//    三张成图落 public/images/web/（field-notes-1.jpg、field-notes-2.jpg 各 900×1200
+//    即 3:4，cards/field-notes-card1.jpg 600×600 即 1:1），占位框已替换为 <img>
+//    （object-fit: cover，井位 aspect-ratio 与成图比例一致，无裁切损失）。
+// 3. SVG 清理：原横向时间线 SVG（viewBox 1120）按 984px 渲染宽调字号，书页阅读栏
+//    内容宽仅 608px，缩比 0.543 下最小字折合 ≈9.2px，跌破 v2 §2 的 14px 下限——
+//    表达力在书页壳内失效，弃用横版；改用页内已有的同数据纵版时间线（.tlv，
+//    全部 ≥14px），四节点数据零丢失，重编号为图 03。
+// 4. 统计卡改横排基线行：608px 栏内三列放不下 48~56px 大数字，塌为整行
+//    「数字左 · 图注右」，.card 词汇与 count-up 场景（stats）不动。
+// 5. 色彩纪律：正文近黑（--text-body→Book v3 --text），钴蓝只在标题 / 重点 /
+//    图框边线 / 徽标 / 链接；占位底纹与小字走墨度档，不引入第二色相。
+---
+
+<BaseLayout
+  title="实录 · 勘察与案例 | Cordis 思想图鉴"
+  slug="field-notes"
+  folio="实录 · 勘察与案例"
+  description="先说数字，再说故事：一颗跑了七年的心脏，从 QQ 机器人到 agent 地基。"
+  book={true}
+  toc={[
+    { id: 'story', label: 'QQ 机器人的起点' },
+    { id: 'paper', label: '心脏的图纸：论文' },
+  ]}
+>
+  <!-- 节 0 · 引言（h1 与前三段照录文稿，徽标行为 apparatus） -->
+  <section class="intro" id="intro">
+    <div class="inner">
+      <div class="intro-copy" data-reveal>
+        <h1>一颗跑了七年的心脏</h1>
+        <p class="lead">先说数字，再说故事。</p>
+        <p>
+          2026 年 10 月 1 日，我们沿 GitHub API 把 dsh 摸了一遍：star 241,568，创建仅七周，最近五条提交全部落在同一天，PR
+          编号排到四位数。它不是热点过后的空壳，是正在高速运转的活项目。
+        </p>
+        <p>但 dsh 是 8 月才出生的。「一切皆插件」的功夫，不可能七周练成。功夫在哪？在 Cordis 身上。</p>
+        <div class="intro-meta">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 节 1 · 故事的起点（h2 与三段照录文稿） -->
+  <section class="sec" id="story">
+    <div class="inner">
+      <h2>故事的起点，是一个 QQ 机器人</h2>
+      <div class="prose" data-reveal>
+        <p>
+          2019 年底，开发者 Shigma（石逸凡）开源了 Koishi——一个跨平台聊天机器人框架。它从第一天起就要面对最凶险的问题：<strong
+            >几千个互不相识的人写的插件，塞在同一个进程里，随时装上、卸下、互相调用，怎么才能不把彼此弄死？</strong
+          >
+        </p>
+        <p>
+          这问题听着像行业难题，其实每个人都懂：你给编辑器装了个插件，用腻了想卸载，它说「请重启」。你只是想拿走一个零件，它却把整栋楼断电重开。
+        </p>
+        <p>
+          2022 年，Shigma 把 Koishi 里最硬的那块内核拆出来单独开源，取名
+          <strong>Cordis</strong>——拉丁语的「心脏」。此后四年，这颗心脏在 Koishi 身上养出了一个 4000
+          多个插件的生态【转引：论文口径，本站未独立核实】。
+        </p>
+      </div>
+
+      <!-- 图 01 / 图 02 · 六幕分镜双联（3:4 铜版画位，成图 /images/web/field-notes-{1,2}.jpg， -->
+      <!-- prompt 存档 public/images/m47/prompts/field-notes-{1,2}.txt） -->
+      <div class="plates" data-reveal>
+        <figure class="plate">
+          <div class="plate-frame">
+            <img
+              class="plate-img"
+              src="/images/web/field-notes-1.jpg"
+              alt="六幕分镜第一幕「拔掉→熄灭」：单墨钴蓝铜版画，只拔走一个插头，这盏灯先熄，旁边电器照常运转"
+              loading="lazy"
+              width="900"
+              height="1200"
+            />
+          </div>
+          <figcaption class="plate-cap">
+            <p class="plate-head"><span class="figno">图 01</span><span class="plate-title">六幕分镜「拔掉→熄灭」</span></p>
+            <p class="plate-desc">卸载编辑器插件要「整栋楼断电重开」的类比：只拔走一个插头，这盏灯先熄，旁边电器照常运转。</p>
+          </figcaption>
+        </figure>
+        <figure class="plate">
+          <div class="plate-frame">
+            <img
+              class="plate-img"
+              src="/images/web/field-notes-2.jpg"
+              alt="六幕分镜第二幕「换源→复明」：单墨钴蓝铜版画，插头改插独立的电池盒，灯重新亮起，原排插与邻居不必陪着重启"
+              loading="lazy"
+              width="900"
+              height="1200"
+            />
+          </div>
+          <figcaption class="plate-cap">
+            <p class="plate-head"><span class="figno">图 02</span><span class="plate-title">六幕分镜「换源→复明」</span></p>
+            <p class="plate-desc">换到新电源的下一幕：插头改插独立的电池盒，灯重新亮起，原排插与邻居不必陪着重启。</p>
+          </figcaption>
+        </figure>
+      </div>
+
+      <!-- 一词一画小卡 ·「插头」（1:1 方形成图 /images/web/cards/field-notes-card1.jpg，prompt 存档 m47/prompts） -->
+      <div class="word-cards" data-reveal>
+        <article class="word-card">
+          <img
+            class="word-img"
+            src="/images/web/cards/field-notes-card1.jpg"
+            alt="一词一画「插头」：单墨钴蓝方形单画，一个可装可卸的电流入口，主体居中偏上"
+            loading="lazy"
+            width="600"
+            height="600"
+          />
+          <p class="word-tag">一词一画</p>
+          <h3 class="word-name">插头</h3>
+          <p class="word-note">本页分镜的主角零件：一个可装可卸的电流入口。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 节 2 · 图纸与论文：时间线 + 三枚数字卡（h2 与各段照录文稿） -->
+  <section class="sec" id="paper">
+    <div class="inner">
+      <h2>心脏的图纸，写成了论文</h2>
+      <div class="prose">
+        <p data-reveal>
+          2026 年，石逸凡（北京大学 &amp; DeepSeek-AI）与合作者把这套跑了七年的东西写成 88 页的论文，就是本站拆解的《时空可组装性的一种编程范式》。同月，DeepSeek
+          把 Cordis 整个装进 dsh，当 Agent 框架的地基。
+        </p>
+        <p data-reveal>
+          四者的分工一句话说完：<strong>论文立论，Cordis 把论点做成框架，Koishi 是它跑了多年的先例，dsh 拿它做 agent 时代的地基。</strong>
+        </p>
+      </div>
+
+      <!-- 图 03 时间线：M4.7 起用纵版列表（横版 SVG 在 608px 阅读栏内字号跌破 14px 下限已弃）， -->
+      <!-- 节点取自文稿所记事件与数字，无文稿外数字 -->
+      <figure class="fig" data-reveal>
+        <figcaption class="fig-head">
+          <span class="figno">图 03</span>
+          <h3 class="fig-title">从 QQ 机器人到 agent 地基</h3>
+        </figcaption>
+        <ol class="tlv">
+          <li>
+            <span class="tlv-tick" aria-hidden="true"></span>
+            <p class="tlv-date">2019 年底</p>
+            <h3 class="tlv-name">Koishi 开源</h3>
+            <p class="tlv-note">跨平台聊天机器人框架</p>
+          </li>
+          <li>
+            <span class="tlv-tick" aria-hidden="true"></span>
+            <p class="tlv-date">2022 年</p>
+            <h3 class="tlv-name">Cordis 拆出</h3>
+            <p class="tlv-note">Koishi 内核单独开源</p>
+          </li>
+          <li>
+            <span class="tlv-tick" aria-hidden="true"></span>
+            <p class="tlv-date">2026 年 8 月</p>
+            <h3 class="tlv-name">论文与 dsh</h3>
+            <p class="tlv-note">88 页论文写成，Cordis 装进 dsh</p>
+          </li>
+          <li>
+            <span class="tlv-tick" aria-hidden="true"></span>
+            <p class="tlv-date">2026 年 10 月</p>
+            <h3 class="tlv-name">勘察时点</h3>
+            <p class="tlv-note">star 241,568，PR 编号四位数</p>
+          </li>
+        </ol>
+        <p class="fig-cap">题注：时间线四节点均为文稿所记事件与数字（2019 年底、2022 年、2026 年 8 月、2026 年 10 月勘察时点）</p>
+      </figure>
+
+      <!-- 三枚计数器：.card 数字行（书页栏内塌为整行：数字左 · 图注右），进视口 count-up 一次即静止 -->
+      <div class="stats" data-stats>
+        <div class="stats-ctl">
+          <SceneControls scene="stats" />
+        </div>
+        <div class="stat-grid">
+          <article class="card stat-card" data-reveal>
+            <p class="stat-num num-display" data-count data-target="4000" data-suffix="+">4,000+</p>
+            <p class="stat-cap">Koishi 社区插件【转引】（论文口径，本站未独立核实）</p>
+          </article>
+          <article class="card stat-card" data-reveal>
+            <p class="stat-num num-display" data-count data-target="7" data-suffix=" 年">7 年</p>
+            <p class="stat-cap">Cordis 思想在生产环境连续服役（2019 至今）</p>
+          </article>
+          <article class="card stat-card" data-reveal>
+            <p class="stat-num num-display" data-count data-target="241568">241,568</p>
+            <p class="stat-cap">dsh 的 star（2026-10-01 勘察值）</p>
+          </article>
+        </div>
+      </div>
+
+      <p class="declare" data-reveal>
+        诚实声明：论文第 70 页自己交代，证据是观察性的（有生态、无对照实验），性能开销未量化。我们把这些一并摆上桌，不藏着。
+      </p>
+
+      <p class="next" data-reveal>
+        <a class="next-link" href="/why">心脏认识了，下一站：88 页论文的一页纸总结 →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- 尾注：文稿末行（release zone，零动效）；章节翻页器由 BaseLayout book 壳在阅读栏底部追加 -->
+  <section class="outro">
+    <div class="inner">
+      <p class="small">本页数据快照于 2026-10，dsh 处于 developer preview、随时可能有破坏兼容的变更，引用前请对照仓库当下状态。</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // 三枚计数器：进视口 count-up 一次，随后完全静止（浏览器端模块）
+  import '../scripts/field-notes-motion';
+</script>
+
+<style>
+  /* ── 页面骨架（book 壳：阅读栏 720px 已带左右 56px 内边距，.inner 不再自设宽度） ── */
+  .inner {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* ── 节间距（v2 §3 验收线：section 上下间距 ≤72px） ─────────────────────── */
+  .intro {
+    padding: 8px 0 72px;
+  }
+  .sec {
+    padding: 56px 0 72px;
+    border-top: 1px solid var(--border);
+  }
+  /* 书页壳内 .reading h2 自带上边线与 52px 上距，与 .sec 节线重复：节内归零，只留节线一道 */
+  .sec h2 {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+  .outro {
+    padding: 28px 0 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── 引言：h1 走 .reading 阶梯（34px serif 900），正文近黑实墨 ───────────── */
+  .intro-copy h1 {
+    margin-bottom: var(--space-p);
+    text-wrap: balance;
+  }
+  .lead {
+    font-size: 20px; /* h3 档字号，不作降档 */
+    font-weight: 500;
+  }
+  .intro-meta {
+    margin-top: var(--card-gap);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* 正文列宽：46em 起（书页栏 608px 为硬上限，两者取小） */
+  .prose p {
+    max-width: 46em;
+  }
+  .prose strong {
+    font-weight: 700;
+  }
+  h2 {
+    margin-bottom: var(--space-p);
+  }
+
+  /* ── 图 01 / 图 02 · 六幕分镜双联（M47 成图版） ────────────────────────────
+     框体：2px 钴蓝 + 8px 偏移实影（.card 同款墨线语言）；
+     成图 900×1200（3:4），井位 aspect-ratio 同比，object-fit: cover 不裁切。 */
+  .plates {
+    margin-top: var(--card-gap);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--card-gap);
+  }
+  .plate {
+    min-width: 0;
+  }
+  .plate-frame {
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    box-shadow: 8px 8px 0 var(--ink-14);
+  }
+  .plate-img {
+    display: block;
+    width: 100%;
+    height: auto; /* 覆盖 img height 属性的 presentational hint，aspect-ratio 才接管 */
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+  .plate-cap {
+    margin-top: 14px;
+  }
+  .plate-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .figno {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 14px; /* v2 阶梯：小字下限 14px */
+    letter-spacing: 0.18em;
+    color: var(--muted);
+  }
+  .plate-title {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--text-body); /* 图注标题随正文近黑，钴蓝留给框线 */
+  }
+  .plate-desc {
+    margin-top: 8px;
+    font-size: 14px; /* 图注走小字档（v2 §2 唯一降档，墨 .78 ≥4.5:1） */
+    line-height: 1.8;
+    color: var(--muted);
+  }
+
+  /* ── 一词一画小卡 · 动效卡片 ────────────────────────────────────────────
+     hover 只动 transform / box-shadow；data-reveal 挂在网格容器上，
+     卡片自身的 transition 不与显影过渡打架。 */
+  .word-cards {
+    margin-top: var(--card-gap);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 240px));
+    justify-content: start;
+    gap: var(--card-gap);
+  }
+  .word-card {
+    min-width: 0;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    box-shadow: 6px 6px 0 var(--ink-14);
+    padding: 12px 14px 14px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .word-card:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 10px 10px 0 var(--ink-20); /* 阴影加深：墨度 .14→.20，偏移随抬起放大 */
+  }
+  .word-img {
+    display: block;
+    width: 100%;
+    height: auto; /* 同 .plate-img：解除 height 属性 hint，让 1:1 井位生效 */
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+  .word-tag {
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    color: var(--ink); /* kicker 家族：钴蓝保留（去蓝令豁免） */
+  }
+  .word-name {
+    margin-top: 4px;
+    font-size: 20px;
+  }
+  .word-note {
+    margin-top: 6px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--muted);
+  }
+
+  /* ── 图 03 时间线（纵版列表，M4.7 起为唯一形态） ──────────────────────── */
+  .fig {
+    margin-top: var(--card-gap);
+  }
+  .fig-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .fig-title {
+    font-size: 20px; /* h3 档（v2 §2） */
+  }
+  .fig-cap {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 14px; /* 题注走小字档（v2 §2 唯一降档，墨 .78 ≥4.5:1） */
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  .tlv {
+    list-style: none;
+    position: relative;
+    padding-left: 40px;
+  }
+  .tlv::before {
+    content: '';
+    position: absolute;
+    left: 9px;
+    top: 6px;
+    bottom: 14px;
+    width: 1.6px;
+    background: var(--ink-70);
+  }
+  .tlv li {
+    position: relative;
+    padding-bottom: 28px;
+  }
+  .tlv li:last-child {
+    padding-bottom: 0;
+  }
+  .tlv-tick {
+    position: absolute;
+    left: -39px;
+    top: 5px;
+    width: 22px;
+    height: 14px;
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    background: var(--paper);
+  }
+  .tlv-date {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-body);
+  }
+  .tlv-name {
+    margin-top: 6px;
+    font-size: 20px;
+  }
+  .tlv-note {
+    margin-top: 6px;
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--muted);
+  }
+
+  /* ── 三枚计数器：.card 数字行（书页栏内塌整行：数字左 · 图注右） ────────── */
+  .stats {
+    margin-top: 36px;
+  }
+  .stats-ctl {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 14px;
+  }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--card-gap);
+  }
+  .stat-card {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    padding: 18px var(--card-pad);
+  }
+  .stat-num {
+    flex: none;
+  }
+  .stat-cap {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px; /* 卡内图注小字档 */
+    line-height: 1.9;
+    color: var(--muted);
+  }
+  /* 卡片 stagger（只作用于 data-reveal 显影过渡） */
+  .stat-grid .stat-card:nth-child(2) { transition-delay: 0.06s; }
+  .stat-grid .stat-card:nth-child(3) { transition-delay: 0.12s; }
+
+  /* ── 诚实声明 / 下一站 / 尾注 ────────────────────────────────────────── */
+  .declare {
+    margin-top: 36px;
+    padding-top: var(--space-p);
+    border-top: 1px solid var(--border);
+    max-width: 46em;
+  }
+  .next {
+    margin-top: 36px;
+  }
+  .next-link {
+    display: inline-block;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    font-weight: 500;
+    text-decoration: none;
+    padding: 14px 24px;
+    box-shadow: 8px 8px 0 var(--ink-14);
+  }
+  .next-link:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .outro .small {
+    max-width: 52em;
+  }
+
+  /* ── 响应式（铁律 6）：窄栏由 .reading 自身收窄，分镜双联 <560px 塌单列 ── */
+  @media (max-width: 960px) {
+    .intro,
+    .sec {
+      padding-top: 48px;
+      padding-bottom: 56px;
+    }
+  }
+  @media (max-width: 560px) {
+    .plates {
+      grid-template-columns: 1fr;
+    }
+    .stat-card {
+      flex-direction: column;
+      gap: 8px;
+    }
+  }
+</style>

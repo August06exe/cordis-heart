@@ -1,0 +1,78 @@
+---
+/**
+ * 演示 03「万物过前台」场景（全站唯一自动循环，本体在 ideas-motion.ts 实现）。
+ * 构图照搬 50-design/视觉稿/ideas/ideas.html 演示卡 03，动画挂钩：
+ * - [data-d3-route]  行进路径（不可见，MotionPath 用；起点 = 效应方块静止位）；
+ * - [data-d3-traveler] 两类方块，几何中心在原点，静止位由 markup transform 给出
+ *   （无 JS / 降级时即视觉稿静帧）；
+ * - [data-d3-row]    循环新增账行，首帧隐藏（opacity="0"），落账时以 opacity 显影。
+ * 动画只动 transform 与 opacity（铁律 1）。
+ */
+---
+
+<svg viewBox="0 0 980 380" role="img" aria-labelledby="d3-title" data-d3-svg xmlns="http://www.w3.org/2000/svg">
+  <title id="d3-title">万物过前台：改状态的效应和写依赖的登记两类方块，沿同一条路流经同一座柜台，每过一枚，账本落一行账</title>
+  <defs>
+    <marker id="d3-arrow" viewBox="0 0 10 10" refX="8" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" class="dep-arrow"></path>
+    </marker>
+  </defs>
+
+  <text class="scene-note" x="24" y="44">循环首帧</text>
+  <text class="scene-note" x="956" y="44" text-anchor="end">全站唯一自动循环</text>
+
+  <!-- 流向参考线（视觉稿同款，块体沿其上方弧线行进） -->
+  <path class="dep-curve" d="M 24 240 C 120 240, 220 248, 320 244 C 356 242, 378 240, 396 240"></path>
+  <path class="dep-curve" d="M 544 240 C 620 240, 680 234, 734 238" marker-end="url(#d3-arrow)"></path>
+
+  <!-- 柜台 -->
+  <g data-d3-counter>
+    <rect class="block-box" x="400" y="128" width="140" height="170" rx="10"></rect>
+    <line class="thin-line" x1="420" y1="164" x2="520" y2="164"></line>
+    <text class="block-label" x="470" y="218">柜台</text>
+  </g>
+
+  <!-- 账本：既有三行 + 循环新增两行（首帧隐藏） -->
+  <g data-d3-ledger>
+    <rect class="block-box" x="740" y="112" width="200" height="204" rx="8"></rect>
+    <line class="thin-line" x1="764" y1="112" x2="764" y2="316"></line>
+    <text class="block-label sm" x="862" y="148">账本</text>
+    <rect x="788" y="182" width="9" height="9" class="dep-arrow"></rect>
+    <line class="thin-line" x1="812" y1="186" x2="916" y2="186"></line>
+    <text class="scene-sigma" x="788" y="230">Σ</text>
+    <line class="thin-line" x1="812" y1="224" x2="916" y2="224"></line>
+    <rect x="788" y="258" width="9" height="9" class="dep-arrow"></rect>
+    <line class="thin-line" x1="812" y1="262" x2="916" y2="262"></line>
+    <g data-d3-row="effect" opacity="0">
+      <rect x="788" y="284" width="9" height="9" class="dep-arrow"></rect>
+      <line class="thin-line" x1="812" y1="288" x2="916" y2="288"></line>
+    </g>
+    <g data-d3-row="register" opacity="0">
+      <text class="scene-sigma" x="788" y="313">Σ</text>
+      <line class="thin-line" x1="812" y1="308" x2="916" y2="308"></line>
+    </g>
+  </g>
+
+  <!-- 行进路径：不可见，起点 = 效应方块静止位，穿过柜台，止于账本 -->
+  <path class="motion-route" data-d3-route
+        d="M 194 183 C 250 228, 330 240, 420 240 C 480 240, 520 238, 560 238 C 640 238, 720 234, 790 232"
+        fill="none" stroke="none"></path>
+
+  <!-- Σ 记号（登记依赖的入口侧标记） -->
+  <text class="scene-sigma" x="362" y="198">Σ</text>
+
+  <!-- 两类方块：几何中心在原点，静止位 = 视觉稿静帧位（无 JS 即静帧） -->
+  <g data-d3-traveler="effect" transform="translate(194,183)">
+    <rect class="block-box" x="-44" y="-33" width="88" height="66" rx="10"></rect>
+    <text class="block-label" x="0" y="5">效应</text>
+  </g>
+  <g data-d3-traveler="register" transform="translate(336,209)">
+    <rect class="block-box" x="-44" y="-33" width="88" height="66" rx="10"></rect>
+    <text class="block-label" x="0" y="5">登记</text>
+  </g>
+
+  <rect class="plinth" x="24" y="340" width="932" height="8" rx="4"></rect>
+  <text class="scene-note" x="24" y="370">语境 · 唯一入口</text>
+  <text class="scene-note" x="956" y="370" text-anchor="end">ONE CONTEXT</text>
+</svg>

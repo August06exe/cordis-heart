@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>实录 · 勘察与案例 | Cordis 思想图鉴</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:       oklch(0.984 0.004 106.5);        /* 纸白 #FAFAF7 */
+    --fg:       oklch(0.449 0.182 265);          /* 全页唯一墨色：钴蓝 #2148B8 */
+    --ink:      var(--fg);
+    --ink-14:   oklch(0.449 0.182 265 / .14);    /* 基座色块 */
+    --ink-20:   oklch(0.449 0.182 265 / .20);    /* 分隔细线 */
+    --ink-70:   oklch(0.449 0.182 265 / .70);    /* 图解线 */
+    --ink-78:   oklch(0.449 0.182 265 / .78);    /* 小字 注脚 */
+    --ink-80:   oklch(0.449 0.182 265 / .80);    /* 图内编号文字 */
+    --ink-82:   oklch(0.449 0.182 265 / .82);    /* 正文 */
+    --paper:    var(--bg);
+    --serif: "Noto Serif SC","Songti SC","SimSun",serif;
+    --sans:  "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    --mono:  "IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ overflow-x:clip; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection{ background: var(--ink-14); }
+  code{ font-family:var(--mono); font-size:.92em; }
+  :focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+
+  /* 印刷开本：页面四缘一圈细墨线 */
+  .sheet{
+    position:relative;
+    min-height:100dvh;
+    margin:22px;
+    border:1px solid var(--ink-20);
+    display:flex;
+    flex-direction:column;
+  }
+  .inner{ width:100%; max-width:1080px; margin:0 auto; padding:0 48px; }
+
+  /* ── 报头 ───────────────────────────────── */
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:24px;
+    flex-wrap:wrap;
+    padding:26px 48px 20px;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .wordmark{ display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  .wordmark .latin{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:19px;
+    letter-spacing:.34em;
+  }
+  .wordmark .zh{
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:.18em;
+    color:var(--ink-82);
+  }
+  .masthead .folio{
+    font-size:12px;
+    letter-spacing:.22em;
+    color:var(--ink-78);
+    white-space:nowrap;
+  }
+
+  /* ── 节 0 引言 ──────────────────────────── */
+  .intro{ padding:108px 0 120px; }
+  .intro-copy{ max-width:40%; }
+  .kicker{
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.42em;
+    color:var(--ink-78);
+    margin-bottom:34px;
+  }
+  h1.headline{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:clamp(38px, 3.6vw, 58px);
+    line-height:1.34;
+    letter-spacing:.015em;
+    text-wrap:balance;
+  }
+  .intro .sub{
+    margin-top:32px;
+    font-size:16px;
+    line-height:2.0;
+    color:var(--ink-82);
+    max-width:26em;
+  }
+  html.js .intro{ animation: introIn .7s ease-out both; }
+  @keyframes introIn{ from{ opacity:0; } to{ opacity:1; } }
+
+  /* ── 小节题行 ───────────────────────────── */
+  .sec{ border-top:1px solid var(--ink-20); }
+  .sec-head{
+    display:flex;
+    align-items:baseline;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .figno{
+    font-family:var(--mono);
+    font-weight:500;
+    font-size:13px;
+    letter-spacing:.18em;
+    color:var(--ink-80);
+  }
+  .sec-title{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:26px;
+    letter-spacing:.02em;
+  }
+  .plate-badge{
+    margin-left:auto;
+    font-size:11.5px;
+    font-weight:500;
+    letter-spacing:.22em;
+    white-space:nowrap;
+  }
+  .b-plate{ background:var(--ink); color:var(--paper); padding:7px 13px; }
+  .b-screen{ border:1px solid var(--ink-20); color:var(--ink-78); padding:6px 12px; }
+  .b-line{ color:var(--ink-78); padding:6px 2px; border-bottom:1px solid var(--ink-20); }
+
+  /* ── 图 01 图版 ─────────────────────────── */
+  .fig01-sec{ padding:88px 0 96px; }
+  .plate{
+    margin-top:44px;
+    border:2px solid var(--ink);
+    background:var(--paper);
+    padding:44px 48px 34px;
+  }
+  .stats{
+    display:flex;
+    align-items:flex-start;
+    gap:72px;
+    flex-wrap:wrap;
+    margin:46px 0 52px;
+  }
+  .stat-num{
+    font-family:var(--mono);
+    font-weight:500;
+    font-size:clamp(44px, 5vw, 72px);
+    line-height:1;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .stat-label{
+    margin-top:14px;
+    padding-top:10px;
+    border-top:1px solid var(--ink-20);
+    font-size:13px;
+    letter-spacing:.06em;
+    color:var(--ink-78);
+    max-width:17em;
+  }
+  .stat-subnote{
+    margin-top:6px;
+    font-size:12px;
+    line-height:1.9;
+    color:var(--ink-78);
+    max-width:24em;
+  }
+  /* 计数器预显影门：js 生效时先隐终值，图 01 过 25% 阈值再淡入，淡入窗内 count-up 已把文本改写为低值，防「先见终值再归零」闪烁 */
+  html.js .stat-num{ opacity:0; transition:opacity .6s ease-out .2s; }
+  html.js #fig01.in .stat-num{ opacity:1; }
+  html.js .stat-zero{ opacity:0; transition:opacity .6s ease-out .2s; }
+  html.js #fig01.in .stat-zero{ opacity:1; }
+
+  .axis-note{
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+    text-align:right;
+    margin-bottom:14px;
+  }
+  .bars{ position:relative; --max:241568; }
+  .gridlines{ position:absolute; top:0; bottom:0; left:236px; right:0; pointer-events:none; }
+  .gridlines span{ position:absolute; top:0; bottom:0; width:1px; background:var(--ink-14); }
+  .gridlines span:nth-child(1){ left:25%; }
+  .gridlines span:nth-child(2){ left:50%; }
+  .gridlines span:nth-child(3){ left:75%; }
+  .bar-row{
+    display:grid;
+    grid-template-columns:220px 1fr;
+    gap:16px;
+    align-items:center;
+    padding:13px 0;
+  }
+  .bar-name{
+    font-family:var(--mono);
+    font-weight:400;
+    font-size:12.5px;
+    letter-spacing:.01em;
+    color:var(--ink-82);
+    overflow-wrap:anywhere;
+  }
+  .bar-track{ position:relative; height:40px; }
+  .bar-track::after{
+    content:"";
+    position:absolute;
+    left:0; right:0; bottom:-13px;
+    height:1px;
+    background:var(--ink-20);
+  }
+  .bar{
+    display:block;
+    height:100%;
+    width:calc(var(--v) / var(--max) * 100%);
+    background:var(--ink-70);
+  }
+  .bar-row.dsh .bar{ background:var(--ink); }
+  .bar-val{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    left:calc(var(--v) / var(--max) * 100% + 12px);
+    font-family:var(--mono);
+    font-weight:500;
+    font-size:13.5px;
+    color:var(--ink-82);
+    white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+  }
+  .bar-row.dsh .bar-val{ left:auto; right:14px; color:var(--paper); }
+  html.js #fig01 .bar{ width:0; transition:width .8s cubic-bezier(.22,.61,.36,1); }
+  html.js #fig01.in .bar{ width:calc(var(--v) / var(--max) * 100%); }
+  html.js #fig01 .bar-row:nth-child(3) .bar{ transition-delay:.12s; }
+  html.js #fig01 .bar-row:nth-child(4) .bar{ transition-delay:.24s; }
+  html.js #fig01 .bar-val{ opacity:0; transition:opacity .4s ease-out; }
+  html.js #fig01.in .bar-val{ opacity:1; }
+  html.js #fig01 .bar-row:nth-child(2) .bar-val{ transition-delay:.85s; }
+  html.js #fig01 .bar-row:nth-child(3) .bar-val{ transition-delay:.95s; }
+  html.js #fig01 .bar-row:nth-child(4) .bar-val{ transition-delay:1.05s; }
+
+  .plate-caption{
+    margin-top:44px;
+    border-top:1px solid var(--ink-20);
+    padding-top:16px;
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+  .plate-footnote{
+    margin-top:14px;
+    font-size:13px;
+    line-height:2.0;
+    color:var(--ink-78);
+    max-width:44em;
+  }
+
+  /* ── 节 2 勘察卡 ────────────────────────── */
+  .cards-sec{ padding:88px 0 40px; }
+  .cards-sec .sec-head{ margin-bottom:46px; }
+  .cards{ columns:2; column-gap:40px; }
+  .card{
+    break-inside:avoid;
+    border:2px solid var(--ink);
+    background:var(--paper);
+    padding:26px 28px 22px;
+    margin:0 0 40px;
+  }
+  .card-no{
+    font-family:var(--mono);
+    font-weight:500;
+    font-size:13px;
+    letter-spacing:.18em;
+    color:var(--ink-80);
+  }
+  .card h3{
+    margin-top:10px;
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:20px;
+    letter-spacing:.02em;
+  }
+  .card p{
+    margin-top:12px;
+    font-size:15px;
+    line-height:1.95;
+    color:var(--ink-82);
+  }
+  .card .src{
+    margin-top:16px;
+    padding-top:12px;
+    border-top:1px solid var(--ink-20);
+    font-size:12px;
+    letter-spacing:.04em;
+    color:var(--ink-78);
+  }
+  html.js .cards .card{
+    opacity:0;
+    transform:translateY(12px);
+    transition:opacity .5s ease-out, transform .5s ease-out;
+  }
+  html.js .cards.in .card{ opacity:1; transform:none; }
+  html.js .cards .card:nth-child(1){ transition-delay:0s; }
+  html.js .cards .card:nth-child(2){ transition-delay:.06s; }
+  html.js .cards .card:nth-child(3){ transition-delay:.12s; }
+  html.js .cards .card:nth-child(4){ transition-delay:.18s; }
+  html.js .cards .card:nth-child(5){ transition-delay:.24s; }
+  html.js .cards .card:nth-child(6){ transition-delay:.30s; }
+
+  /* ── 图 02 时间线 ───────────────────────── */
+  .fig02-sec{ padding:88px 0 96px; }
+  .fig02-sec .sec-head{ margin-bottom:52px; }
+  html.js .tl-wrap{ opacity:0; transition:opacity .6s ease-out; }
+  html.js .tl-wrap.in{ opacity:1; }
+  .tlh svg{ width:100%; height:auto; display:block; }
+  .tl-axis{ stroke:var(--ink); stroke-width:1.6; opacity:.7; fill:none; }
+  .tl-arrow{ fill:var(--ink); opacity:.7; }
+  .tl-plinth{ fill:var(--ink); opacity:.14; }
+  .tl-block{ fill:var(--paper); stroke:var(--ink); stroke-width:2; }
+  .tl-date{
+    font-family:var(--mono);
+    font-weight:500;
+    font-size:18px;
+    fill:var(--ink); opacity:.82;
+    text-anchor:middle;
+  }
+  .tl-name{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:20px;
+    fill:var(--ink);
+    text-anchor:middle;
+  }
+  .tl-note{
+    font-family:var(--sans);
+    font-weight:400;
+    font-size:16px;
+    fill:var(--ink); opacity:.78;
+    text-anchor:middle;
+  }
+  .tlv{ display:none; list-style:none; position:relative; padding-left:40px; }
+  .tlv::before{
+    content:"";
+    position:absolute;
+    left:9px; top:6px; bottom:14px;
+    width:1.6px;
+    background:var(--ink); opacity:.7;
+  }
+  .tlv li{ position:relative; padding-bottom:42px; }
+  .tlv li:last-child{ padding-bottom:0; }
+  .tlv-tick{
+    position:absolute;
+    left:-39px; top:5px;
+    width:22px; height:14px;
+    border:2px solid var(--ink);
+    border-radius:4px;
+    background:var(--paper);
+  }
+  .tlv-date{ font-family:var(--mono); font-weight:500; font-size:14px; color:var(--ink-82); }
+  .tlv-name{ margin-top:6px; font-family:var(--serif); font-weight:600; font-size:19px; }
+  .tlv-note{ margin-top:6px; font-size:13px; line-height:1.9; color:var(--ink-78); }
+  .plate-note{
+    margin-top:40px;
+    font-size:16px;
+    line-height:2.0;
+    color:var(--ink-82);
+    max-width:40em;
+  }
+
+  /* ── 带走物槽位 ─────────────────────────── */
+  .takeaway-sec{ padding:28px 0 72px; }
+  .takeaway{
+    display:flex;
+    align-items:center;
+    min-height:44px;
+    border:1px dashed var(--ink-20);
+    padding:0 18px;
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--ink-78);
+  }
+
+  /* ── 页脚（release zone 零动效）──────────── */
+  .colophon{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:24px;
+    flex-wrap:wrap;
+    padding:18px 48px 22px;
+    border-top:1px solid var(--ink-20);
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+
+  /* ── 设计说明 ───────────────────────────── */
+  .design-notes{
+    border-top:1px solid var(--ink-20);
+    padding:44px 48px 72px;
+  }
+  .design-notes .dn-label{
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.3em;
+    color:var(--ink-78);
+    margin-bottom:20px;
+  }
+  .design-notes p{
+    font-size:13.5px;
+    line-height:2.1;
+    color:var(--ink-82);
+    max-width:52em;
+  }
+  .design-notes p + p{ margin-top:6px; }
+
+  /* ── 动效豁免 ───────────────────────────── */
+  html.no-anim *{ animation:none !important; transition:none !important; }
+  @media (prefers-reduced-motion: reduce){
+    .intro, .stat-num, .stat-zero, .bar, .bar-val, .card, .tl-wrap{ animation:none !important; transition:none !important; opacity:1 !important; transform:none !important; }
+  }
+
+  /* ── 响应式 ─────────────────────────────── */
+  @media (max-width: 960px){
+    .sheet{ margin:14px; }
+    .inner{ padding:0 24px; }
+    .masthead{ padding:20px 24px 16px; }
+    .colophon{ padding:16px 24px 20px; }
+    .design-notes{ padding:36px 24px 56px; }
+    .intro{ padding:72px 0 80px; }
+    .intro-copy{ max-width:100%; }
+    h1.headline{ font-size:clamp(38px, 8vw, 44px); }
+    .fig01-sec, .cards-sec, .fig02-sec{ padding:64px 0 72px; }
+    .plate{ padding:30px 24px 26px; }
+    .stats{ gap:40px; margin:36px 0 40px; }
+    .tlh{ display:none; }
+    .tlv{ display:block; }
+    .gridlines{ display:none; }
+    .cards{ columns:1; }
+    .bar-row{ grid-template-columns:1fr; gap:8px; padding:12px 0 16px; }
+    .bar-track{ height:34px; }
+    .plate-badge{ margin-left:0; }
+    .plate-note{ margin-top:32px; }
+  }
+</style>
+</head>
+<body>
+<script>
+  document.documentElement.classList.add('js');
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.documentElement.classList.add('no-anim');
+  }
+</script>
+<div class="sheet" data-od-id="page-sheet">
+
+  <!-- 报头 -->
+  <header class="masthead" data-od-id="masthead">
+    <div class="wordmark">
+      <span class="latin">CORDIS</span>
+      <span class="zh">DSH 的心脏 · 思想图鉴</span>
+    </div>
+    <span class="folio">实录 · 勘察与案例</span>
+  </header>
+
+  <main>
+    <!-- 节 0 引言 -->
+    <section class="intro" data-od-id="intro">
+      <div class="inner">
+        <div class="intro-copy">
+          <p class="kicker" data-od-id="kicker">实录 · 勘察与案例</p>
+          <h1 class="headline" data-od-id="headline">论文说的数字，我们去仓库数了一遍</h1>
+          <p class="sub" data-od-id="intro-sub">2026-10-01，我们沿 GitHub API 与 raw 文档勘察了 deepseek-ai/deepseek-harness。仓库存在而且活跃，README 写明由 Cordis 驱动。本页数字逐条注明来源，读不到的地方如实标注。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 节 1 图版 图 01 -->
+    <section class="sec fig01-sec" id="fig01" data-motion data-od-id="fig01-sec">
+      <div class="inner">
+        <div class="sec-head" data-od-id="fig01-head">
+          <span class="figno">图 01</span>
+          <h2 class="sec-title">Koishi 生态：四年攒下 4000+ 插件</h2>
+          <span class="plate-badge b-plate">论文原文核实</span>
+        </div>
+
+        <div class="plate" data-od-id="fig01-plate">
+          <!-- 计数器三枚 -->
+          <div class="stats" data-od-id="fig01-stats">
+            <div class="stat">
+              <div class="stat-num" id="stat-plugins">4,000+</div>
+              <p class="stat-label">社区插件（论文第 69 页）</p>
+            </div>
+            <div class="stat">
+              <div class="stat-num" id="stat-star">6,239</div>
+              <p class="stat-label">GitHub star（2026-10-01 勘察值）</p>
+            </div>
+            <div class="stat">
+              <div class="stat-num stat-zero" id="stat-zero">0</div>
+              <p class="stat-label">对照实验</p>
+              <p class="stat-subnote">论文第 70 页自述局限：单一生态、单一语言 TypeScript、观察性证明、无对照实验、性能未量化</p>
+            </div>
+          </div>
+
+          <!-- 横向条形：三仓 star 线性同尺 -->
+          <p class="axis-note" data-od-id="fig01-axis-note">三仓 star，线性同尺</p>
+          <div class="bars" data-od-id="fig01-bars">
+            <div class="gridlines" aria-hidden="true"><span></span><span></span><span></span></div>
+            <div class="bar-row koishi" style="--v:6239">
+              <span class="bar-name">koishijs/koishi</span>
+              <span class="bar-track"><span class="bar"></span><span class="bar-val">6,239</span></span>
+            </div>
+            <div class="bar-row cordis" style="--v:8938">
+              <span class="bar-name">cordiverse/cordis</span>
+              <span class="bar-track"><span class="bar"></span><span class="bar-val">8,938</span></span>
+            </div>
+            <div class="bar-row dsh" style="--v:241568">
+              <span class="bar-name">deepseek-ai/deepseek-harness</span>
+              <span class="bar-track"><span class="bar"></span><span class="bar-val">241,568</span></span>
+            </div>
+          </div>
+
+          <!-- 题注与脚注（release zone，零动效）-->
+          <p class="plate-caption" data-od-id="fig01-caption">数据转引自论文 arXiv:2608.25512 第 69 页 · star 数为 GitHub API 2026-10-01 勘察值</p>
+          <p class="plate-footnote" data-od-id="fig01-footnote">Koishi 官网自称 3000+ 插件（转引未核实），本图以论文口径为准。论文脚注注明 Koishi 现用 Cordis v3，论文讲 v4，核心组合模型两个版本一致。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 节 2 仓库勘察六要点 -->
+    <section class="sec cards-sec" data-od-id="cards-sec">
+      <div class="inner">
+        <div class="sec-head" data-od-id="cards-head">
+          <h2 class="sec-title">仓库勘察六要点</h2>
+          <span class="plate-badge b-screen">合理解读</span>
+        </div>
+        <div class="cards" id="cards" data-motion data-od-id="cards">
+
+          <article class="card" data-od-id="card-01">
+            <span class="card-no">01</span>
+            <h3>存在且活跃</h3>
+            <p>2026-08-13 创建，勘察日 241,568 star、28,999 fork；最近五条提交全部落在 2026-09-29 当天，其中一条是 <code>release(dsh): 0.2.0-rc.2</code>，PR 编号已到 #5479。</p>
+            <p class="src">出处：GitHub API 元数据与提交记录。</p>
+          </article>
+
+          <article class="card" data-od-id="card-02">
+            <span class="card-no">02</span>
+            <h3>一切皆插件</h3>
+            <p>官方自述「Everything is a Plugin.」模型适配器、工具注册表、会话日志、agent 循环本身都是插件，都能通过配置替换；扩展就是在别的插件旁边挂一个新插件，没有特权核心需要打补丁。</p>
+            <p class="src">出处：README 原文。</p>
+          </article>
+
+          <article class="card" data-od-id="card-03">
+            <span class="card-no">03</span>
+            <h3>整体收编 Cordis</h3>
+            <p><code>vendor/</code> 目录把 Cordis 连同 loader、hmr、schemastery、cosmokit 等共 9 个目录整个内置进仓库，不靠外部版本漂移。</p>
+            <p class="src">出处：根目录与 vendor 目录清单。</p>
+          </article>
+
+          <article class="card" data-od-id="card-04">
+            <span class="card-no">04</span>
+            <h3>文档密度罕见</h3>
+            <p><code>docs/</code> 下 60 余篇文档中英双语成对，architecture、cordis-primer、glossary、capability-seams 分门别类。</p>
+            <p class="src">出处：docs 目录清单。</p>
+          </article>
+
+          <article class="card" data-od-id="card-05">
+            <span class="card-no">05</span>
+            <h3>三层组装</h3>
+            <p>Profile 定配方，Bundle 在 package.json 里自我声明，Patch 按 id 把任何一行打印出来的配置顶掉；想改哪块写个补丁即可，不用 fork 整个产品。</p>
+            <p class="src">出处：docs/architecture.md（大白话转述）。</p>
+          </article>
+
+          <article class="card" data-od-id="card-06">
+            <span class="card-no">06</span>
+            <h3>预览版警告</h3>
+            <p>developer preview，README 用大写警告 <code>THERE WILL BE COMPATIBILITY-BREAKING CHANGES</code>；star 热度不等于 API 稳定。</p>
+            <p class="src">出处：README 原文。</p>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 节 3 图版 图 02 时间线 -->
+    <section class="sec fig02-sec" data-od-id="fig02-sec">
+      <div class="inner">
+        <div class="sec-head" data-od-id="fig02-head">
+          <span class="figno">图 02</span>
+          <h2 class="sec-title">从元框架到 agent 地基</h2>
+          <span class="plate-badge b-line">合理解读</span>
+        </div>
+
+        <div class="tl-wrap" id="tl-wrap" data-motion data-od-id="fig02-timeline">
+          <!-- 桌面：横向时间线 -->
+          <div class="tlh">
+            <svg viewBox="0 0 1120 276" role="img" xmlns="http://www.w3.org/2000/svg" aria-labelledby="tl-title" data-od-id="tl-svg">
+              <title id="tl-title">从 Koishi 与 Cordis 到 dsh 的演化时间线，四个节点立于细墨基座上</title>
+              <defs>
+                <marker id="tl-arrowhead" viewBox="0 0 10 10" refX="8" refY="5"
+                        markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 Z" class="tl-arrow"/>
+                </marker>
+              </defs>
+              <line class="tl-axis" x1="16" y1="93" x2="1092" y2="93" marker-end="url(#tl-arrowhead)"/>
+              <rect class="tl-plinth" x="16" y="104" width="1104" height="8" rx="4"/>
+              <g data-od-id="tl-node-1">
+                <rect class="tl-block" x="128" y="82" width="44" height="22" rx="5"/>
+                <text class="tl-date" x="150" y="152">2019-12</text>
+                <text class="tl-name" x="150" y="184">Koishi 创建</text>
+                <text class="tl-note" x="150" y="212">跨平台聊天机器人框架</text>
+                <text class="tl-note" x="150" y="234">（GitHub API）</text>
+              </g>
+              <g data-od-id="tl-node-2">
+                <rect class="tl-block" x="408" y="82" width="44" height="22" rx="5"/>
+                <text class="tl-date" x="430" y="152">2022-05</text>
+                <text class="tl-name" x="430" y="184">Cordis 仓库创建</text>
+                <text class="tl-note" x="430" y="212">自述「时空可组合性元框架」</text>
+                <text class="tl-note" x="430" y="234">（GitHub API）</text>
+              </g>
+              <g data-od-id="tl-node-3">
+                <rect class="tl-block" x="688" y="82" width="44" height="22" rx="5"/>
+                <text class="tl-date" x="710" y="152">2026-08</text>
+                <text class="tl-name" x="710" y="184">论文与 dsh</text>
+                <text class="tl-note" x="710" y="212">arXiv:2608.25512 挂出</text>
+                <text class="tl-note" x="710" y="234">dsh 8 月 13 日开源</text>
+                <text class="tl-note" x="710" y="256">（arXiv 与 GitHub API）</text>
+              </g>
+              <g data-od-id="tl-node-4">
+                <rect class="tl-block" x="968" y="82" width="44" height="22" rx="5"/>
+                <text class="tl-date" x="990" y="152">2026-09</text>
+                <text class="tl-name" x="990" y="184">dsh 持续高热</text>
+                <text class="tl-note" x="990" y="212">0.2.0-rc.2 发布，PR #5479</text>
+                <text class="tl-note" x="990" y="234">（GitHub API）</text>
+              </g>
+            </svg>
+          </div>
+          <!-- 窄屏：纵向时间线 -->
+          <ol class="tlv" data-od-id="tl-vertical">
+            <li>
+              <span class="tlv-tick" aria-hidden="true"></span>
+              <p class="tlv-date">2019-12</p>
+              <h3 class="tlv-name">Koishi 创建</h3>
+              <p class="tlv-note">跨平台聊天机器人框架（GitHub API）</p>
+            </li>
+            <li>
+              <span class="tlv-tick" aria-hidden="true"></span>
+              <p class="tlv-date">2022-05</p>
+              <h3 class="tlv-name">Cordis 仓库创建</h3>
+              <p class="tlv-note">自述「时空可组合性元框架」（GitHub API）</p>
+            </li>
+            <li>
+              <span class="tlv-tick" aria-hidden="true"></span>
+              <p class="tlv-date">2026-08</p>
+              <h3 class="tlv-name">论文与 dsh</h3>
+              <p class="tlv-note">arXiv:2608.25512 挂出，dsh 8 月 13 日开源（arXiv 与 GitHub API）</p>
+            </li>
+            <li>
+              <span class="tlv-tick" aria-hidden="true"></span>
+              <p class="tlv-date">2026-09</p>
+              <h3 class="tlv-name">dsh 持续高热</h3>
+              <p class="tlv-note">0.2.0-rc.2 发布，PR #5479（GitHub API）</p>
+            </li>
+          </ol>
+        </div>
+
+        <p class="plate-note" data-od-id="fig02-note">Koishi 先跑了四五年，证明这套范式养得起三千插件的生态；然后 dsh 把 Cordis 整个搬进仓库，拿它做 agent 框架的地基。</p>
+      </div>
+    </section>
+
+    <!-- 带走物槽位 -->
+    <section class="takeaway-sec" data-od-id="takeaway-sec">
+      <div class="inner">
+        <div class="takeaway" data-od-id="takeaway-slot">带走物槽位 · 形态与内容由 M3 定，本页仅预留</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚（release zone，零动效）-->
+  <footer class="colophon" data-od-id="colophon">
+    <span>deepseek-harness / Cordis 支撑框架</span>
+    <span>数据快照 2026-10-01 · 图表风格 lieflat-charts G18，PolyForm Noncommercial 许可随附并保留署名</span>
+  </footer>
+
+  <!-- 设计说明 -->
+  <section class="design-notes" data-od-id="design-notes">
+    <p class="dn-label">设计说明</p>
+    <p>配色：纸白 #FAFAF7 铺底，全页唯一墨色钴蓝 #2148B8，层次只走透明度阶梯，淡墨只用于基座与细线，不作文字。</p>
+    <p>字体：Noto Serif SC 重衬线立骨，Noto Sans SC 承担正文，IBM Plex Mono 专用于数字、仓名与功能编号。</p>
+    <p>构图：archival plate 图版式，报头、引言、两块图版、勘察卡、时间线以细线与大留白切开，六卡两列锯齿，各节版式族不重样。</p>
+    <p>动效：全页唯一大动作在图 01，进视口时计数器与条形一次性画完即完全静止；其余各节只做轻入场，release zone 零动效，并以 prefers-reduced-motion 直出终态。</p>
+    <p>移动端 display 维持 clamp 38px 下限，clamp 下限档豁免。</p>
+  </section>
+</div>
+
+<script>
+(function () {
+  var doc = document.documentElement;
+  var reduced = doc.classList.contains('no-anim') ||
+                !('IntersectionObserver' in window);
+
+  var counters = [
+    { el: document.getElementById('stat-plugins'), target: 4000, suffix: '+' },
+    { el: document.getElementById('stat-star'),    target: 6239, suffix: ''  }
+  ];
+  function setFinal(el, target, suffix) {
+    el.textContent = target.toLocaleString('en-US') + suffix;
+  }
+  function animateCount(el, target, suffix) {
+    var dur = 1200;
+    var t0 = performance.now();
+    function tick(now) {
+      var p = Math.min(1, (now - t0) / dur);
+      var e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * e).toLocaleString('en-US') + suffix;
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  if (reduced) {
+    counters.forEach(function (c) { setFinal(c.el, c.target, c.suffix); });
+    document.querySelectorAll('[data-motion]').forEach(function (n) { n.classList.add('in'); });
+    return;
+  }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      var node = entry.target;
+      node.classList.add('in');
+      if (node.id === 'fig01') {
+        counters.forEach(function (c) { animateCount(c.el, c.target, c.suffix); });
+      }
+      io.unobserve(node);
+    });
+  }, { threshold: 0.25 });
+
+  document.querySelectorAll('[data-motion]').forEach(function (n) { io.observe(n); });
+})();
+</script>
+</body>
+</html>

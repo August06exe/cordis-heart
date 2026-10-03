@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CORDIS 词典 · 术语卡</title>
+<script>document.documentElement.classList.add('js');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:       oklch(0.984 0.004 106.5);        /* 纸白 #FAFAF7 */
+    --fg:       oklch(0.449 0.182 265);          /* 全页唯一墨色：钴蓝 #2148B8 */
+    --ink:      var(--fg);
+    --ink-14:   oklch(0.449 0.182 265 / .14);    /* 基座色块 */
+    --ink-20:   oklch(0.449 0.182 265 / .20);    /* 分隔细线与细影 */
+    --ink-70:   oklch(0.449 0.182 265 / .70);    /* 图解线条，仅图形 */
+    --ink-78:   oklch(0.449 0.182 265 / .78);    /* 小字注脚 */
+    --ink-80:   oklch(0.449 0.182 265 / .80);    /* 条目编号 */
+    --ink-82:   oklch(0.449 0.182 265 / .82);    /* 正文 */
+    --paper:    var(--bg);
+    --serif: "Noto Serif SC","Songti SC","SimSun",serif;
+    --sans:  "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    --mono:  "IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
+  }
+  ::selection{ background: var(--ink-14); }
+  :focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+
+  /* 印刷开本：四缘一圈细墨线 */
+  .sheet{
+    position:relative;
+    margin:22px;
+    min-height:calc(100vh - 44px);
+    min-height:calc(100dvh - 44px);
+    border:1px solid var(--ink-20);
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* 报头 */
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:24px;
+    padding:26px 48px 20px;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .wordmark{ display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  .wordmark .latin{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:19px;
+    letter-spacing:.34em;
+  }
+  .wordmark .zh{
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:.18em;
+    color:var(--ink-82);
+  }
+  .masthead .folio{
+    font-size:12px;
+    letter-spacing:.22em;
+    color:var(--ink-78);
+    white-space:nowrap;
+  }
+
+  /* 信息带：左 40 文案，右 60 图解 */
+  .intro{
+    display:grid;
+    grid-template-columns:40fr 60fr;
+    align-items:start;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .copy{
+    display:flex;
+    flex-direction:column;
+    padding:72px 56px 56px 48px;
+    border-right:1px solid var(--ink-20);
+    min-width:0;
+  }
+  .kicker{
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.42em;
+    color:var(--ink-78);
+    margin-bottom:34px;
+  }
+  h1.headline{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:58px;
+    line-height:1.3;
+    letter-spacing:.01em;
+    text-wrap:balance;
+  }
+  .sub{
+    margin-top:28px;
+    font-size:16px;
+    line-height:2.0;
+    color:var(--ink-82);
+    max-width:26em;
+  }
+  .footnote{
+    margin-top:52px;
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+  .footnote .rule{ flex:1; height:1px; background:var(--ink-20); }
+
+  .scene{
+    padding:64px 56px 56px;
+    min-width:0;
+  }
+  .scene svg{ width:100%; height:auto; display:block; }
+  .cap{
+    margin-top:26px;
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+  .cap .rule{ flex:1; height:1px; background:var(--ink-20); }
+
+  /* 图解几何：照搬 hero 实样视觉语言 */
+  .dg-box{ fill:var(--paper); stroke:var(--ink); stroke-width:2; }
+  .dg-label{
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.08em;
+    fill:var(--ink);
+    text-anchor:middle;
+  }
+  .dg-index{
+    font-family:var(--mono);
+    font-weight:500;
+    font-size:10px;
+    letter-spacing:.16em;
+    fill:var(--ink);
+    opacity:.8;
+  }
+  .dg-note{
+    font-family:var(--sans);
+    font-weight:500;
+    font-size:13px;
+    letter-spacing:.06em;
+    fill:var(--ink);
+    opacity:.78;
+  }
+  .dg-curve{ fill:none; stroke:var(--ink-70); stroke-width:1.6; }
+  .dg-arrow{ fill:var(--ink-70); }
+  .dg-plinth{ fill:var(--ink); opacity:.14; }
+  .dg-rule{ stroke:var(--ink); opacity:.2; stroke-width:1; }
+
+  /* 术语卡网格：两列锯齿 */
+  .grid-wrap{ padding:40px 48px 88px; }
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    column-gap:96px;
+    align-items:start;
+  }
+  .col{
+    display:flex;
+    flex-direction:column;
+    border-bottom:1px solid var(--ink-20);
+    min-width:0;
+  }
+  .card{
+    position:relative;
+    border-top:1px solid var(--ink-20);
+    padding:36px 16px 46px 0;
+    cursor:pointer;
+    touch-action:manipulation;
+    order:var(--ord, 0);
+  }
+  .card-head{ display:flex; align-items:baseline; gap:16px; }
+  .card-head .num{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:12px;
+    letter-spacing:.22em;
+    color:var(--ink-80);
+  }
+  .card-head .en{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:.05em;
+    color:var(--ink);
+  }
+  h2.zh-term{
+    margin-top:16px;
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:26px;
+    line-height:1.35;
+    letter-spacing:.02em;
+    color:var(--ink);
+  }
+  .def{
+    margin-top:14px;
+    font-size:16px;
+    line-height:1.95;
+    color:var(--ink-82);
+    max-width:30em;
+  }
+
+  /* 浮层：档案卡抽出 */
+  .pop{
+    position:absolute;
+    left:0;
+    top:0;
+    z-index:60;
+    width:300px;
+    max-width:calc(100vw - 32px);
+    padding:20px 22px 22px;
+    background:var(--paper);
+    border:2px solid var(--ink);
+    border-radius:2px;
+    box-shadow:0 10px 26px var(--ink-20), 0 2px 8px var(--ink-20);
+    opacity:0;
+    visibility:hidden;
+  }
+  .pop.open{
+    opacity:1;
+    visibility:visible;
+  }
+  .pop-p + .pop-p{ margin-top:14px; }
+  .pop-p .tag{
+    display:block;
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:10.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+    margin-bottom:6px;
+  }
+  .pop-p .txt{
+    display:block;
+    font-size:15px;
+    line-height:1.85;
+    color:var(--ink-82);
+  }
+  .pop-p .txt code{
+    font-family:var(--mono);
+    font-size:.92em;
+  }
+  .badge{
+    width:12px;
+    height:12px;
+    display:inline-block;
+    vertical-align:-1px;
+    margin-right:7px;
+  }
+  .badge-solid-rect{ fill:var(--ink); }
+  .badge-hatch-rect{ fill:url(#hatch); stroke:var(--ink); stroke-width:1; }
+  .hatch-line{ stroke:var(--ink); stroke-width:1.1; }
+
+  /* 动效：仅在允许动效的环境启用，reduce 直显直切 */
+  @media (prefers-reduced-motion: no-preference){
+    html.js .card{
+      opacity:0;
+      transform:translateY(12px);
+      transition:opacity .55s ease-out, transform .55s ease-out;
+      transition-delay:var(--d, 0ms);
+    }
+    html.js .card.in{
+      opacity:1;
+      transform:none;
+    }
+    .pop{
+      transform:translateY(8px);
+      transition:opacity .12s ease-out, transform .12s ease-out, visibility 0s linear .12s;
+    }
+    .pop.open{
+      transform:none;
+      transition:opacity .16s ease-out, transform .16s ease-out;
+    }
+    .pop .pop-p{
+      opacity:0;
+      transform:translateY(3px);
+      transition:opacity .2s ease-out, transform .2s ease-out;
+    }
+    .pop.open .pop-p{
+      opacity:1;
+      transform:none;
+    }
+    .pop.open .pop-p:nth-child(1){ transition-delay:0ms; }
+    .pop.open .pop-p:nth-child(2){ transition-delay:80ms; }
+    .pop.open .pop-p:nth-child(3){ transition-delay:160ms; }
+  }
+
+  /* 设计说明 */
+  .note{
+    border-top:1px solid var(--ink-20);
+    padding:44px 48px 56px;
+  }
+  .note-head{
+    font-size:11.5px;
+    font-weight:500;
+    letter-spacing:.3em;
+    color:var(--ink-78);
+  }
+  .note-body{
+    margin-top:18px;
+    font-size:12.5px;
+    line-height:2.0;
+    color:var(--ink-78);
+    max-width:62em;
+  }
+
+  /* 页脚 */
+  .colophon{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:24px;
+    padding:18px 48px 22px;
+    border-top:1px solid var(--ink-20);
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+
+  /* 响应式 */
+  @media (max-width:1080px){
+    .intro{ grid-template-columns:1fr; }
+    .copy{
+      border-right:none;
+      border-bottom:1px solid var(--ink-20);
+      padding:52px 24px 40px;
+    }
+    .scene{ padding:40px 24px 44px; }
+  }
+  @media (max-width:960px){
+    .sheet{ margin:14px; min-height:calc(100vh - 28px); min-height:calc(100dvh - 28px); }
+    .masthead{ padding:20px 20px 16px; }
+    .grid-wrap{ padding:32px 24px 60px; }
+    .grid{ grid-template-columns:1fr; }
+    .col{ display:contents; }
+    .card{ padding:30px 12px 38px 0; }
+    .col:last-child .card:last-child{ border-bottom:1px solid var(--ink-20); }
+    .note{ padding:34px 20px 42px; }
+    .colophon{ padding:16px 20px 20px; flex-wrap:wrap; }
+  }
+</style>
+<noscript>
+  <style>
+    .pop{
+      position:static;
+      opacity:1;
+      visibility:visible;
+      transform:none;
+      width:auto;
+      max-width:34em;
+      margin-top:18px;
+      border:1px solid var(--ink-20);
+      box-shadow:none;
+    }
+  </style>
+</noscript>
+</head>
+<body>
+<div class="sheet" data-od-id="page-sheet">
+
+  <!-- 徽标网点用的斜线图案，全页共用 -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <pattern id="hatch" width="3.6" height="3.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <line x1="0" y1="0" x2="0" y2="3.6" class="hatch-line"/>
+      </pattern>
+    </defs>
+  </svg>
+
+  <!-- 报头 -->
+  <header class="masthead" data-od-id="masthead">
+    <div class="wordmark">
+      <span class="latin">CORDIS</span>
+      <span class="zh">DSH 的心脏 · 思想图鉴</span>
+    </div>
+    <span class="folio">词典 · 术语卡</span>
+  </header>
+
+  <main>
+    <!-- 信息带 -->
+    <section class="intro" data-od-id="intro">
+      <div class="copy" data-od-id="intro-copy">
+        <p class="kicker" data-od-id="kicker">通俗词典 · 十个术语</p>
+        <h1 class="headline" data-od-id="headline">术语说人话</h1>
+        <p class="sub" data-od-id="sub-copy">按重要程度排，够用为准。每张卡三段：大白话定义、生活类比、论文出处。</p>
+        <div class="footnote" data-od-id="microcopy">
+          <span class="rule" aria-hidden="true"></span>
+          <span>悬停或 Tab 聚焦卡片，查看类比与出处</span>
+        </div>
+      </div>
+      <div class="scene" data-od-id="scene">
+        <svg viewBox="0 0 780 440" role="img" aria-labelledby="dg-title" data-od-id="scene-svg"
+             xmlns="http://www.w3.org/2000/svg">
+          <title id="dg-title">组件积木立于基座上，效应经唯一的门改动出去，反效应带着依赖经同一道门进来，汇入语境总账</title>
+          <defs>
+            <marker id="dg-arrowhead" viewBox="0 0 10 10" refX="8" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 Z" class="dg-arrow"/>
+            </marker>
+          </defs>
+
+          <!-- 一进一出两根依赖曲线 -->
+          <g data-od-id="dg-curves">
+            <path class="dg-curve" d="M 250 244 C 330 208, 430 232, 524 197" marker-end="url(#dg-arrowhead)"/>
+            <path class="dg-curve" d="M 536 300 C 430 268, 340 296, 294 333" marker-end="url(#dg-arrowhead)"/>
+            <text class="dg-note" x="262" y="196">效应 · 改动出去</text>
+            <text class="dg-note" x="306" y="402">反效应 · 依赖进来</text>
+          </g>
+
+          <!-- 唯一的门 -->
+          <g data-od-id="dg-gate">
+            <rect x="406" y="183" width="32" height="134" rx="16" class="dg-box"/>
+            <text class="dg-index" x="422" y="172" text-anchor="middle">gate</text>
+          </g>
+
+          <!-- 左：组件积木 -->
+          <g data-od-id="dg-component">
+            <rect x="60" y="220" width="230" height="150" rx="10" class="dg-box"/>
+            <text class="dg-index" x="76" y="244">component</text>
+            <text class="dg-label" x="175" y="302">组件</text>
+          </g>
+          <rect class="dg-plinth" x="44" y="370" width="262" height="8" rx="4" data-od-id="dg-plinth"/>
+
+          <!-- 右：语境总账 -->
+          <g data-od-id="dg-context">
+            <rect x="530" y="80" width="190" height="330" rx="10" class="dg-box"/>
+            <text class="dg-index" x="546" y="104">context</text>
+            <text class="dg-label" x="625" y="134">语境 · 总账</text>
+            <line class="dg-rule" x1="552" y1="168" x2="698" y2="168"/>
+            <line class="dg-rule" x1="552" y1="203" x2="698" y2="203"/>
+            <line class="dg-rule" x1="552" y1="238" x2="698" y2="238"/>
+            <line class="dg-rule" x1="552" y1="273" x2="698" y2="273"/>
+            <line class="dg-rule" x1="552" y1="308" x2="698" y2="308"/>
+            <line class="dg-rule" x1="552" y1="343" x2="698" y2="343"/>
+          </g>
+        </svg>
+        <div class="cap" data-od-id="scene-cap">
+          <span class="rule" aria-hidden="true"></span>
+          <span>图 01 · 语境是唯一的门</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 术语卡网格：左列 01 03 05 07 09，右列 02 04 06 08 10 -->
+    <section class="grid-wrap" data-od-id="grid-section" aria-label="术语卡网格">
+      <div class="grid" data-od-id="grid">
+        <div class="col" data-od-id="col-left">
+
+          <article class="card" data-od-id="card-01-effect" data-n="1" tabindex="0"
+                   aria-expanded="false" aria-describedby="pop-01" style="--ord:1">
+            <header class="card-head"><span class="num">01</span><span class="en">effect</span></header>
+            <h2 class="zh-term">效应</h2>
+            <p class="def">程序对外部世界留下的改动，写文件、开端口、注册一条命令都算。论文要求每个效应自带撤销办法。</p>
+            <div class="pop" id="pop-01" role="tooltip" data-od-id="pop-01">
+              <p class="pop-p"><span class="tag">大白话定义</span><span class="txt">程序对外部世界留下的改动，写文件、开端口、注册一条命令都算。论文要求每个效应自带撤销办法。</span></p>
+              <p class="pop-p"><span class="tag">生活类比</span><span class="txt">装修留收据。工人每动一处，当场留一张「如何复原此处」的说明，房东退租时按相反顺序执行一遍。</span></p>
+              <p class="pop-p"><span class="tag">论文出处</span><span class="txt"><svg class="badge" viewBox="0 0 12 12" role="img" aria-label="可靠度：论文原文核实（实印）"><rect x="1" y="1" width="10" height="10" class="badge-solid-rect"/></svg>论文 arXiv:2608.25512；对应 Cordis 的 <code>ctx.effect()</code>，装上去的每样东西都留撤销按钮。</span></p>
+            </div>
+          </article>
+
+          <article class="card" data-od-id="card-03-context" data-n="3" tabindex="0"
+                   aria-expanded="false" aria-describedby="pop-03" style="--ord:3">
+            <header class="card-head"><span class="num">03</span><span class="en">context</span></header>
+            <h2 class="zh-term">语境</h2>
+            <p class="def">全系统共用的一本大账，记着当前状态、所有撤销办法、所有依赖登记。组件和环境的每一次交互都经过它，谁也不许绕开。</p>
+            <div class="pop" id="pop-03" role="tooltip" data-od-id="pop-03">
+              <p class="pop-p"><span class="tag">大白话定义</span><span class="txt">全系统共用的一本大账，记着当前状态、所有撤销办法、所有依赖登记。组件和环境的每一次交互都经过它，谁也不许绕开。</span></p>
+              <p class="pop-p"><span class="tag">生活类比</span><span class="txt">酒店前台的总账。住客想动任何东西都得记在总台账上，谁也不许私下配钥匙。</span></p>
+              <p class="pop-p"><span class="tag">论文出处</span><span class="txt"><svg class="badge" viewBox="0 0 12 12" role="img" aria-label="可靠度：论文原文核实（实印）"><rect x="1" y="1" width="10" height="10" class="badge-solid-rect"/></svg>论文 arXiv:2608.25512；对应 <code>ctx</code> 对象与 <code>ctx.*</code> 稳定键（tools、llm、fs、sandbox、sessions 等）。</span></p>
+            </div>
+          </article>
+
+          <article class="card" data-od-id="card-05-fiber" data-n="5" tabindex="0"
+                   aria-expanded="false" aria-describedby="pop-05" style="--ord:5">
+            <header class="card-head"><span class="num">05</span><span class="en">fiber</span></header>
+            <h2 class="zh-term">纤维</h2>
+            <p class="def">说明书的一次具体上岗。组件是职位描述，fiber 是某年某月入职的那位员工，从入职到离场有固定流程。</p>
+            <div class="pop" id="pop-05" role="tooltip" data-od-id="pop-05">
+              <p class="pop-p"><span class="tag">大白话定义</span><span class="txt">说明书的一次具体上岗。组件是职位描述，fiber 是某年某月入职的那位员工，从入职到离场有固定流程。</span></p>
+              <p class="pop-p"><span class="tag">生活类比</span><span class="txt">同一份职位描述，每雇一个人就对应一个 fiber；入职、在岗、离职走同一套流程，谁也不能私下改。</span></p>
+              <p class="pop-p"><span class="tag">论文出处</span><span class="txt"><svg class="badge" viewBox="0 0 12 12" role="img" aria-label="可靠度：主出处论文原文核实（实印）"><rect x="1" y="1" width="10" height="10" class="badge-solid-rect"/></svg><svg class="badge" viewBox="0 0 12 12" role="img" aria-label="可靠度：注记合理解读（网屏）"><rect x="1" y="1" width="10" height="10" class="badge-hatch-rect"/></svg>论文 arXiv:2608.25512。注记：dsh 文档未出现此词，隔离角色由 scope 承担（研读存疑项之一）。</span></p>
+            </div>
+          </article>
+
+          <article class="card" data-od-id="card-07-reactive" data-n="7" tabindex="0"
+                   aria-expanded="false" aria-describedby="pop-07" style="--ord:7">
+            <header class="card-head"><span class="num">07</span><span class="en">reactive</span></header>
+            <h2 class="zh-term">响应式</h2>
+            <p class="def">依赖是活的。环境每变一次，运行时拿每个组件的需求清单对照一遍：从缺到齐就激活，从齐到缺就停用，其余不理会。</p>
+            <div class="pop" id="pop-07" role="tooltip" data-od-id="pop-07">
+              <p class="pop-p"><span class="tag">大白话定义</span><span class="txt">依赖是活的。环境每变一次，运行时拿每个组件的需求清单对照一遍：从缺到齐就激活，从齐到缺就停用，其余不理会。</span></p>
+              <p class="pop-p"><span class="tag">生活类比</span><span class="txt">夜市摊位接隔壁摊的电源。隔壁收摊你自动歇业，隔壁回来你自动开张，不用雇人二十四小时盯着电闸。</span></p>
+              <p class="pop-p"><span class="tag">论文出处</span><span class="txt"><svg class="badge" viewBox="0 0 12 12" role="img" aria-label="可靠度：论文原文核实（实印）"><rect x="1" y="1" width="10" height="10" class="badge-solid-rect"/></svg>论文 arXiv:2608.25512；对应 <code>inject</code> 依赖声明，插件自己不找依赖，也不写监控代码。</span></p>
+            </div>
+          </article>
+
+          <article class="card" data-od-id="card-09-hmr" data-n="9" tabindex="0"
+                   aria-expanded="false" aria-describedby="pop-09" style="--ord:9">
+            <header class="card-head"><span class="num">09</span><span class="en">HMR</span></header>
+            <h2 class="zh-term">热模块替换</h2>
+            <p class="def">改了源码文件，程序不重启，原地换掉受影响的零件。Cordis 的重载是事务性的：先备份，失败整体回滚，永不半新半旧。</p>
+            <div class="pop" id="pop-09" role="tooltip" data-od-id="pop-09">
+              <p class="pop-p"><span class="tag">大白话定义</span><span class="txt">改了源码文件，程序不重启，原地换掉受影响的零件。Cordis 的重载是事务性的：先备份，失败整体回滚，永不半新半旧。</span></p>
+              <p class="pop-p"><span class="tag">生活类比</span><span class="txt">先备份再换件。装修换壁纸，旧壁纸完整收好，新的贴失败就原样贴回去，绝不留半面新半面旧。</span></p>
+              <p class="pop-p"><span class="tag">论文出处</span><span class="txt"><svg class="badge" viewBox="0 0 12 12" role="img" aria-label="可靠度：论文原文核实（实印）"><rect x="1" y="1" width="10" height="10" class="badge-solid-rect"/></svg>论文 arXiv:2608.25512；Cordis 的 hmr 配套模块（dsh 将 loader、hmr 等配套整体 vendor 进仓库）。</span></p>
+            </div>
+          </article>
+
+        </div>
+        <div class="col" data-od-id="col-right">
+
+          <article class="card" data-od-id="card-02-coeffect" data-n="2" tabindex="0"
+                   aria-expanded="false" aria-describedby="pop-02" style="--ord:2">
+            <header class="card-head"><span class="num">02</span><span class="en">coeffect</span></header>
+            <h2 class="zh-term">反效应</h2>
+            <p class="def">效应的镜像。效应说「我对世界做了什么」，反效应说「世界得先给我什么」：资源、权限、服务。说白了就是依赖清单。</p>
+            <div class="pop" id="pop-02" role="tooltip" data-od-id="pop-02">
+              <p class="pop-p"><span class="tag">大白话定义</span><span class="txt">效应的镜像。效应说「我对世界做了什么」，反效应说「世界得先给我什么」：资源、权限、服务。说白了就是依赖清单。</span></p>
+              <p class="pop-p"><span class="tag">生活类比</span><span class="txt">餐馆门口挂牌「本店需要水、电、燃气」。市政停水那一刻，挂牌状态翻转，餐馆自动贴出暂停营业。</span></p>
+              <p class="pop-p"><span class="tag">论文出处</span><span class="txt"><svg class="badge" viewBox="0 0 12 12" role="img" aria-label="可靠度：论文原文核实（实印）"><rect x="1" y="1" width="10" height="10" class="badge-solid-rect"/></svg>论文 arXiv:2608.25512；对应 dsh 的 <code>inject</code> 依赖声明，写明我要什么，框架等就绪才启动。</span></p>
+            </div>
+          </article>
+
+          <article class="card" data-od-id="card-04-component" data-n="4" tabindex="0"
+                   aria-expanded="false" aria-describedby="pop-04" style="--ord:4">
+            <header class="card-head"><span class="num">04</span><span class="en">component</span></header>
+            <h2 class="zh-term">组件</h2>
+            <p class="def">一份岗位说明书，含三份文件：我需要什么、我能提供什么、我上岗后干什么（每件事附撤销办法）。</p>
+            <div class="pop" id="pop-04" role="tooltip" data-od-id="pop-04">
+              <p class="pop-p"><span class="tag">大白话定义</span><span class="txt">一份岗位说明书，含三份文件：我需要什么、我能提供什么、我上岗后干什么（每件事附撤销办法）。</span></p>
+              <p class="pop-p"><span class="tag">生活类比</span><span class="txt">就是岗位说明书本身：任职要求、能提供的职责、上岗后的工作清单，三份文件一次交齐。</span></p>
+              <p class="pop-p"><span class="tag">论文出处</span><span class="txt"><svg class="badge" viewBox="0 0 12 12" role="img" aria-label="可靠度：论文原文核实（实印）"><rect x="1" y="1" width="10" height="10" class="badge-solid-rect"/></svg>论文 arXiv:2608.25512；对应 Plugin / Service，插件就是组件的实现形态。</span></p>
+            </div>
+          </article>
+
+          <article class="card" data-od-id="card-06-revertible" data-n="6" tabindex="0"
+                   aria-expanded="false" aria-describedby="pop-06" style="--ord:6">
+            <header class="card-head"><span class="num">06</span><span class="en">revertible</span></header>
+            <h2 class="zh-term">可逆</h2>
+            <p class="def">改动的附赠品。谁做的改动谁当场交出撤销函数，运行时统一保管，卸载时按后进先出执行。</p>
+            <div class="pop" id="pop-06" role="tooltip" data-od-id="pop-06">
+              <p class="pop-p"><span class="tag">大白话定义</span><span class="txt">改动的附赠品。谁做的改动谁当场交出撤销函数，运行时统一保管，卸载时按后进先出执行。</span></p>
+              <p class="pop-p"><span class="tag">生活类比</span><span class="txt">Ctrl+Z 的历史栈。后发生的先撤销；所有撤销函数串成一个累加器，像按一次键全退光。</span></p>
+              <p class="pop-p"><span class="tag">论文出处</span><span class="txt"><svg class="badge" viewBox="0 0 12 12" role="img" aria-label="可靠度：论文原文核实（实印）"><rect x="1" y="1" width="10" height="10" class="badge-solid-rect"/></svg>论文 arXiv:2608.25512；对应 <code>ctx.effect()</code> 加 disposer，文档称「可回退注册」。</span></p>
+            </div>
+          </article>
+
+          <article class="card" data-od-id="card-08-declarative-config" data-n="8" tabindex="0"
+                   aria-expanded="false" aria-describedby="pop-08" style="--ord:8">
+            <header class="card-head"><span class="num">08</span><span class="en">declarative config</span></header>
+            <h2 class="zh-term">声明式配置</h2>
+            <p class="def">用一份配置树描述「系统应该长什么样」，加载器负责把现实改成和清单一致，改动按最小动作分发，不推倒重来。</p>
+            <div class="pop" id="pop-08" role="tooltip" data-od-id="pop-08">
+              <p class="pop-p"><span class="tag">大白话定义</span><span class="txt">用一份配置树描述「系统应该长什么样」，加载器负责把现实改成和清单一致，改动按最小动作分发，不推倒重来。</span></p>
+              <p class="pop-p"><span class="tag">生活类比</span><span class="txt">手动挡与自动挡。使用者只写愿望清单，加载器把现实改成和清单一致，改多少算多少。</span></p>
+              <p class="pop-p"><span class="tag">论文出处</span><span class="txt"><svg class="badge" viewBox="0 0 12 12" role="img" aria-label="可靠度：论文原文核实（实印）"><rect x="1" y="1" width="10" height="10" class="badge-solid-rect"/></svg>论文 arXiv:2608.25512；对应 Profile、Bundle、Patch 三层组装，<code>cordis.patch.yml</code> 按 id 替换任意配置行。</span></p>
+            </div>
+          </article>
+
+          <article class="card" data-od-id="card-10-lifecycle" data-n="10" tabindex="0"
+                   aria-expanded="false" aria-describedby="pop-10" style="--ord:10">
+            <header class="card-head"><span class="num">10</span><span class="en">lifecycle</span></header>
+            <h2 class="zh-term">生命周期</h2>
+            <p class="def">一个零件从装上到拆下经过的固定阶段。论文里 fiber 有四态：空闲、激活中、在岗、停用中，怎么流转由九条规则管。</p>
+            <div class="pop" id="pop-10" role="tooltip" data-od-id="pop-10">
+              <p class="pop-p"><span class="tag">大白话定义</span><span class="txt">一个零件从装上到拆下经过的固定阶段。论文里 fiber 有四态：空闲、激活中、在岗、停用中，怎么流转由九条规则管。</span></p>
+              <p class="pop-p"><span class="tag">生活类比</span><span class="txt">拆迁先疏散租户，确认全走了，再动承重墙。停用一台数据库时，先宣布停机，等所有依赖方安全拆完，自己才倒序撤销。</span></p>
+              <p class="pop-p"><span class="tag">论文出处</span><span class="txt"><svg class="badge" viewBox="0 0 12 12" role="img" aria-label="可靠度：论文原文核实（实印）"><rect x="1" y="1" width="10" height="10" class="badge-solid-rect"/></svg>论文 arXiv:2608.25512；九条规则：人只下三道命令（插入、退役、移除），其余六条是系统自动流转。</span></p>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 设计说明 -->
+    <section class="note" data-od-id="design-note">
+      <h2 class="note-head">设计说明</h2>
+      <p class="note-body">配色守单墨规则：全页唯一墨色钴蓝，纸白为底，层次全部交给透明度阶梯，基座与装饰线走淡墨，文字各档保持在对比度红线之上。
+      字体以 Noto Serif SC 900 立标题骨架，Noto Sans SC 承担正文与注脚，条目号、英文术语与代码键名交给 IBM Plex Mono。
+      构图取档案柜意象：四缘细线开本，信息带与图解左右并置，十张术语卡排成两列锯齿，卡高随内容自然不齐，索引感先于装饰感。
+      动效只有三拍：进场时卡片按条目号以 60ms 间隔上浮淡入一次，悬停或聚焦时浮层经 floating-ui 定位淡入并依次显影三段内容，移出或失焦后约 120ms 淡出，其余时刻页面保持安静。</p>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="colophon" data-od-id="colophon">
+    <span>deepseek-harness / Cordis 支撑框架</span>
+    <span>视觉稿 · 单墨编辑印刷</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var doc = document;
+  var cards = Array.prototype.slice.call(doc.querySelectorAll('.card'));
+  var reduce = false;
+  try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
+
+  /* 第 1 拍：进场。IntersectionObserver 一次性触发，同批内按条目号每张 60ms */
+  if (!reduce && 'IntersectionObserver' in window) {
+    try {
+      var io = new IntersectionObserver(function(entries){
+        var batch = entries.filter(function(e){ return e.isIntersecting; })
+          .sort(function(a, b){ return (+a.target.dataset.n) - (+b.target.dataset.n); });
+        batch.forEach(function(e, i){
+          e.target.style.setProperty('--d', (i * 60) + 'ms');
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -36px 0px' });
+      cards.forEach(function(c){ io.observe(c); });
+    } catch (_) {
+      cards.forEach(function(c){ c.classList.add('in'); });
+    }
+  } else {
+    cards.forEach(function(c){ c.classList.add('in'); });
+  }
+
+  /* 第 2 至 4 拍：浮层显影与收场 */
+  var active = null, cleanupAuto = null, closeTimer = null, lastPointer = '';
+  function popOf(card){ return card.querySelector('.pop'); }
+  function F(){ return window.FloatingUI; }
+  function cancelClose(){
+    if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+  }
+  function scheduleClose(){
+    cancelClose();
+    closeTimer = setTimeout(function(){ closeTimer = null; close(); }, 140);
+  }
+  function position(card, pop){
+    var f = F();
+    if (f && f.computePosition && f.autoUpdate) {
+      if (cleanupAuto) { cleanupAuto(); cleanupAuto = null; }
+      var update = function(){
+        f.computePosition(card, pop, {
+          placement: 'top-start',
+          middleware: [f.offset(8), f.flip(), f.shift({ padding: 10 })]
+        }).then(function(res){
+          pop.style.left = res.x + 'px';
+          pop.style.top = res.y + 'px';
+        }).catch(function(){});
+      };
+      cleanupAuto = f.autoUpdate(card, pop, update);
+      update();
+    } else {
+      /* CDN 不可用时的 CSS 简单定位 */
+      pop.style.left = '0px';
+      pop.style.top = 'calc(100% + 8px)';
+    }
+  }
+  function open(card){
+    if (active === card) return;
+    cancelClose();
+    if (active) close();
+    var pop = popOf(card);
+    position(card, pop);
+    pop.classList.add('open');
+    card.setAttribute('aria-expanded', 'true');
+    active = card;
+  }
+  function close(){
+    if (!active) return;
+    cancelClose();
+    popOf(active).classList.remove('open');
+    active.setAttribute('aria-expanded', 'false');
+    if (cleanupAuto) { cleanupAuto(); cleanupAuto = null; }
+    active = null;
+  }
+
+  cards.forEach(function(card){
+    var pop = popOf(card);
+    card.addEventListener('pointerenter', function(e){
+      if (e.pointerType !== 'touch') open(card);
+    });
+    card.addEventListener('pointerleave', function(e){
+      if (e.pointerType !== 'touch') scheduleClose();
+    });
+    card.addEventListener('pointerdown', function(e){
+      lastPointer = e.pointerType;
+      if (e.pointerType === 'touch') e.preventDefault();
+    });
+    card.addEventListener('click', function(){
+      if (lastPointer === 'touch') { (active === card) ? close() : open(card); }
+    });
+    card.addEventListener('focusin', function(){
+      if (lastPointer !== 'touch') open(card);
+    });
+    card.addEventListener('focusout', function(e){
+      if (!card.contains(e.relatedTarget)) close();
+    });
+    card.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        (active === card) ? close() : open(card);
+      }
+      if (e.key === 'Escape') close();
+    });
+    pop.addEventListener('pointerenter', function(e){
+      if (e.pointerType !== 'touch') cancelClose();
+    });
+    pop.addEventListener('pointerleave', function(e){
+      if (e.pointerType !== 'touch') scheduleClose();
+    });
+  });
+  doc.addEventListener('pointerdown', function(e){
+    if (active && !active.contains(e.target)) close();
+  }, true);
+  doc.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') close();
+  });
+
+  /* floating-ui 加载：双 CDN 依次尝试，全失败走降级定位 */
+  var sources = [
+    'https://cdn.jsdelivr.net/npm/@floating-ui/dom@1/dist/floating-ui.dom.min.js',
+    'https://unpkg.com/@floating-ui/dom@1/dist/floating-ui.dom.min.js'
+  ];
+  var i = 0;
+  (function next(){
+    if (i >= sources.length) {
+      doc.body.classList.add('no-floating');
+      if (active) position(active, popOf(active));
+      return;
+    }
+    var s = doc.createElement('script');
+    s.src = sources[i++];
+    s.onload = function(){
+      if (F() && F().computePosition) {
+        if (active) position(active, popOf(active));
+      } else {
+        if (s.parentNode) s.parentNode.removeChild(s);
+        next();
+      }
+    };
+    s.onerror = function(){
+      if (s.parentNode) s.parentNode.removeChild(s);
+      next();
+    };
+    doc.head.appendChild(s);
+  })();
+})();
+</script>
+</body>
+</html>

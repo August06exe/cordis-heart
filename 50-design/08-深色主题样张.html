@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSH 的心脏 · Cordis 思想图鉴 - Hero 深色主题样张</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     深色主题令牌 —— 由 03-首页小样-OD/cordis-hero.html 换色而来，
+     结构与透明度阶梯值（.14/.20/.70/.78/.82/1）与浅色样张完全一致。
+     对比度为 Node 实算（WCAG 2.x 相对亮度，sRGB 8-bit 先合成取整再算，
+     保守口径），复现脚本见 08-深色主题样张-审记.md。
+     本套取值即九页深色态的基准词汇：04-DesignRead-定稿.md 第 5 节
+     原给九页的四角色占位（#FAFAF7 正文 / #6b8be6 accent / #a0b4ee
+     次要 / #2058D4 大字）由本样张的单墨方案取代，那份表在 04 v1.1
+     已改判为存档记录，两处声明对齐；出稿深色变量按本文件 :root 抄。
+     候选淘汰记录：#2148B8 对暗纸 2.33:1（全不过）；#2058D4 2.96:1
+     （连图解线 3:1 都不过）；#6b8be6 5.61:1 本体过线但其透明度阶梯
+     合成后跌破 4.5（@.82=4.18 / @.78=3.89，需 alpha≥0.865 才保住），
+     故单墨基色取 #a0b4ee：文字与图解线各档原值全过线，
+     .14/.20 为装饰档，不设红线（1.29 / 1.49，照录）。
+     ============================================================ */
+  :root{
+    --bg:       oklch(0.196 0.017 268.8);        /* 暗纸 · 冷黑 #12151D（OKLCH L=0.196 ∈ [0.16,0.20]；三候选 #10131B/#12151D/#161A23 中位，同 02-色彩配方-mono.md）*/
+    --fg:       oklch(0.776 0.086 269.6);        /* 提亮钴蓝墨 #a0b4ee · 对暗纸实测 8.91:1（标题/正文线 ≥4.5 ✓）*/
+    --ink:      var(--fg);
+    --ink-14:   oklch(0.776 0.086 269.6 / .14);  /* 淡墨 · 基座 · 合成 #262B3A 实测 1.29:1 —— 仅作色块（淡墨不用于文字，brand-spec 规则 3）*/
+    --ink-20:   oklch(0.776 0.086 269.6 / .20);  /* 分隔细线 · 合成 #2E3547 实测 1.49:1 —— 仅作细线（非文字，不设 3:1 红线）*/
+    --ink-78:   oklch(0.776 0.086 269.6 / .78);  /* 小字 / 注脚 · 合成 #8191C0 实测 5.86:1（≥4.5 小字线 ✓）*/
+    --ink-82:   oklch(0.776 0.086 269.6 / .82);  /* 正文 · 合成 #8697C8 实测 6.32:1（≥4.5 正文线 ✓）*/
+    --paper:    var(--bg);
+    --serif: "Noto Serif SC","Songti SC","SimSun",serif;
+    --sans: "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* 选区反白（2026-10-03 定案）：底 = 墨本体 var(--fg)，对暗纸 8.91:1 ≥3 非文字可辨线 ✓；
+     选区字 = 暗纸 var(--paper)，对选区底 8.91:1 ≥4.5 ✓；同一套 var 写法浅色主题通用（7.48:1）。
+     修复前底为墨 .14 合成 #262B3A，对暗纸 1.29:1 低于 3:1 判不可辨；
+     实算过程与候选淘汰记录见 10-docs/11-深色令牌定案.md */
+  ::selection{ background: var(--fg); color: var(--paper); }
+
+  /* 印刷开本：页面四缘一圈细墨线 */
+  .sheet{
+    position:relative;
+    min-height:100vh;
+    margin:22px;
+    border:1px solid var(--ink-20);
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ── 报头 masthead ─────────────────────────── */
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:24px;
+    padding:26px 48px 20px;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .wordmark{ display:flex; align-items:baseline; gap:16px; }
+  .wordmark .latin{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:19px;
+    letter-spacing:.34em;
+  }
+  .wordmark .zh{
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:.18em;
+    color:var(--ink-82);   /* 合成 #8697C8 · 6.32:1 ≥4.5 ✓ */
+  }
+  .masthead .folio{
+    font-size:12px;
+    letter-spacing:.22em;
+    color:var(--ink-78);   /* 合成 #8191C0 · 5.86:1 ≥4.5 ✓ */
+    white-space:nowrap;
+  }
+
+  /* ── Hero 主区：左 40 文案 / 右 60 场景 ─────── */
+  .hero{
+    flex:1;
+    display:grid;
+    grid-template-columns: 40fr 60fr;
+    min-height:0;
+  }
+  .copy{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:64px 56px 64px 48px;
+    border-right:1px solid var(--ink-20);
+  }
+  .kicker{
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.42em;
+    color:var(--ink-78);   /* 5.86:1 ≥4.5 ✓ */
+    margin-bottom:34px;
+  }
+  h1.headline{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:clamp(38px, 3.6vw, 58px);
+    line-height:1.32;
+    letter-spacing:.015em;
+    max-width:11em;
+    text-wrap:balance;
+  }
+  h1 .restorable{
+    text-decoration:underline;
+    text-decoration-thickness:2px;
+    text-decoration-color:var(--ink-78);   /* 下划线（非文字指示）合成 #8191C0 · 5.86:1 ≥3 ✓ */
+    text-underline-offset:.18em;
+  }
+  .sub{
+    margin-top:30px;
+    font-size:16px;
+    line-height:2.0;
+    color:var(--ink-82);   /* 6.32:1 ≥4.5 ✓ */
+    max-width:26em;
+  }
+  .sub .term{ font-weight:700; color:var(--ink); }   /* 8.91:1 ✓ */
+  .footnote{
+    margin-top:auto;
+    padding-top:48px;
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);   /* 5.86:1 ≥4.5 ✓ */
+  }
+  .footnote .rule{ flex:1; height:1px; background:var(--ink-20); }
+
+  /* ── 场景：内联 SVG 几何插画 ───────────────── */
+  .scene{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:48px 56px;
+    min-width:0;
+  }
+  .scene svg{ width:100%; height:auto; max-height:82vh; display:block; }
+
+  /* 积木描边对暗纸填充 8.91:1 ≥3 图形线 ✓ */
+  .block-box{ fill:var(--paper); stroke:var(--ink); stroke-width:2; }
+  .block-label{
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.06em;
+    fill:var(--ink);       /* 8.91:1 ≥4.5 ✓ */
+    text-anchor:middle;
+  }
+  .block-label.core{ font-size:17px; font-weight:700; }
+  .block-index{
+    font-family:var(--sans);
+    font-weight:500;
+    font-size:10px;
+    letter-spacing:.18em;
+    fill:var(--ink);
+    opacity:.8;            /* 合成 #8494C4 · 6.10:1 ≥4.5 ✓ */
+  }
+  .dep-curve{
+    fill:none;
+    stroke:var(--ink);
+    stroke-width:1.6;
+    opacity:.7;            /* 合成 #7584AF · 4.93:1 ≥3 图解线 ✓ */
+  }
+  .dep-arrow{ fill:var(--ink); opacity:.7; }   /* 4.93:1 ≥3 ✓ */
+  .plinth{ fill:var(--ink); opacity:.14; }     /* 合成 #262B3A · 1.29:1 —— 装饰基座色块，brand-spec 淡墨规则 */
+  .scene-note{
+    font-family:var(--sans);
+    font-weight:500;
+    font-size:11px;
+    letter-spacing:.24em;
+    fill:var(--ink);
+    opacity:.78;           /* 合成 #8191C0 · 5.86:1 ≥4.5 ✓ */
+  }
+
+  /* ── 页脚 ─────────────────────────────────── */
+  .colophon{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:24px;
+    padding:18px 48px 22px;
+    border-top:1px solid var(--ink-20);
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);   /* 5.86:1 ≥4.5 ✓ */
+  }
+
+  :focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }   /* 焦点环 8.91:1 ≥3 ✓ */
+
+  /* ── 响应式：<960px 竖排，禁止横向滚动 ──────── */
+  @media (max-width: 960px){
+    .sheet{ margin:14px; }
+    .masthead{ padding:20px 24px 16px; flex-wrap:wrap; }
+    .hero{ grid-template-columns:1fr; }
+    .copy{
+      border-right:none;
+      border-bottom:1px solid var(--ink-20);
+      padding:44px 24px 36px;
+    }
+    h1.headline{ font-size:clamp(32px, 8vw, 44px); }
+    .footnote{ padding-top:32px; }
+    .scene{ padding:32px 20px; }
+    .colophon{ padding:16px 24px 20px; flex-wrap:wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet" data-od-id="page-sheet">
+
+  <!-- 报头 -->
+  <header class="masthead" data-od-id="masthead">
+    <div class="wordmark">
+      <span class="latin">CORDIS</span>
+      <span class="zh">DSH 的心脏 · 思想图鉴</span>
+    </div>
+    <span class="folio">HERO · 深色样张 № 02</span>
+  </header>
+
+  <!-- Hero -->
+  <main class="hero" data-od-id="hero">
+
+    <!-- 左 40%：文案 -->
+    <section class="copy" data-od-id="hero-copy">
+      <p class="kicker" data-od-id="kicker">支撑框架 · 图鉴开篇</p>
+      <h1 class="headline" data-od-id="headline">让运行中的软件换零件，还能<span class="restorable">原样退回去</span></h1>
+      <p class="sub" data-od-id="sub-copy"><span class="term">Cordis</span> 是 deepseek-harness 背后的支撑框架，这个站把它的思想拆给你看。</p>
+      <div class="footnote" data-od-id="copy-footnote">
+        <span>图 01</span>
+        <span class="rule" aria-hidden="true"></span>
+        <span>积木与依赖</span>
+      </div>
+    </section>
+
+    <!-- 右 60%：场景 -->
+    <section class="scene" data-od-id="hero-scene" aria-label="Cordis 插件积木插画">
+      <svg viewBox="0 0 780 620" role="img" data-od-id="scene-svg"
+           xmlns="http://www.w3.org/2000/svg" aria-labelledby="scene-title">
+        <title id="scene-title">五块插件积木立于运行时基座上，中央数据库驱动向右侧两块插件伸出贝塞尔依赖曲线</title>
+
+        <defs>
+          <marker id="dep-arrowhead" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" class="dep-arrow"/>
+          </marker>
+        </defs>
+
+        <!-- 贝塞尔依赖曲线：数据库驱动 → 查询插件 / 聊天插件 -->
+        <g data-od-id="dependency-curves">
+          <path class="dep-curve" d="M 416 412 C 462 336, 512 402, 562 462"
+                marker-end="url(#dep-arrowhead)"/>
+          <path class="dep-curve" d="M 416 412 C 484 268, 668 296, 698 434"
+                marker-end="url(#dep-arrowhead)"/>
+          <text class="scene-note" x="502" y="300">依赖</text>
+        </g>
+
+        <!-- 积木 01 · 主题皮肤 -->
+        <g data-od-id="block-theme">
+          <rect class="block-box" x="36" y="452" width="138" height="108" rx="10"/>
+          <text class="block-index" x="50" y="472">01</text>
+          <text class="block-label" x="105" y="511">主题皮肤</text>
+        </g>
+
+        <!-- 积木 02 · 日志器 -->
+        <g data-od-id="block-logger">
+          <rect class="block-box" x="198" y="482" width="104" height="78" rx="10"/>
+          <text class="block-index" x="212" y="502">02</text>
+          <text class="block-label" x="250" y="526">日志器</text>
+        </g>
+
+        <!-- 积木 03 · 数据库驱动（中央核心，最高） -->
+        <g data-od-id="block-database">
+          <rect class="block-box" x="326" y="412" width="156" height="148" rx="10"/>
+          <text class="block-index" x="340" y="432">03</text>
+          <text class="block-label core" x="404" y="492">数据库驱动</text>
+        </g>
+
+        <!-- 积木 04 · 查询插件 -->
+        <g data-od-id="block-query">
+          <rect class="block-box" x="506" y="468" width="112" height="92" rx="10"/>
+          <text class="block-index" x="520" y="488">04</text>
+          <text class="block-label" x="562" y="519">查询插件</text>
+        </g>
+
+        <!-- 积木 05 · 聊天插件 -->
+        <g data-od-id="block-chat">
+          <rect class="block-box" x="642" y="440" width="112" height="120" rx="10"/>
+          <text class="block-index" x="656" y="460">05</text>
+          <text class="block-label" x="698" y="505">聊天插件</text>
+        </g>
+
+        <!-- 浅墨基座横条 -->
+        <rect class="plinth" x="20" y="560" width="740" height="8" rx="4" data-od-id="plinth"/>
+        <text class="scene-note" x="20" y="592">运行中的软件 · 运行时</text>
+        <text class="scene-note" x="760" y="592" text-anchor="end">CORDIS RUNTIME</text>
+      </svg>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="colophon" data-od-id="colophon">
+    <span>deepseek-harness / Cordis 支撑框架</span>
+    <span>深色样张 · 单墨编辑印刷（暗纸）</span>
+  </footer>
+</div>
+</body>
+</html>

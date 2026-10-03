@@ -1,0 +1,556 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+
+// 文案一字不改照录 src/content/pages/sandbox.md（导语三段 / 你会拿到什么三段 /
+// 链接行 / 时效声明；2026-10-03 复评违项「页面不再照录文稿」回归全站口径，
+// 其余 7 章节页同款声明）。六幕演示引擎（画布 SVG + 旁白面板 + STEPS）是
+// 文稿「界面占位：控制条四钮……引擎本体 M5.5 接入」预留的壳，其旁白属界面
+// 文案，不属正文。
+// 2026-10-03 生图通道恢复（台账 public/images/m47/gen-ledger.json：sandbox
+// 1 / 2 / card1 三张已出，failed 空），本章图版接线 web 压缩档（900px 主图 /
+// 600px 小卡，2K 原档留 m47/），框体与图注不动——占位 .slot 内换 <img> 即可。
+---
+
+<BaseLayout
+  title="组件沙盒 · 亲手拔一块试试"
+  slug="sandbox"
+  description="浏览器里搭一个迷你 Cordis：拖积木、连依赖线、拔掉提供者，看连锁熄灭与换源复明，最后原样退回去。"
+  book={true}
+>
+  <article class="sbx">
+    <header class="sbx-head">
+      <p class="kicker">动手 · 六步演完一篇论文</p>
+      <h1>亲手拔一块试试</h1>
+      <!-- 徽标计数照录文稿 frontmatter「原文核实 2 ｜ 合理解读 4 ｜ 转引未核实 0」 -->
+      <div class="sbx-badges">
+      </div>
+      <div class="lead">
+        <p>浏览器里搭一个迷你 Cordis。你从托盘拖出积木，连上依赖线，然后把正在供电的提供者拔掉：依赖它的积木逐块熄灭；换上新源，它们按原路复明；最后一步，全部原样退回去。</p>
+        <p>你刚才在上一页读的所有词，在这块画布上全部会发生：<strong>可逆效应、响应式反效应、累加器、生命周期</strong>。你负责动手，画布负责把背后的机制演给你看。</p>
+        <p>这一页与首页并列，是全站动效预算最足的两页：滚动很少，动手很多。别怕按坏——这台机器上每个动作都自带撤销，比现实世界安全一万倍。</p>
+      </div>
+    </header>
+
+    <!-- 你会拿到什么（文稿照录）：六幕演示壳即此处所述界面的占位实现 -->
+    <section class="sbx-get" aria-labelledby="sbx-get-h">
+      <h2 id="sbx-get-h">你会拿到什么</h2>
+      <p><strong>托盘里六个零件</strong>：03 提供者·数据库驱动（主角 A）、06 提供者·备用源（主角 B）、04 消费者·查询插件、05 消费者·聊天插件（都挂在 03 身上）、01 独立·主题皮肤、02 独立·日志器（无依赖线，专门证明连锁只沿声明过的依赖传导）。托盘底还有一块虚线幽灵块：「拖入画布」。</p>
+      <p><strong>你能做的六拍</strong>：拖积木入画布 → 连依赖线 → 拔掉 03 → 看熄灭传导 → 换上 06 看复明 → 一键全部复原。每一步，侧栏都会告诉你论文里这步叫什么。</p>
+      <p>界面占位：控制条四钮 + 检查器与日志侧栏——引擎本体 M5.5 接入，文稿与视觉壳已定。</p>
+      <p class="sbx-next"><a href="/steal-this/">玩过了，去拿能直接抄的作业 →</a></p>
+    </section>
+
+    <div class="sbx-stage-wrap">
+      <!-- 画布 -->
+      <div class="sbx-canvas" data-sbx-scene>
+        <svg viewBox="0 0 880 560" role="img" aria-label="插件积木沙盒：五块积木与依赖线的六步演示" xmlns="http://www.w3.org/2000/svg">
+          <title>五块积木的装上、供电、断供、换源、复原</title>
+          <defs>
+            <marker id="sbx-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 Z" fill="var(--ink)" opacity=".65"/>
+            </marker>
+          </defs>
+
+          <!-- 依赖线（主供） -->
+          <path class="sbx-dep" data-dep="q" d="M 500 400 C 540 380, 545 420, 580 425" fill="none" stroke="var(--ink)" stroke-width="2" marker-end="url(#sbx-arr)"/>
+          <path class="sbx-dep" data-dep="c" d="M 505 385 C 590 330, 690 330, 745 395" fill="none" stroke="var(--ink)" stroke-width="2" marker-end="url(#sbx-arr)"/>
+
+          <!-- 换源新线（备用源 → 消费者） -->
+          <path class="sbx-sdep" d="M 470 230 C 545 280, 540 380, 580 415" fill="none" stroke="var(--ink)" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#sbx-arr)"/>
+          <path class="sbx-sdep" d="M 490 220 C 620 250, 710 310, 748 392" fill="none" stroke="var(--ink)" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#sbx-arr)"/>
+
+          <!-- 供电脉冲 -->
+          <circle class="sbx-pulse" r="6" fill="var(--ink)" opacity="0"/>
+          <circle class="sbx-pulse" r="6" fill="var(--ink)" opacity="0"/>
+
+          <!-- 独立积木 -->
+          <g class="sbx-block" data-block="theme">
+            <rect x="40" y="360" width="150" height="100" rx="10" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>
+            <text x="115" y="408" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">主题皮肤</text>
+            <text x="115" y="432" text-anchor="middle" font-size="12.5" fill="var(--ink)" opacity=".65">无依赖 · 谁也影响不了它</text>
+          </g>
+          <g class="sbx-block" data-block="logger">
+            <rect x="215" y="388" width="120" height="72" rx="10" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>
+            <text x="275" y="422" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">日志器</text>
+            <text x="275" y="444" text-anchor="middle" font-size="12.5" fill="var(--ink)" opacity=".65">无依赖</text>
+          </g>
+
+          <!-- 提供者：数据库驱动 -->
+          <g class="sbx-block" data-block="db">
+            <rect x="370" y="300" width="170" height="150" rx="10" fill="var(--paper)" stroke="var(--ink)" stroke-width="2.5"/>
+            <text x="455" y="362" text-anchor="middle" font-size="17" font-weight="700" fill="var(--ink)">数据库驱动</text>
+            <text class="sbx-chip" data-chip="db" x="455" y="388" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">提供者 · 在岗</text>
+          </g>
+
+          <!-- 消费者 -->
+          <g class="sbx-block" data-block="query">
+            <rect x="580" y="368" width="130" height="92" rx="10" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>
+            <text x="645" y="408" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">查询插件</text>
+            <text class="sbx-chip" data-chip="query" x="645" y="432" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">在岗</text>
+          </g>
+          <g class="sbx-block" data-block="chat">
+            <rect x="735" y="338" width="115" height="122" rx="10" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>
+            <text x="792" y="390" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">聊天插件</text>
+            <text class="sbx-chip" data-chip="chat" x="792" y="414" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">在岗</text>
+          </g>
+
+          <!-- 备用源（初始在画布外上方） -->
+          <g class="sbx-block" data-block="spare">
+            <rect x="330" y="-150" width="170" height="110" rx="10" fill="var(--paper)" stroke="var(--ink)" stroke-width="2" stroke-dasharray="7 5"/>
+            <text x="415" y="-88" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">备用源</text>
+            <text class="sbx-chip" data-chip="spare" x="415" y="-66" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">待命</text>
+          </g>
+
+          <!-- 基座 -->
+          <rect x="24" y="486" width="832" height="9" rx="4" fill="var(--ink)" opacity=".14"/>
+          <text x="24" y="518" font-size="12" letter-spacing=".22em" fill="var(--ink)" opacity=".55">运行时 · 所有组件都插在这条基座上</text>
+          <text x="856" y="518" text-anchor="end" font-size="12" letter-spacing=".18em" fill="var(--ink)" opacity=".55">CORDIS SANDBOX</text>
+        </svg>
+      </div>
+
+      <!-- 旁白面板 -->
+      <aside class="sbx-narr" aria-live="polite">
+        <p class="sbx-term" data-sbx-term>开场</p>
+        <p class="sbx-text" data-sbx-text>画布上是五块插件积木：左边的主题皮肤和日志器谁也不依赖；中间的数据库驱动是提供者；右边的查询和聊天插件靠它过活。按「下一步」开始第一幕。</p>
+        <div class="sbx-dots" role="list" aria-label="六步进度">
+          <span class="sbx-dot" data-dot="1">① 装上</span>
+          <span class="sbx-dot" data-dot="2">② 接线</span>
+          <span class="sbx-dot" data-dot="3">③ 供电</span>
+          <span class="sbx-dot" data-dot="4">④ 拔掉</span>
+          <span class="sbx-dot" data-dot="5">⑤ 换源</span>
+          <span class="sbx-dot" data-dot="6">⑥ 复原</span>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 控制条 -->
+    <div class="sbx-ctl">
+      <button type="button" class="sbx-primary" data-sbx-next>下一步：① 装上</button>
+      <button type="button" class="sbx-ghost" data-sbx-auto>自动播放</button>
+      <button type="button" class="sbx-ghost" data-sbx-reset>重来</button>
+    </div>
+
+    <!-- 本章图版：主图两张（sandbox-1 / sandbox-2，生图已出，台账 m47/gen-ledger.json） -->
+    <div class="plate-duo" data-reveal>
+      <figure class="plate">
+        <div class="slot slot-v34">
+          <img
+            src="/images/web/sandbox-1.jpg"
+            alt="单墨钴蓝铜版画：提供者积木被自己的线缆吊离画布，插座处留下一块纸白；两块消费者积木褪成淡网点、面上只剩空灯泡轮廓，松脱的依赖线垂成虚影；两块无依赖积木仍是满墨实印、带着运转须线；旁边一块虚线幽灵块待命"
+            width="900"
+            height="1200"
+            loading="lazy"
+          />
+        </div>
+        <figcaption class="plate-cap">
+          <p class="cap-line"><b class="cap-no">图 01</b><span class="cap-title">「拔掉→熄灭」六幕分镜</span></p>
+          <p class="cap-desc">提供者被拔离画布的一瞬：依赖线松脱变虚，两块消费者当场熄灭，无依赖的积木照常满墨运转。</p>
+        </figcaption>
+      </figure>
+      <figure class="plate">
+        <div class="slot slot-v34">
+          <img
+            src="/images/web/sandbox-2.jpg"
+            alt="单墨钴蓝铜版画：备用源积木沿短导轨滑入空插座，接触一瞬迸出短须线；近处消费者已复明满墨，远处一块正沿原依赖线重新上墨；两块无依赖积木全程未受惊扰，幽灵块仍待命"
+            width="900"
+            height="1200"
+            loading="lazy"
+          />
+        </div>
+        <figcaption class="plate-cap">
+          <p class="cap-line"><b class="cap-no">图 02</b><span class="cap-title">「换源→复明」六幕分镜</span></p>
+          <p class="cap-desc">备用源滑进空插座：依赖线重新画实，两块消费者沿原路逐块复明，独立积木全程未受惊扰。</p>
+        </figcaption>
+      </figure>
+    </div>
+
+    <!-- 小卡：动效卡片（hover 抬升 + 阴影加深，transition 只动 transform / box-shadow） -->
+    <div class="mcards" data-reveal>
+      <figure class="mcard">
+        <div class="slot slot-11">
+          <img
+            src="/images/web/cards/sandbox-card1.jpg"
+            alt="单墨钴蓝铜版画小卡：一只两脚工业插头，线缆松松绕一圈通向纸缘，一脚尖上一点火花须线"
+            width="600"
+            height="600"
+            loading="lazy"
+          />
+        </div>
+        <figcaption class="plate-cap">
+          <p class="cap-line"><b class="cap-no">小卡 · 插头</b></p>
+          <p class="cap-desc">两脚插头——这一页所有的戏剧性，都从拔掉它开始。</p>
+        </figcaption>
+      </figure>
+    </div>
+
+    <!-- 文稿尾段照录：时效声明 -->
+    <hr class="sbx-rule" />
+    <p class="sbx-note">时效声明：dsh 目前是 developer preview，官方 README 明言会有破坏兼容的变更；本页内容为 2026-10 快照。</p>
+  </article>
+</BaseLayout>
+
+<style>
+  /* 书页壳内排版：栏宽与阶梯随 .reading（global.css Book v3 层）；
+     色彩规矩（2026-10 去蓝令）：正文近黑（--text），钴蓝只留标题/kicker/strong 重点/
+     框线/链接/画布积木墨线；六幕交互引擎本体不动，只调壳上配色。 */
+  .sbx-head .lead { max-width: 40em; margin-bottom: 26px; }
+  .sbx-head .lead strong { color: var(--ink); font-weight: 700; }  /* strong 重点保留钴蓝 */
+
+  /* ── 六幕舞台：<1280px 画布与旁白上下堆叠（画布吃满栏宽，字不缩水）；
+        ≥1280px 双栏并向右出血用足书壳空边，旁白仍守在画布右侧（导语口径） ── */
+  .sbx-stage-wrap {
+    display: grid; grid-template-columns: 1fr;
+    gap: 22px; align-items: stretch;
+  }
+  @media (min-width: 1280px) {
+    .sbx-stage-wrap {
+      grid-template-columns: minmax(0, 1fr) 290px;
+      /* 出血按 Book v3 新壳口径：reading 左锚总宽 --readw(920)，右缘 = sidebar + readw；
+         出血后 stage 右缘距视口至少 24px，不溢出（2026-10-03 版心重排修正） */
+      --sbx-out: min(420px, calc(100vw - var(--sidebar-w) - var(--readw) - 24px));
+      width: calc(100% + var(--sbx-out));
+      margin-right: calc(-1 * var(--sbx-out));
+    }
+  }
+  .sbx-canvas {
+    border: 2px solid var(--ink); background: var(--paper);
+    box-shadow: 10px 10px 0 var(--ink-14);
+    padding: 10px; line-height: 0;
+  }
+  .sbx-canvas svg { width: 100%; height: auto; }
+
+  .sbx-narr {
+    border: 2px solid var(--ink); background: var(--paper);
+    box-shadow: 10px 10px 0 var(--ink-14);
+    padding: 18px 20px; display: flex; flex-direction: column; gap: 12px;
+    line-height: 1.6;
+  }
+  .sbx-term {
+    align-self: flex-start;
+    background: var(--ink); color: var(--paper);   /* 术语标签属 kicker/重点家族，保留钴蓝实印 */
+    font-size: 13px; font-weight: 700; letter-spacing: .1em;
+    padding: 3px 12px;
+  }
+  .sbx-text { font-size: 15px; flex: 1; color: var(--text-body); }  /* 旁白正文近黑 */
+  .sbx-dots { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+  .sbx-dot {
+    font-size: 12px; border: 1.5px solid var(--ink-20);
+    padding: 2px 8px; color: var(--text); opacity: .55;
+  }
+  .sbx-dot.done { border-color: var(--ink); opacity: 1; }
+  .sbx-dot.now { background: var(--ink); color: var(--paper); border-color: var(--ink); opacity: 1; }
+
+  /* 控制条：按钮实底走近黑（与 PagePager / CTA 同一按钮语法），钴蓝不再大面积铺底 */
+  .sbx-ctl { display: flex; gap: 14px; margin-top: 26px; align-items: center; flex-wrap: wrap; }
+  .sbx-primary {
+    background: var(--text); color: var(--paper); border: none;
+    font-size: 16px; font-weight: 700; padding: 13px 30px; cursor: pointer;
+  }
+  .sbx-primary:hover { opacity: .9; }
+  .sbx-primary[disabled] { opacity: .35; cursor: default; }
+  .sbx-ghost {
+    background: var(--paper); color: var(--text); border: 2px solid var(--ink);
+    font-size: 15px; font-weight: 700; padding: 11px 22px; cursor: pointer;
+  }
+  .sbx-ghost:hover { background: var(--text); border-color: var(--text); color: var(--paper); }
+
+  /* ── 本章图版：2px 钴蓝框体 + 偏移实影（与 .card 同语）；图未生成时占位框顶位 ── */
+  .plate-duo {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: var(--card-gap);
+    margin-top: 64px;                                  /* ≤ --section-gap 72px */
+  }
+  .plate,
+  .mcard {
+    margin: 0; min-width: 0;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    box-shadow: 8px 8px 0 var(--ink-14);
+    padding: 12px;
+  }
+  .slot {
+    position: relative; overflow: hidden;             /* 版画井：真图满幅（比例与生图原生一致，无裁切） */
+  }
+  .slot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .slot-v34 { aspect-ratio: 3 / 4; }
+  .slot-11 { aspect-ratio: 1 / 1; }
+  .plate-cap { margin-top: 12px; }
+  .cap-line { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .cap-no {
+    font-family: var(--mono); font-weight: 500; font-size: 13px;
+    letter-spacing: .16em; color: var(--ink);          /* 图号属重点记号，保留钴蓝 */
+  }
+  .cap-title { font-family: var(--serif); font-weight: 700; font-size: 15px; color: var(--text); }
+  .cap-desc { margin-top: 6px; font-size: 14px; line-height: 1.8; color: var(--muted); }
+
+  /* ── 小卡动效：hover 抬升 + 阴影加深；transition 只动 transform / box-shadow ── */
+  .mcards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(168px, 208px));
+    gap: var(--card-gap); justify-content: start;
+    margin-top: var(--card-gap);
+  }
+  .mcard {
+    box-shadow: 4px 4px 0 var(--ink-14);
+    transition: transform .22s ease, box-shadow .22s ease;
+  }
+  .mcard:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 9px 9px 0 var(--ink-20);               /* 阴影更长且更深的墨 */
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mcard { transition: none; }
+    .mcard:hover { transform: none; }
+  }
+
+  .sbx-note { font-size: 14px; color: var(--text-body); opacity: .72; margin-top: 22px; }
+
+  /* 徽标行（frontmatter 计数照录）：h1 之后、导语之前，与 limits 等页同位 */
+  .sbx-badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 22px; }
+
+  /* 你会拿到什么（文稿照录节）：strong 词头与导语同规——重点保留钴蓝 */
+  .sbx-get strong { color: var(--ink); font-weight: 700; }
+
+  /* 文稿尾段：链接行 + 分隔线 + 时效声明 */
+  .sbx-next { margin-top: 18px; }
+  .sbx-next a {
+    font-family: var(--serif); font-size: 17px; font-weight: 700;
+    color: var(--ink); text-decoration: none;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 2px;
+  }
+  .sbx-next a:hover { background: var(--ink); color: var(--paper); }
+  .sbx-rule {
+    border: none; border-top: 1px solid var(--hairline);
+    margin: 44px 0 0;
+  }
+
+  @media (max-width: 960px) {
+    .plate-duo { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+  import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
+  gsap.registerPlugin(DrawSVGPlugin, MotionPathPlugin);
+
+  interface StepSpec {
+    term: string;
+    text: string;
+    action: string;   // 播完这一幕后，下一步按钮显示的文案
+    run: (tl: gsap.core.Timeline, q: SceneRefs) => void;
+  }
+
+  interface SceneRefs {
+    blocks: Record<string, HTMLElement | null>;
+    chips: Record<string, HTMLElement | null>;
+    deps: NodeListOf<SVGPathElement>;
+    sdeps: NodeListOf<SVGPathElement>;
+    pulses: NodeListOf<HTMLElement>;
+  }
+
+  function setChip(q: SceneRefs, name: string, label: string): void {
+    const el = q.chips[name];
+    if (el) el.textContent = label;
+  }
+
+  const STEPS: StepSpec[] = [
+    {
+      term: '第 1 幕 · 装上',
+      text: '积木落到运行时上。左边的主题皮肤和日志器不需要任何人；右边的查询和聊天还没连线。论文里每块积木叫一个「组件」（component）。',
+      action: '下一步：② 接线',
+      run: (tl, q) => {
+        tl.from(Object.values(q.blocks).filter(Boolean) as HTMLElement[], {
+          opacity: 0, y: 26, duration: 0.55, stagger: 0.12, ease: 'power2.out',
+        });
+      },
+    },
+    {
+      term: '第 2 幕 · 接线',
+      text: '查询和聊天各交上一张需求清单：「我需要数据库」。两条依赖线画了出来，运行时把清单记在总账上。交清单这个动作，论文叫「反效应」（coeffect）。',
+      action: '下一步：③ 供电',
+      run: (tl, q) => {
+        tl.to(q.deps, { drawSVG: '0% 100%', duration: 0.7, stagger: 0.2, ease: 'power1.inOut' });
+      },
+    },
+    {
+      term: '第 3 幕 · 供电',
+      text: '依赖齐了，两块插件自动开机——注意，没人写「等数据库好了再启动我」的代码，运行时对着清单自动判定。这叫「响应式」（reactive）：需求齐就开机。',
+      action: '下一步：④ 拔掉数据库',
+      run: (tl, q) => {
+        tl.to(q.pulses[0], { motionPath: { path: q.deps[0] }, opacity: 1, duration: 0.9, ease: 'power1.in' })
+          .to(q.pulses[1], { motionPath: { path: q.deps[1] }, opacity: 1, duration: 1.0, ease: 'power1.in' }, '<')
+          .to(q.pulses, { opacity: 0, duration: 0.3 });
+      },
+    },
+    {
+      term: '第 4 幕 · 拔掉',
+      text: '把数据库拔了。查询和聊天当场检测到断供，自动歇业——没有报错、没有崩溃，只是安静熄灭。而主题皮肤和日志器毫发无伤：连锁只沿声明过的依赖传导。这就是「断供即歇业」。',
+      action: '下一步：⑤ 换备用源',
+      run: (tl, q) => {
+        tl.to(q.blocks.db, { y: -22, duration: 0.4, ease: 'power2.inOut' })
+          .to(q.blocks.db, { opacity: 0.25, duration: 0.3 })
+          .call(() => {
+            setChip(q, 'db', '提供者 · 离场');
+            setChip(q, 'query', '歇业');
+            setChip(q, 'chat', '歇业');
+          })
+          .to([q.blocks.query, q.blocks.chat], { opacity: 0.22, y: 6, duration: 0.5, stagger: 0.15 })
+          .to(q.deps, { opacity: 0.12, duration: 0.4 }, '<');
+      },
+    },
+    {
+      term: '第 5 幕 · 换源',
+      text: '备用源滑进画布，接上同样的键。依赖重新齐了，查询和聊天自动复工——不用重启、不用人管。「换提供者」就是这么平常的一件事。',
+      action: '下一步：⑥ 复原',
+      run: (tl, q) => {
+        tl.to(q.blocks.spare, { y: 410, duration: 0.7, ease: 'power2.out' })
+          .call(() => {
+            setChip(q, 'spare', '提供者 · 在岗');
+            setChip(q, 'query', '在岗');
+            setChip(q, 'chat', '在岗');
+          })
+          .fromTo(q.sdeps, { drawSVG: '0% 0%', opacity: 1 }, { drawSVG: '0% 100%', duration: 0.6, stagger: 0.15 })
+          .to([q.blocks.query, q.blocks.chat], { opacity: 1, y: 0, duration: 0.45, stagger: 0.12 }, '-=0.3');
+      },
+    },
+    {
+      term: '第 6 幕 · 复原',
+      text: '一切按倒序退回去：换源线收回、备用源归位待命、数据库回到在岗、依赖线重新接通。账面清零，像什么都没发生过——「可逆」（revertible）不是口号，是每步都留了撤销说明书的必然结果。',
+      action: '演示完毕 · 点「重来」再走一遍',
+      run: (tl, q) => {
+        tl.to(q.sdeps, { opacity: 0, duration: 0.35 })
+          .to(q.blocks.spare, { y: 0, duration: 0.55, ease: 'power2.inOut' })
+          .call(() => {
+            setChip(q, 'spare', '待命');
+            setChip(q, 'db', '提供者 · 在岗');
+          })
+          .to(q.blocks.db, { y: 0, opacity: 1, duration: 0.5 })
+          .to(q.deps, { opacity: 1, duration: 0.4 }, '<');
+      },
+    },
+  ];
+
+  function initSandbox(): void {
+    const root = document.querySelector<HTMLElement>('[data-sbx-scene]');
+    if (!root || root.dataset.sbxInit) return;
+    root.dataset.sbxInit = '1';
+
+    const termEl = document.querySelector<HTMLElement>('[data-sbx-term]');
+    const textEl = document.querySelector<HTMLElement>('[data-sbx-text]');
+    const nextBtn = document.querySelector<HTMLButtonElement>('[data-sbx-next]');
+    const autoBtn = document.querySelector<HTMLButtonElement>('[data-sbx-auto]');
+    const resetBtn = document.querySelector<HTMLButtonElement>('[data-sbx-reset]');
+    const dots = Array.from(document.querySelectorAll<HTMLElement>('[data-dot]'));
+
+    const q: SceneRefs = {
+      blocks: {
+        theme: root.querySelector('[data-block="theme"]'),
+        logger: root.querySelector('[data-block="logger"]'),
+        db: root.querySelector('[data-block="db"]'),
+        query: root.querySelector('[data-block="query"]'),
+        chat: root.querySelector('[data-block="chat"]'),
+        spare: root.querySelector('[data-block="spare"]'),
+      },
+      chips: {
+        db: root.querySelector('[data-chip="db"]'),
+        query: root.querySelector('[data-chip="query"]'),
+        chat: root.querySelector('[data-chip="chat"]'),
+        spare: root.querySelector('[data-chip="spare"]'),
+      },
+      deps: root.querySelectorAll<SVGPathElement>('.sbx-dep'),
+      sdeps: root.querySelectorAll<SVGPathElement>('.sbx-sdep'),
+      pulses: root.querySelectorAll<HTMLElement>('.sbx-pulse'),
+    };
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let step = 0;          // 已完成的幕数（0 = 开场）
+    let playing = false;
+
+    const syncDots = () => {
+      dots.forEach((d) => {
+        const n = Number(d.dataset.dot);
+        d.classList.toggle('done', n <= step && step !== 0);
+        d.classList.toggle('now', n === step + 1);
+      });
+    };
+    const syncButtons = () => {
+      if (!nextBtn) return;
+      if (step >= STEPS.length) {
+        nextBtn.disabled = true;
+        nextBtn.textContent = STEPS[STEPS.length - 1].action;
+      } else {
+        nextBtn.disabled = playing;
+        nextBtn.textContent = playing ? '演示中…' : (step === 0 ? '下一步：① 装上' : STEPS[step - 1].action);
+      }
+    };
+
+    const resetScene = () => {
+      gsap.set(Object.values(q.blocks).filter(Boolean), { clearProps: 'all' });
+      gsap.set(q.deps, { drawSVG: '0% 0%', opacity: 1 });
+      gsap.set(q.sdeps, { opacity: 0 });
+      gsap.set(q.pulses, { opacity: 0 });
+      setChip(q, 'db', '提供者 · 在岗');
+      setChip(q, 'query', '在岗');
+      setChip(q, 'chat', '在岗');
+      setChip(q, 'spare', '待命');
+      step = 0;
+      playing = false;
+      if (termEl) termEl.textContent = '开场';
+      if (textEl) textEl.textContent = '画布上是五块插件积木：左边的主题皮肤和日志器谁也不依赖；中间的数据库驱动是提供者；右边的查询和聊天插件靠它过活。按「下一步」开始第一幕。';
+      syncDots();
+      syncButtons();
+    };
+
+    const playStep = (i: number, onDone?: () => void): void => {
+      const spec = STEPS[i];
+      if (termEl) termEl.textContent = spec.term;
+      if (textEl) textEl.textContent = spec.text;
+      if (reduce) {
+        // 降级：跳过动画，直接视为该幕完成（各幕的状态标注已在上面 call 中处理）
+        step = i + 1;
+        syncDots();
+        syncButtons();
+        onDone?.();
+        return;
+      }
+      playing = true;
+      syncButtons();
+      const tl = gsap.timeline({
+        onComplete: () => {
+          playing = false;
+          step = i + 1;
+          syncDots();
+          syncButtons();
+          onDone?.();
+        },
+      });
+      spec.run(tl, q);
+    };
+
+    nextBtn?.addEventListener('click', () => {
+      if (playing || step >= STEPS.length) return;
+      playStep(step);
+    });
+
+    autoBtn?.addEventListener('click', () => {
+      if (playing) return;
+      if (step >= STEPS.length) resetScene();
+      const chain = (i: number) => {
+        if (i >= STEPS.length) return;
+        playStep(i, () => window.setTimeout(() => chain(i + 1), 900));
+      };
+      chain(step);
+    });
+
+    resetBtn?.addEventListener('click', resetScene);
+
+    resetScene();
+  }
+
+  initSandbox();
+  document.addEventListener('astro:page-load', () => initSandbox());
+</script>

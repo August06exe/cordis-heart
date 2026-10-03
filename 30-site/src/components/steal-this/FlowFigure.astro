@@ -1,0 +1,82 @@
+---
+/**
+ * 标题带右侧图解：生成器三步（勾选、拼装、带走）。
+ * 几何与文案逐字照录 50-design/视觉稿/steal-this/steal-this.html 的 flow-svg，
+ * 色值换用全站令牌（global.css）：积木 2px 实印描边、纸白填充，基座墨 .14，
+ * 流向贝塞尔 1.6px 墨 .70（图形线 3.78:1 过 3:1），块内标签实印 / 墨 .80。
+ * 本图是叙事件不是装饰件，无动画（本页动效只来自用户交互，04-定稿 steal-this brief）。
+ */
+---
+
+<svg viewBox="0 0 640 306" role="img" aria-labelledby="st-flow-title" xmlns="http://www.w3.org/2000/svg">
+  <title id="st-flow-title">生成器三步图解：勾选清单条目，右侧面板实时拼装 markdown，再复制或下载带走</title>
+  <defs>
+    <marker id="st-flow-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" class="dep-arrow"></path>
+    </marker>
+  </defs>
+  <g>
+    <path class="dep-curve" d="M 190 193 C 208 185, 224 185, 238 181" marker-end="url(#st-flow-arrowhead)"></path>
+    <path class="dep-curve" d="M 402 182 C 420 188, 436 194, 450 199" marker-end="url(#st-flow-arrowhead)"></path>
+  </g>
+  <g>
+    <rect class="block-box" x="30" y="140" width="156" height="106" rx="10"></rect>
+    <text class="dg-index" x="46" y="163">01</text>
+    <text class="block-label" x="108" y="194">勾选</text>
+    <text class="dg-note" x="108" y="222">15 条清单</text>
+  </g>
+  <g>
+    <rect class="block-box" x="242" y="118" width="156" height="128" rx="10"></rect>
+    <text class="dg-index" x="258" y="141">02</text>
+    <text class="block-label" x="320" y="182">拼装</text>
+    <text class="dg-note" x="320" y="210">逐条追加</text>
+  </g>
+  <g>
+    <rect class="block-box" x="454" y="152" width="156" height="94" rx="10"></rect>
+    <text class="dg-index" x="470" y="175">03</text>
+    <text class="block-label" x="532" y="200">带走</text>
+    <text class="dg-note" x="532" y="226">复制 / 下载</text>
+  </g>
+  <rect class="plinth" x="20" y="246" width="600" height="8" rx="4"></rect>
+  <text class="dg-note corner" x="20" y="286">输出 · MARKDOWN</text>
+  <text class="dg-note corner-r" x="620" y="286">STEAL THIS</text>
+</svg>
+
+<style>
+  .block-box { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+  .block-label {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: .08em;
+    fill: var(--ink);
+    text-anchor: middle;
+  }
+  .dg-index {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: .18em;
+    fill: var(--ink-80);
+  }
+  .dg-note {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: .18em;
+    fill: var(--ink-78);
+    text-anchor: middle;
+  }
+  .dg-note.corner { text-anchor: start; }
+  .dg-note.corner-r { text-anchor: end; }
+  .dep-curve { fill: none; stroke: var(--ink-70); stroke-width: 1.6; }
+  .dep-arrow { fill: var(--ink-70); }
+  .plinth { fill: var(--ink-14); }
+
+  /* <960px 图解通栏：字号随放大倍率抬档（照录视觉稿响应式口径） */
+  @media (max-width: 960px) {
+    .block-label { font-size: 30px; }
+    .dg-note { font-size: 20px; letter-spacing: .12em; }
+    .dg-index { font-size: 20px; }
+  }
+</style>

@@ -1,0 +1,115 @@
+---
+/**
+ * 词典术语卡（v2 §4 卡片原语：2px 墨线 + 纸底 + 偏移实影 + 22px 内边距）。
+ * 卡面固定三段（段名出自文稿导语「一句话 / 一个类比 / 落到你的项目里」），
+ * 全部展开在卡面，无浮层；编号块为实墨色块，承担卡内视觉（v2 §4）。
+ * 卡内正文 17.5px 实墨（v2 §2 正文档；--text-body 指向实墨，见 global.css 语义别名层）；
+ * 栏目标签走 v2 §2 小字档 14px。旧进场初始隐藏已移除（评审 P0 打回项）：
+ * 无滚动初始帧必须完整可见（v2 §5.3 默认帧可见精神），本卡不再参与任何显影编排。
+ * 注意：set:html 注入的内容不带 scoped 属性，行内 code / strong / .mark 走 :global()。
+ */
+interface Props {
+  n: string;
+  zh: string;
+  en: string;
+  defHtml: string;
+  analogyHtml: string;
+  sourceHtml: string;
+}
+
+const { n, zh, en, defHtml, analogyHtml, sourceHtml } = Astro.props;
+---
+
+<article class="g-card card" data-gcard data-n={n}>
+  <header class="card-head">
+    <span class="num" aria-hidden="true">{n}</span>
+    {en && <span class="en">{en}</span>}
+  </header>
+  <h3 class="zh-term">{zh}</h3>
+  <div class="seg">
+    <span class="seg-tag">一句话</span>
+    <p class="seg-txt" set:html={defHtml} />
+  </div>
+  <div class="seg">
+    <span class="seg-tag">一个类比</span>
+    <p class="seg-txt" set:html={analogyHtml} />
+  </div>
+  {sourceHtml && (
+    <div class="seg">
+      <span class="seg-tag">落到你的项目里</span>
+      <p class="seg-txt" set:html={sourceHtml} />
+    </div>
+  )}
+</article>
+
+<style>
+  .g-card {
+    min-width: 0;
+    cursor: default;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  /* 实墨编号块：纸白 mono 数字反白，卡内色块 + 数字双重视觉承载（v2 §4） */
+  .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: .08em;
+  }
+  .en {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: .05em;
+    color: var(--ink);
+  }
+  .zh-term {
+    margin-top: 14px;
+    font-size: 20px;
+    line-height: 1.4;
+    letter-spacing: .02em;
+  }
+  .seg + .seg { margin-top: 14px; }
+  .seg-tag {
+    display: block;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 14px;        /* v2 §2 小字档（评审 P1：11.5px 打回） */
+    letter-spacing: .18em;
+    color: var(--ink);      /* v2 §2：小字须实测 ≥4.5:1，.78 墨不达线，走实墨 7.48:1 */
+    margin-bottom: 4px;
+  }
+  .seg-txt {
+    font-size: 17.5px;      /* v2 §2 正文档（评审 P1：16px 打回，验收线 ≥17px） */
+    line-height: 1.9;
+    color: var(--text-body); /* 语义别名指向实墨（global.css） */
+  }
+  .seg-txt :global(strong) {
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .seg-txt :global(code) {
+    font-family: var(--mono);
+    font-size: .92em;
+  }
+  .seg-txt :global(.mark) {
+    text-decoration: underline dotted;
+    text-decoration-color: var(--ink-70);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  /* 默认帧可见（v2 §5.3 精神；2026-10 评审 P0 打回项）：卡片不做任何初始隐藏，
+     无滚动初始帧即完整版面。旧进场 stagger（html.js 初始 opacity:0 +
+     IntersectionObserver 显影）随 glossary-motion.ts 一并移除。 */
+</style>

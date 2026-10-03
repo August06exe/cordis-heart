@@ -1,0 +1,118 @@
+---
+/**
+ * 钉住场景动效引导（DesignRead v2 §5：钉住场景必配，缺即返工）。
+ * 两件套，更新一律由配套脚本 src/scripts/scene-guide.ts 的 update() 驱动：
+ *   1. 场景进度线：pin 区顶端 2px 墨线，长度随 scrub 进度增长（scaleX，铁律 1）；
+ *   2. 拍数指示器：右侧竖排圆点 + 当前拍名（实心=当前拍，随 scrub 进度点亮；
+ *      已过的拍点亮为墨 .70，未到的拍空心）。
+ * 用法（放进 pin 容器内部，容器需 position:relative，如 .hero-stage）：
+ *   <SceneGuide scene="hero" shots={['装上', '拔掉它', '连锁熄灭', '原样退回', '落定']} />
+ * 页动效脚本里（scrub 场景在时间轴 onUpdate 回读进度）：
+ *   import { bindSceneGuide } from '../scripts/scene-guide';
+ *   const guide = bindSceneGuide(root);
+ *   tl.eventCallback('onUpdate', () => guide?.update(beatIndex(tl.time()), tl.progress()));
+ * 拍名自动加「01 · 」式两位编号；指示器信息对辅助技术冗余（拍名正文与图注均有），
+ * 整体 aria-hidden，不进无障碍树。
+ */
+interface Props {
+  /** 拍名数组，顺序即拍序；组件自动加「01 · 」式编号 */
+  shots: string[];
+  /** 场景 id，与 registerScene 的 id 一致，便于调试定位（可省） */
+  scene?: string;
+}
+
+const { shots, scene = '' } = Astro.props;
+const pad = (n: number): string => String(n).padStart(2, '0');
+---
+
+<div class="scene-guide" data-scene-guide={scene} aria-hidden="true">
+  <div class="sg-track"><span class="sg-fill"></span></div>
+  <ol class="sg-dots">
+    {shots.map((name, i) => (
+      <li class="sg-item" data-shot={i}>
+        <span class="sg-name">{pad(i + 1)} · {name}</span>
+        <span class="sg-dot"></span>
+      </li>
+    ))}
+  </ol>
+</div>
+
+<style>
+  /* 引导层铺满 pin 容器、不接指针；放置容器需 position:relative */
+  .scene-guide {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  /* 场景进度线：pin 区顶端 2px；轨为墨 .14 基座，进度为实墨 scaleX（只动 transform） */
+  .sg-track {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--ink-14);
+  }
+  .sg-fill {
+    display: block;
+    height: 100%;
+    background: var(--ink);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+  }
+
+  /* 拍数指示器：右侧竖排，垂直居中；拍名在点左侧，只显当前拍 */
+  .sg-dots {
+    position: absolute;
+    right: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sg-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .sg-dot {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink-70);
+    background: transparent;
+    transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+  }
+  .sg-name {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .18em;
+    white-space: nowrap;
+    color: var(--ink);
+    opacity: 0;
+    transition: opacity .2s ease;
+  }
+  /* 已过的拍：点亮为墨 .70（淡墨属图解线档，非文字）；当前拍：实墨实心放大 */
+  .sg-item.is-lit .sg-dot { background: var(--ink-70); }
+  .sg-item.is-active .sg-dot {
+    background: var(--ink);
+    border-color: var(--ink);
+    transform: scale(1.3);
+  }
+  .sg-item.is-active .sg-name { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sg-dot, .sg-name { transition: none; }
+  }
+  @media (max-width: 960px) {
+    .sg-dots { right: 14px; gap: 12px; }
+  }
+</style>

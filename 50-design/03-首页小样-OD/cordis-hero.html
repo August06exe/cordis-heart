@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSH 的心脏 · Cordis 思想图鉴 - Hero 设计小样</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:       oklch(0.984 0.004 106.5);        /* 纸白 #FAFAF7 */
+    --fg:       oklch(0.449 0.182 265);          /* 全页唯一墨色：钴蓝 #2148B8 */
+    --ink:      var(--fg);
+    --ink-14:   oklch(0.449 0.182 265 / .14);    /* 浅墨 · 基座 */
+    --ink-20:   oklch(0.449 0.182 265 / .20);    /* 分隔细线 */
+    --ink-78:   oklch(0.449 0.182 265 / .78);    /* 小字 / 注脚 · ≥4.5:1 */
+    --ink-82:   oklch(0.449 0.182 265 / .82);    /* 正文 · ≥4.5:1 */
+    --paper:    var(--bg);
+    --serif: "Noto Serif SC","Songti SC","SimSun",serif;
+    --sans: "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection{ background: var(--ink-14); }
+
+  /* 印刷开本：页面四缘一圈细墨线 */
+  .sheet{
+    position:relative;
+    min-height:100vh;
+    margin:22px;
+    border:1px solid var(--ink-20);
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ── 报头 masthead ─────────────────────────── */
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:24px;
+    padding:26px 48px 20px;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .wordmark{ display:flex; align-items:baseline; gap:16px; }
+  .wordmark .latin{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:19px;
+    letter-spacing:.34em;
+  }
+  .wordmark .zh{
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:.18em;
+    color:var(--ink-82);
+  }
+  .masthead .folio{
+    font-size:12px;
+    letter-spacing:.22em;
+    color:var(--ink-78);
+    white-space:nowrap;
+  }
+
+  /* ── Hero 主区：左 40 文案 / 右 60 场景 ─────── */
+  .hero{
+    flex:1;
+    display:grid;
+    grid-template-columns: 40fr 60fr;
+    min-height:0;
+  }
+  .copy{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:64px 56px 64px 48px;
+    border-right:1px solid var(--ink-20);
+  }
+  .kicker{
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.42em;
+    color:var(--ink-78);
+    margin-bottom:34px;
+  }
+  h1.headline{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:clamp(38px, 3.6vw, 58px);
+    line-height:1.32;
+    letter-spacing:.015em;
+    max-width:11em;
+    text-wrap:balance;
+  }
+  h1 .restorable{
+    text-decoration:underline;
+    text-decoration-thickness:2px;
+    text-decoration-color:var(--ink-78);
+    text-underline-offset:.18em;
+  }
+  .sub{
+    margin-top:30px;
+    font-size:16px;
+    line-height:2.0;
+    color:var(--ink-82);
+    max-width:26em;
+  }
+  .sub .term{ font-weight:700; color:var(--ink); }
+  .footnote{
+    margin-top:auto;
+    padding-top:48px;
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+  .footnote .rule{ flex:1; height:1px; background:var(--ink-20); }
+
+  /* ── 场景：内联 SVG 几何插画 ───────────────── */
+  .scene{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:48px 56px;
+    min-width:0;
+  }
+  .scene svg{ width:100%; height:auto; max-height:82vh; display:block; }
+
+  .block-box{ fill:var(--paper); stroke:var(--ink); stroke-width:2; }
+  .block-label{
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.06em;
+    fill:var(--ink);
+    text-anchor:middle;
+  }
+  .block-label.core{ font-size:17px; font-weight:700; }
+  .block-index{
+    font-family:var(--sans);
+    font-weight:500;
+    font-size:10px;
+    letter-spacing:.18em;
+    fill:var(--ink);
+    opacity:.8;
+  }
+  .dep-curve{
+    fill:none;
+    stroke:var(--ink);
+    stroke-width:1.6;
+    opacity:.7;
+  }
+  .dep-arrow{ fill:var(--ink); opacity:.7; }
+  .plinth{ fill:var(--ink); opacity:.14; }
+  .scene-note{
+    font-family:var(--sans);
+    font-weight:500;
+    font-size:11px;
+    letter-spacing:.24em;
+    fill:var(--ink);
+    opacity:.78;
+  }
+
+  /* ── 页脚 ─────────────────────────────────── */
+  .colophon{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:24px;
+    padding:18px 48px 22px;
+    border-top:1px solid var(--ink-20);
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+
+  :focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+
+  /* ── 响应式：<960px 竖排，禁止横向滚动 ──────── */
+  @media (max-width: 960px){
+    .sheet{ margin:14px; }
+    .masthead{ padding:20px 24px 16px; flex-wrap:wrap; }
+    .hero{ grid-template-columns:1fr; }
+    .copy{
+      border-right:none;
+      border-bottom:1px solid var(--ink-20);
+      padding:44px 24px 36px;
+    }
+    h1.headline{ font-size:clamp(32px, 8vw, 44px); }
+    .footnote{ padding-top:32px; }
+    .scene{ padding:32px 20px; }
+    .colophon{ padding:16px 24px 20px; flex-wrap:wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet" data-od-id="page-sheet">
+
+  <!-- 报头 -->
+  <header class="masthead" data-od-id="masthead">
+    <div class="wordmark">
+      <span class="latin">CORDIS</span>
+      <span class="zh">DSH 的心脏 · 思想图鉴</span>
+    </div>
+    <span class="folio">HERO · 设计小样 № 01</span>
+  </header>
+
+  <!-- Hero -->
+  <main class="hero" data-od-id="hero">
+
+    <!-- 左 40%：文案 -->
+    <section class="copy" data-od-id="hero-copy">
+      <p class="kicker" data-od-id="kicker">支撑框架 · 图鉴开篇</p>
+      <h1 class="headline" data-od-id="headline">让运行中的软件换零件，还能<span class="restorable">原样退回去</span></h1>
+      <p class="sub" data-od-id="sub-copy"><span class="term">Cordis</span> 是 deepseek-harness 背后的支撑框架，这个站把它的思想拆给你看。</p>
+      <div class="footnote" data-od-id="copy-footnote">
+        <span>图 01</span>
+        <span class="rule" aria-hidden="true"></span>
+        <span>积木与依赖</span>
+      </div>
+    </section>
+
+    <!-- 右 60%：场景 -->
+    <section class="scene" data-od-id="hero-scene" aria-label="Cordis 插件积木插画">
+      <svg viewBox="0 0 780 620" role="img" data-od-id="scene-svg"
+           xmlns="http://www.w3.org/2000/svg" aria-labelledby="scene-title">
+        <title id="scene-title">五块插件积木立于运行时基座上，中央数据库驱动向右侧两块插件伸出贝塞尔依赖曲线</title>
+
+        <defs>
+          <marker id="dep-arrowhead" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" class="dep-arrow"/>
+          </marker>
+        </defs>
+
+        <!-- 贝塞尔依赖曲线：数据库驱动 → 查询插件 / 聊天插件 -->
+        <g data-od-id="dependency-curves">
+          <path class="dep-curve" d="M 416 412 C 462 336, 512 402, 562 462"
+                marker-end="url(#dep-arrowhead)"/>
+          <path class="dep-curve" d="M 416 412 C 484 268, 668 296, 698 434"
+                marker-end="url(#dep-arrowhead)"/>
+          <text class="scene-note" x="502" y="300">依赖</text>
+        </g>
+
+        <!-- 积木 01 · 主题皮肤 -->
+        <g data-od-id="block-theme">
+          <rect class="block-box" x="36" y="452" width="138" height="108" rx="10"/>
+          <text class="block-index" x="50" y="472">01</text>
+          <text class="block-label" x="105" y="511">主题皮肤</text>
+        </g>
+
+        <!-- 积木 02 · 日志器 -->
+        <g data-od-id="block-logger">
+          <rect class="block-box" x="198" y="482" width="104" height="78" rx="10"/>
+          <text class="block-index" x="212" y="502">02</text>
+          <text class="block-label" x="250" y="526">日志器</text>
+        </g>
+
+        <!-- 积木 03 · 数据库驱动（中央核心，最高） -->
+        <g data-od-id="block-database">
+          <rect class="block-box" x="326" y="412" width="156" height="148" rx="10"/>
+          <text class="block-index" x="340" y="432">03</text>
+          <text class="block-label core" x="404" y="492">数据库驱动</text>
+        </g>
+
+        <!-- 积木 04 · 查询插件 -->
+        <g data-od-id="block-query">
+          <rect class="block-box" x="506" y="468" width="112" height="92" rx="10"/>
+          <text class="block-index" x="520" y="488">04</text>
+          <text class="block-label" x="562" y="519">查询插件</text>
+        </g>
+
+        <!-- 积木 05 · 聊天插件 -->
+        <g data-od-id="block-chat">
+          <rect class="block-box" x="642" y="440" width="112" height="120" rx="10"/>
+          <text class="block-index" x="656" y="460">05</text>
+          <text class="block-label" x="698" y="505">聊天插件</text>
+        </g>
+
+        <!-- 浅墨基座横条 -->
+        <rect class="plinth" x="20" y="560" width="740" height="8" rx="4" data-od-id="plinth"/>
+        <text class="scene-note" x="20" y="592">运行中的软件 · 运行时</text>
+        <text class="scene-note" x="760" y="592" text-anchor="end">CORDIS RUNTIME</text>
+      </svg>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="colophon" data-od-id="colophon">
+    <span>deepseek-harness / Cordis 支撑框架</span>
+    <span>设计小样 · 单墨编辑印刷</span>
+  </footer>
+</div>
+</body>
+</html>

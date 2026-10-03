@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cordis 思想图鉴 · 借鉴清单</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:       oklch(0.984 0.004 106.5);        /* 纸白 #FAFAF7 */
+    --fg:       oklch(0.449 0.182 265);          /* 全页唯一墨色：钴蓝 #2148B8 */
+    --ink:      var(--fg);
+    --ink-14:   oklch(0.449 0.182 265 / .14);    /* 浅墨 · 基座 / 高亮闪 */
+    --ink-20:   oklch(0.449 0.182 265 / .20);    /* 分隔细线 */
+    --ink-70:   oklch(0.449 0.182 265 / .70);    /* 图解线 · 图形 ≥3:1 */
+    --ink-78:   oklch(0.449 0.182 265 / .78);    /* 小字 / 注脚 · ≥4.5:1 */
+    --ink-82:   oklch(0.449 0.182 265 / .82);    /* 正文 · ≥4.5:1 */
+    --paper:    var(--bg);
+    --serif: "Noto Serif SC","Songti SC","SimSun",serif;
+    --sans:  "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    --mono:  "IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection{ background: var(--ink-14); }
+  :focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+
+  /* 印刷开本：四缘一圈细墨线 */
+  .sheet{
+    position:relative;
+    min-height:100vh;
+    min-height:100dvh;
+    margin:22px;
+    border:1px solid var(--ink-20);
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* 报头 */
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:24px;
+    padding:26px 48px 20px;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .wordmark{ display:flex; align-items:baseline; gap:16px; }
+  .wordmark .latin{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:19px;
+    letter-spacing:.34em;
+  }
+  .wordmark .zh{
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:.18em;
+    color:var(--ink-82);
+  }
+  .masthead .folio{
+    font-size:12px;
+    letter-spacing:.22em;
+    color:var(--ink-78);
+    white-space:nowrap;
+  }
+
+  /* 标题带：左文案 / 右图解 */
+  .titleband{
+    display:grid;
+    grid-template-columns: 11fr 9fr;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .tb-copy{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:58px 56px 56px 48px;
+    border-right:1px solid var(--ink-20);
+    min-width:0;
+  }
+  .kicker{
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.42em;
+    color:var(--ink-78);
+    margin-bottom:34px;
+  }
+  h1.headline{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:clamp(38px, 3.6vw, 58px);
+    line-height:1.32;
+    letter-spacing:.015em;
+    max-width:11em;
+    text-wrap:balance;
+  }
+  .sub{
+    margin-top:30px;
+    font-size:16px;
+    line-height:2.0;
+    color:var(--ink-82);
+    max-width:26em;
+  }
+  .tb-fig{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:24px;
+    padding:48px 48px 42px;
+    min-width:0;
+  }
+  .tb-fig svg{ width:100%; height:auto; display:block; }
+  .figcap{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+  .figcap .rule{ flex:1; height:1px; background:var(--ink-20); }
+
+  /* SVG 图解语言：圆角积木 + 贝塞尔依赖线 + 浅墨基座 */
+  .block-box{ fill:var(--paper); stroke:var(--ink); stroke-width:2; }
+  .block-label{
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:20px;
+    letter-spacing:.08em;
+    fill:var(--ink);
+    text-anchor:middle;
+  }
+  .dg-index{
+    font-family:var(--mono);
+    font-weight:500;
+    font-size:12px;
+    letter-spacing:.18em;
+    fill:var(--ink);
+    opacity:.8;
+  }
+  .dg-note{
+    font-family:var(--sans);
+    font-weight:500;
+    font-size:15px;
+    letter-spacing:.18em;
+    fill:var(--ink);
+    opacity:.78;
+    text-anchor:middle;
+  }
+  .dg-note.corner{ text-anchor:start; }
+  .dg-note.corner-r{ text-anchor:end; }
+  .dep-curve{
+    fill:none;
+    stroke:var(--ink);
+    stroke-width:1.6;
+    opacity:.7;
+  }
+  .dep-arrow{ fill:var(--ink); opacity:.7; }
+  .plinth{ fill:var(--ink); opacity:.14; }
+
+  /* 主区工作台：非对称双栏 */
+  .workbench{
+    flex:1;
+    display:grid;
+    grid-template-columns: 58fr 42fr;
+  }
+  .checkcol{
+    border-right:1px solid var(--ink-20);
+    padding:40px 44px 48px 48px;
+    min-width:0;
+  }
+  .listhead{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:16px;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .lh{
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.24em;
+    color:var(--ink-78);
+  }
+
+  /* 清单：两列锯齿，无盒行 + 细线分隔 */
+  .list{
+    columns:2;
+    column-gap:44px;
+    column-rule:1px solid var(--ink-20);
+    padding-top:4px;
+  }
+  .item{
+    position:relative;
+    break-inside:avoid;
+    padding:19px 8px 21px 16px;
+    border-bottom:1px solid var(--ink-20);
+    border-left:2px solid transparent;
+    transition:border-color .14s ease;
+  }
+  .item.on{ border-left-color:var(--ink); }
+  .item label{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    cursor:pointer;
+  }
+  .cbx{
+    position:absolute;
+    opacity:0;
+    width:20px; height:20px;
+    left:18px; top:22px;
+    margin:0;
+  }
+  .cbx:focus-visible{ outline:none; }
+  .cbx:focus-visible + label .box{ outline:2px solid var(--ink); outline-offset:3px; }
+  .box{
+    flex:0 0 auto;
+    width:20px; height:20px;
+    margin-top:3px;
+    border:1.5px solid var(--ink-70);
+    background:transparent;
+    position:relative;
+    transition:border-color .14s ease, background-color .14s ease;
+  }
+  .item label:hover .box{ border-color:var(--ink); }
+  .tick{
+    position:absolute;
+    left:4.5px; top:1.5px;
+    width:6px; height:11px;
+    border-right:2px solid var(--bg);
+    border-bottom:2px solid var(--bg);
+    transform:rotate(42deg) scale(0);
+    transform-origin:50% 50%;
+    transition:transform .14s ease;
+  }
+  .item.on .box{ background:var(--ink); border-color:var(--ink); }
+  .item.on .tick{ transform:rotate(42deg) scale(1); }
+  .num{
+    flex:0 0 auto;
+    margin-top:5px;
+    font-family:var(--mono);
+    font-weight:500;
+    font-size:11px;
+    letter-spacing:.12em;
+    color:var(--ink-78);
+    transition:color .14s ease;
+  }
+  .item.on .num{ color:var(--ink); }
+  .item.on .src .s-txt{ color:var(--ink); }
+  .txt{ flex:1; min-width:0; }
+  .t{
+    display:block;
+    font-weight:700;
+    font-size:15.5px;
+    line-height:1.55;
+    color:var(--ink);
+  }
+  .d{
+    display:block;
+    margin-top:7px;
+    font-size:14px;
+    line-height:1.85;
+    color:var(--ink-82);
+  }
+
+  /* 出处行：徽标 + 出处小字，独立于勾选 label 的第二行 */
+  .src{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:10px;
+    padding-left:50px;
+    cursor:default;
+  }
+  .lv{
+    flex:0 0 auto;
+    display:inline-block;
+    width:12px; height:12px;
+    border-radius:2px;
+    position:relative;
+  }
+  /* 一级 实印：实心墨方块 */
+  .lv-1{ background:var(--ink); }
+  /* 二级 网屏：SVG 半调网点填充；网点覆盖率 14.1% 等效对比度仅 1.17:1，承载不了表意，
+     叠 1.5px 墨 .70 描边承载表意（同 .lv-3 线档，线色实测 3.76:1 过 3:1 线） */
+  .lv-2{ background:var(--paper); border:1.5px solid var(--ink-70); }
+  .lv-2 svg{ display:block; width:100%; height:100%; border-radius:2px; }
+  .lv-2 rect{ fill:var(--paper); }
+  .lv-2 circle{ fill:var(--ink-70); }
+  /* 三级 细线：空心描边（本页 15 条无此档，形态备用） */
+  .lv-3{ background:transparent; border:1.5px solid var(--ink-70); }
+  /* 浮层触发：徽标可聚焦，出处文字同触发（hover / focus / tap 均可弹出） */
+  .lv-wrap{ display:inline-flex; align-items:center; outline:none; }
+  .lv-wrap:hover .lv-1, .lv-wrap:focus-visible .lv-1{ outline:2px solid var(--ink); outline-offset:2px; }
+  .lv-wrap:focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+  .s-txt{ color:var(--ink-78); }
+
+  /* 依据浮层：2px 墨线小卡，淡入上浮，transform/opacity only */
+  .pop{
+    position:absolute;
+    left:50px;
+    top:100%;
+    margin-top:6px;
+    z-index:30;
+    width:min(320px, calc(100vw - 120px));
+    border:2px solid var(--ink);
+    background:var(--paper);
+    padding:10px 12px;
+    font-size:12px;
+    line-height:1.8;
+    color:var(--ink-82);
+    text-align:left;
+    opacity:0;
+    transform:translateY(8px);
+    visibility:hidden;
+    transition:opacity .15s ease, transform .15s ease, visibility 0s linear .15s;
+    pointer-events:none;
+  }
+  .item{ position:relative; z-index:0; }
+  /* 展开浮层的条目整体抬层：.item 各自成层叠上下文，.pop 的 z:30 出不了父上下文，
+     会被 DOM 靠后条目整体盖住，故悬停 / 聚焦 / 展开时把该条目抬到 z:1 */
+  .item:has(.lv-wrap.open), .item:has(.lv-wrap:hover),
+  .item:has(.lv-wrap:focus-visible), .item:has(.lv-wrap:focus){ z-index:1; }
+  .item:has(.lv-wrap:hover) .pop,
+  .item:has(.lv-wrap:focus-visible) .pop,
+  .item:has(.lv-wrap:focus) .pop,
+  .item:has(.lv-wrap.open) .pop{
+    opacity:1;
+    transform:none;
+    visibility:visible;
+    transition:opacity .15s ease, transform .15s ease;
+  }
+
+  /* 表头图例：两档实体小方标 */
+  .legend{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding-top:10px;
+    font-size:11.5px;
+    letter-spacing:.12em;
+    color:var(--ink-78);
+  }
+  .legend .lg-gap{ flex:0 0 14px; }
+
+  /* 生成器预览面板：2px 墨线勾勒，sticky 跟读 */
+  .panelcol{
+    padding:40px 48px 48px 44px;
+    min-width:0;
+  }
+  .genpanel{
+    position:sticky;
+    top:40px;
+    display:flex;
+    flex-direction:column;
+    min-height:520px;
+    border:2px solid var(--ink);
+    background:transparent;
+  }
+  .ghead{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px;
+    padding:15px 20px 13px;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .gtitle{
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.24em;
+    color:var(--ink-78);
+  }
+  .gcount{
+    font-size:12.5px;
+    color:var(--ink-78);
+  }
+  .gcount b{ color:var(--ink); font-weight:700; }
+  .mdview{
+    flex:1;
+    padding:22px 20px;
+    font-family:var(--mono);
+    font-size:13px;
+    line-height:1.9;
+    color:var(--ink-82);
+    min-height:300px;
+    overflow-wrap:anywhere;
+  }
+  .mdview code{ display:block; white-space:normal; }
+  .md-head{
+    display:block;
+    font-weight:500;
+    color:var(--ink);
+    margin-bottom:18px;
+  }
+  .md-h{ display:block; font-weight:500; color:var(--ink); }
+  .md-t{ display:block; margin-top:2px; }
+  .md-s{ display:block; margin-top:2px; font-size:12px; color:var(--ink-78); }
+  .md-block{ position:relative; }
+  .md-block + .md-block{
+    margin-top:16px;
+    padding-top:16px;
+    border-top:1px solid var(--ink-20);
+  }
+  .md-block::after{
+    content:'';
+    position:absolute;
+    inset:-2px -12px;
+    background:var(--ink-14);
+    opacity:0;
+    pointer-events:none;
+  }
+  .md-block.noanim{ animation:none; }
+  .md-block.fresh{ animation:rise-sm .24s ease-out both; }
+  .md-block.fresh::after{ animation:flash .6s ease-out both; }
+  .md-block.leaving{ animation:sink .2s ease-in both; }
+  .md-empty{
+    font-size:12.5px;
+    color:var(--ink-78);
+  }
+  .pactions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    padding:16px 20px 18px;
+    border-top:1px solid var(--ink-20);
+  }
+  .btn{
+    appearance:none;
+    height:46px;
+    border:2px solid var(--ink);
+    background:transparent;
+    color:var(--ink);
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:.1em;
+    cursor:pointer;
+    transition:background-color .14s ease, color .14s ease;
+  }
+  .btn:hover{ background:var(--ink); color:var(--bg); }
+  .btn:active{ transform:translateY(1px); }
+
+  /* 动效：载入为全页唯一编排时刻 */
+  @keyframes rise{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+  @keyframes rise-sm{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
+  @keyframes fade{ from{ opacity:0; } to{ opacity:1; } }
+  @keyframes flash{ from{ opacity:1; } to{ opacity:0; } }
+  @keyframes sink{ to{ opacity:0; transform:translateY(-4px); } }
+  .tb-copy{ animation:rise .48s ease-out both; }
+  .tb-fig{ animation:rise .48s ease-out .06s both; }
+  .checkcol{ animation:fade .4s ease-out .12s both; }
+  .panelcol{ animation:fade .4s ease-out .18s both; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+
+  /* 页脚 */
+  .colophon{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:24px;
+    padding:18px 48px 22px;
+    border-top:1px solid var(--ink-20);
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+
+  /* 响应式：<960px 塌单栏，页边距收 14px，display 抬到 58px */
+  @media (max-width: 960px){
+    .sheet{ margin:14px; }
+    .masthead{ padding:18px 24px 14px; flex-wrap:wrap; }
+    .titleband{ grid-template-columns:1fr; }
+    .tb-copy{
+      border-right:none;
+      border-bottom:1px solid var(--ink-20);
+      padding:42px 24px 38px;
+    }
+    h1.headline{ font-size:58px; line-height:1.28; }
+    .tb-fig{ padding:34px 20px 30px; }
+    .block-label{ font-size:30px; }
+    .dg-note{ font-size:20px; letter-spacing:.12em; }
+    .dg-index{ font-size:20px; }
+    .workbench{ grid-template-columns:1fr; }
+    .checkcol{
+      border-right:none;
+      border-bottom:1px solid var(--ink-20);
+      padding:32px 24px 16px;
+    }
+    .panelcol{ padding:32px 24px 44px; }
+    .genpanel{ position:static; min-height:0; }
+    .mdview{ min-height:240px; }
+    .src{ padding-left:44px; }
+    .pop{ left:44px; width:min(320px, calc(100% - 44px)); }
+    .colophon{ padding:16px 24px 20px; flex-wrap:wrap; }
+  }
+  @media (max-width: 600px){
+    .wordmark{ flex-wrap:wrap; row-gap:6px; }
+    .list{ columns:1; column-rule:none; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet" data-od-id="page-sheet">
+
+  <!-- 报头 -->
+  <header class="masthead" data-od-id="masthead">
+    <div class="wordmark">
+      <span class="latin">CORDIS</span>
+      <span class="zh">DSH 的心脏 · 思想图鉴</span>
+    </div>
+    <span class="folio">借鉴清单 · STEAL THIS</span>
+  </header>
+
+  <!-- 标题带：左文案 / 右三步图解 -->
+  <section class="titleband" data-od-id="titleband">
+    <div class="tb-copy" data-od-id="titleband-copy">
+      <p class="kicker" data-od-id="kicker">第五节 · 可借鉴思想</p>
+      <h1 class="headline" data-od-id="headline">十五条思想，勾走你要的</h1>
+      <p class="sub" data-od-id="sub-copy">左侧勾选用得上的条目，右侧自动拼出一份 markdown 清单。复制给任何 AI 或工程师，都能照单执行。</p>
+    </div>
+    <figure class="tb-fig" data-od-id="flow-figure">
+      <svg viewBox="0 0 640 306" role="img" aria-labelledby="flow-title" xmlns="http://www.w3.org/2000/svg" data-od-id="flow-svg">
+        <title id="flow-title">生成器三步图解：勾选清单条目，右侧面板实时拼装 markdown，再复制或下载带走</title>
+        <defs>
+          <marker id="flow-arrowhead" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" class="dep-arrow"/>
+          </marker>
+        </defs>
+        <g data-od-id="flow-curves">
+          <path class="dep-curve" d="M 190 193 C 208 185, 224 185, 238 181" marker-end="url(#flow-arrowhead)"/>
+          <path class="dep-curve" d="M 402 182 C 420 188, 436 194, 450 199" marker-end="url(#flow-arrowhead)"/>
+        </g>
+        <g data-od-id="flow-block-pick">
+          <rect class="block-box" x="30" y="140" width="156" height="106" rx="10"/>
+          <text class="dg-index" x="46" y="163">01</text>
+          <text class="block-label" x="108" y="194">勾选</text>
+          <text class="dg-note" x="108" y="222">15 条清单</text>
+        </g>
+        <g data-od-id="flow-block-build">
+          <rect class="block-box" x="242" y="118" width="156" height="128" rx="10"/>
+          <text class="dg-index" x="258" y="141">02</text>
+          <text class="block-label" x="320" y="182">拼装</text>
+          <text class="dg-note" x="320" y="210">逐条追加</text>
+        </g>
+        <g data-od-id="flow-block-take">
+          <rect class="block-box" x="454" y="152" width="156" height="94" rx="10"/>
+          <text class="dg-index" x="470" y="175">03</text>
+          <text class="block-label" x="532" y="200">带走</text>
+          <text class="dg-note" x="532" y="226">复制 / 下载</text>
+        </g>
+        <rect class="plinth" x="20" y="246" width="600" height="8" rx="4" data-od-id="flow-plinth"/>
+        <text class="dg-note corner" x="20" y="286">输出 · MARKDOWN</text>
+        <text class="dg-note corner-r" x="620" y="286">STEAL THIS</text>
+      </svg>
+      <figcaption class="figcap" data-od-id="flow-cap">
+        <span>图 01</span>
+        <span class="rule" aria-hidden="true"></span>
+        <span>生成器三步</span>
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- 主区工作台：左清单 / 右生成器 -->
+  <main class="workbench" data-od-id="workbench">
+
+    <section class="checkcol" data-od-id="checklist-col" aria-label="思想清单">
+      <div class="listhead" data-od-id="list-head">
+        <span class="lh">思想清单</span>
+        <span class="lh">共 <span id="total-n">15</span> 条</span>
+      </div>
+      <div class="legend" data-od-id="list-legend">
+        <span class="lv lv-1" aria-hidden="true"></span><span>实心方块 论文原文核实</span>
+        <span class="lg-gap" aria-hidden="true"></span>
+        <span class="lv lv-2"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="0" y="0" width="16" height="16"/><circle cx="4" cy="4" r="2.4"/><circle cx="12" cy="12" r="2.4"/></svg></span><span>网屏方块 合理解读</span>
+      </div>
+      <div class="list" id="list" data-od-id="idea-list"></div>
+    </section>
+
+    <aside class="panelcol" data-od-id="gen-col">
+      <div class="genpanel" data-od-id="gen-panel">
+        <div class="ghead">
+          <span class="gtitle">生成器预览</span>
+          <span class="gcount" aria-live="polite" data-od-id="gen-count">已选 <b id="cnum">0</b> 条</span>
+        </div>
+        <pre class="mdview" id="mdview" data-od-id="mdview"><code class="md-empty" id="mdempty">勾选左侧条目，这里逐条拼出可带走的清单</code><code class="md-head" id="mdhead"></code></pre>
+        <div class="pactions">
+          <button class="btn" id="btn-copy" type="button" data-od-id="btn-copy"><span id="copylabel">复制</span></button>
+          <button class="btn" id="btn-dl" type="button" data-od-id="btn-dl">下载 .md</button>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="colophon" data-od-id="colophon">
+    <span>deepseek-harness / Cordis 支撑框架</span>
+    <span>单墨编辑印刷 · 思想图鉴</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  /* 15 条逐字取自研读总览第五节；on 为初始预勾选（第 1、4、13 条）；
+     lv 徽标档位：1 论文原文核实 / 2 合理解读（定档判据见 brief §8.2）；
+     why 为悬停依据浮层占位文案。 */
+  var IDEAS = [
+    { n:'01', t:'给每个注册动作配一个撤销函数', d:'装工具、挂监听器、注册命令的 API 都返回 undo，卸载、热重载、权限回收全走这一种操作。', s:'思想一', lv:2, why:'总览思想一：效应当场附撤销说明书，运行时串成回执链，卸载倒序执行。', on:true },
+    { n:'02', t:'把能力挂在公共上下文的稳定键名下', d:'学 dsh 的 ctx.tools、ctx.llm，插件只认键名，不 import 具体实现。', s:'第四节对应表', lv:2, why:'总览第四节对应表：ctx.* 稳定键出自 dsh architecture.md 与 glossary。' },
+    { n:'03', t:'按「接口 + 提供者 + 消费者」三件套设计能力接缝', d:'换文件系统实现时让 shell、终端这些依赖方整体跟随。', s:'第四节对应表', lv:2, why:'总览第四节对应表：能力接缝三件套为 dsh 术语，换 provider 全局生效。' },
+    { n:'04', t:'让插件进门先声明依赖清单', d:'依赖不齐就安静待机，等就绪自动激活，不报错也不轮询。', s:'思想二', lv:2, why:'总览思想二：需求清单对照环境变化，从缺到齐激活、从齐到缺停用。', on:true },
+    { n:'05', t:'用永不复用的编号识别提供者', d:'货可以一样，人不能认错；宁可偶尔多重启一次，也不让下游带着已经易主的依赖继续跑。', s:'思想五', lv:2, why:'总览思想五：ctx.use 记供货人名不记货品，编号不同即视为换人。' },
+    { n:'06', t:'状态只记一本账', d:'哪些能力可用，直接从「谁在岗」推出来，别再养一份可能对不上的资源名册。', s:'思想四', lv:2, why:'总览思想四：九条规则下资源账直接从在岗名单推出，不记第二本账。' },
+    { n:'07', t:'把「改配置等于退役加重插，终态等于按新配置从头装一遍」立为运行时改动的目标性质', d:'前提是共享状态都守着走语境的纪律。', s:'思想四、第六节', lv:2, why:'总览思想四、第六节：进展与汇聚性质；论文第 31 页划界绕过语境不受保护。' },
+    { n:'08', t:'热重载做成事务', d:'先备份旧模块再换新，任何一步失败整体回滚，系统永不半新半旧。', s:'思想五', lv:2, why:'总览思想五：声明式配置加载器与事务性热重载（先备份、失败整体回滚）。' },
+    { n:'09', t:'把会话日志做成唯一事实源', d:'模型可见即已记录，只追加、永不改名删除，界面、回放、调试都从它投影。', s:'第四节', lv:2, why:'总览第四节：dsh 设计，模型可见即已记录，JSONL 只追加不改名删除。' },
+    { n:'10', t:'权限跟着声明走', d:'插件只能读到它声明过的依赖，加载前就能审完整清单。', s:'论文第 6 章', lv:1, why:'论文第 6 章能力型安全（素材笔记 06）：插件只能读到声明过的依赖。' },
+    { n:'11', t:'审一遍接口承诺', d:'没人依赖的返回值约定（比如「必须发最小的空号」这类）能砍就砍，换来操作可乱序、可独立撤销。', s:'思想三', lv:2, why:'总览思想三：接口承诺决定可乱序操作集（发号窗口例）。' },
+    { n:'12', t:'一个资源只允许一个提供者', d:'第二家申报同名资源直接拒绝，出了问题永远找得到人。', s:'论文第 4 章', lv:1, why:'论文第 4 章配套纪律：一种资源只允许一家供应商申报。' },
+    { n:'13', t:'卸载次序立成协议', d:'先停供、通知依赖者、等它们全部拆完，自己再按后进先出清理。', s:'思想四', lv:2, why:'总览思想四：停用三步，停供、等依赖者拆完、按后进先出清场。', on:true },
+    { n:'14', t:'失败显式记录原因', d:'不自动重试、不传染邻居组件。', s:'论文第 4.4 节', lv:1, why:'论文第 4.4 节失败处置：显式记录原因、不自动重试、不连累邻居。' },
+    { n:'15', t:'给多租户或多 agent 场景加一层作用域隔离', d:'同名依赖各拿各的，撤销时丢掉整层即可。', s:'思想三、dsh 的 scope', lv:2, why:'总览思想三与 dsh scope：ctx.isolate 与 per-agent 注册作用域。' }
+  ];
+  var LV_NAME = { 1: '论文原文核实', 2: '合理解读', 3: '转引未核实' };
+
+  var list  = document.getElementById('list');
+  var view  = document.getElementById('mdview');
+  var head  = document.getElementById('mdhead');
+  var empty = document.getElementById('mdempty');
+  var cnum  = document.getElementById('cnum');
+  document.getElementById('total-n').textContent = IDEAS.length;
+  var boxes = [];
+
+  function blockFor(rec, quiet){
+    var b = document.createElement('code');
+    b.className = 'md-block' + (quiet ? ' noanim' : '');
+    b.dataset.idx = rec.it.n;
+    var h = document.createElement('span'); h.className = 'md-h';
+    h.textContent = '### ' + rec.it.n + ' ' + rec.it.t;
+    var t = document.createElement('span'); t.className = 'md-t'; t.textContent = rec.it.d;
+    var s = document.createElement('span'); s.className = 'md-s'; s.textContent = '（出处：' + rec.it.s + ' · ' + LV_NAME[rec.it.lv] + '）';
+    b.append(h, t, s);
+    return b;
+  }
+  function insert(b, n){
+    var after = null;
+    var blocks = view.querySelectorAll('.md-block');
+    for (var i = 0; i < blocks.length; i++){
+      if (+blocks[i].dataset.idx > +n){ after = blocks[i]; break; }
+    }
+    after ? view.insertBefore(b, after) : view.append(b);
+  }
+  function update(){
+    var n = 0;
+    boxes.forEach(function(r){ if (r.cbx.checked) n++; });
+    cnum.textContent = n;
+    head.textContent = '## 借鉴清单（' + n + ' 条）';
+    head.style.display = n ? '' : 'none';
+    empty.style.display = n ? 'none' : '';
+  }
+  function sync(rec, animate){
+    rec.item.classList.toggle('on', rec.cbx.checked);
+    if (rec.cbx.checked){
+      var b = blockFor(rec, !animate);
+      insert(b, rec.it.n);
+      if (animate){
+        b.addEventListener('animationend', function(e){
+          if (e.animationName === 'flash') b.classList.remove('fresh');
+        });
+      }
+    } else {
+      var old = view.querySelector('.md-block[data-idx="' + rec.it.n + '"]');
+      if (old){
+        old.classList.add('leaving');
+        var kill = function(){ old.remove(); };
+        old.addEventListener('animationend', kill, { once: true });
+        setTimeout(kill, 300);
+      }
+    }
+    update();
+  }
+
+  function closePop(w){ w.classList.remove('open'); w.setAttribute('aria-expanded', 'false'); }
+  function togglePop(w){
+    var open = w.classList.toggle('open');
+    w.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  IDEAS.forEach(function(it){
+    var item = document.createElement('div');
+    item.className = 'item';
+    item.dataset.odId = 'item-' + it.n;
+    var cbx = document.createElement('input');
+    cbx.type = 'checkbox';
+    cbx.className = 'cbx';
+    cbx.id = 'idea-' + it.n;
+    cbx.checked = !!it.on;
+    var lab = document.createElement('label');
+    lab.htmlFor = cbx.id;
+    lab.innerHTML = '<span class="box" aria-hidden="true"><span class="tick"></span></span>'
+      + '<span class="num"></span>'
+      + '<span class="txt"><span class="t"></span><span class="d"></span></span>';
+    lab.querySelector('.num').textContent = it.n;
+    lab.querySelector('.t').textContent = it.t;
+    lab.querySelector('.d').textContent = it.d;
+    item.append(cbx, lab);
+    /* 出处行移出 label，成为条目内第二行：徽标可聚焦弹出依据浮层 */
+    var src = document.createElement('div');
+    src.className = 'src';
+    var wrap = document.createElement('span');
+    wrap.className = 'lv-wrap';
+    wrap.setAttribute('role', 'button');
+    wrap.setAttribute('tabindex', '0');
+    wrap.setAttribute('aria-label', '出处可信度：' + LV_NAME[it.lv]);
+    wrap.setAttribute('aria-expanded', 'false');
+    if (it.lv === 2){
+      wrap.innerHTML = '<span class="lv lv-2"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+        + '<rect x="0" y="0" width="16" height="16"/>'
+        + '<circle cx="4" cy="4" r="2.4"/><circle cx="12" cy="12" r="2.4"/>'
+        + '</svg></span>';
+    } else {
+      wrap.innerHTML = '<span class="lv lv-' + it.lv + '"></span>';
+    }
+    var st = document.createElement('span');
+    st.className = 's-txt';
+    st.textContent = it.s;
+    var pop = document.createElement('span');
+    pop.className = 'pop';
+    pop.setAttribute('role', 'note');
+    pop.textContent = it.why;
+    src.append(wrap, st, pop);
+    item.append(src);
+    /* 键盘 Enter/Space 与触屏 click 切换浮层；Esc 收起；焦点离开自动收起 */
+    wrap.addEventListener('click', function(){ togglePop(wrap); });
+    wrap.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); togglePop(wrap); }
+    });
+    src.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && wrap.classList.contains('open')){ closePop(wrap); wrap.focus(); }
+    });
+    wrap.addEventListener('blur', function(){
+      setTimeout(function(){ if (!pop.matches(':hover')) closePop(wrap); }, 0);
+    });
+    list.append(item);
+    var rec = { it: it, cbx: cbx, item: item };
+    boxes.push(rec);
+    cbx.addEventListener('change', function(){ sync(rec, true); });
+    sync(rec, false);
+  });
+
+  function markdown(){
+    var sel = boxes.filter(function(r){ return r.cbx.checked; });
+    var lines = ['## 借鉴清单（' + sel.length + ' 条）', ''];
+    sel.forEach(function(r){
+      lines.push('### ' + r.it.n + ' ' + r.it.t, r.it.d, '（出处：' + r.it.s + ' · ' + LV_NAME[r.it.lv] + '）', '');
+    });
+    return lines.join('\n').replace(/\s+$/, '');
+  }
+
+  var btnCopy = document.getElementById('btn-copy');
+  var cap = document.getElementById('copylabel');
+  var tId = 0;
+  function flashCopied(){
+    cap.textContent = '已复制';
+    clearTimeout(tId);
+    tId = setTimeout(function(){ cap.textContent = '复制'; }, 2000);
+  }
+  function legacyCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.append(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+  }
+  function selectFallback(){
+    var range = document.createRange();
+    range.selectNodeContents(view);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  btnCopy.addEventListener('click', function(){
+    var text = markdown();
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(flashCopied, function(){
+        legacyCopy(text); selectFallback(); flashCopied();
+      });
+    } else {
+      legacyCopy(text); selectFallback(); flashCopied();
+    }
+  });
+  document.getElementById('btn-dl').addEventListener('click', function(){
+    var blob = new Blob([markdown()], { type: 'text/markdown;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'cordis-steal-this.md';
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 500);
+  });
+
+  update();
+})();
+</script>
+
+<!-- 设计说明
+  配色：全页唯一墨色为钴蓝 oklch(0.449 0.182 265)（#2148B8），印在纸白 #FAFAF7 上，层次只走透明度阶梯 .14 / .20 / .70 / .78 / .82 与实印，无第二色相、无纯黑。
+  字体：Noto Serif SC 900 立标题骨相，Noto Sans SC 400 / 500 / 700 承正文与清单，IBM Plex Mono 专属生成器预览与编号；版面留白约四成。
+  构图：印刷开本细墨线框，报头、标题带、工作台、页脚以 1px 细线切开；工作台 58fr / 42fr 非对称双栏，左栏清单两列锯齿无盒行，右栏生成器面板以 2px 墨线勾勒并 sticky 跟读。
+  动效分镜：载入是全页唯一编排时刻，标题带位移淡入、双栏按 60ms 交叠显影，总时长约 580ms；此后只剩勾选反馈，新增 markdown 块 240ms 淡入（上移 8px）并叠加 ink .14 高亮一闪 600ms 退去，取消勾选 200ms 淡出，复制按钮文字两秒回切。
+  移动端 display 口径：走「下限抬到 58px」档，960px 以下大标题固定 58px，对最小功能字 11.5px 为 5.04 倍，全程过线，无需豁免；桌面沿用 clamp(38px, 3.6vw, 58px) 家族口径。
+  设计说明补句（第 3 轮修订）：可靠度徽标用三级墨密度表达，实印（论文原文核实，线色实测 7.48:1）/ 网屏（合理解读，12px 盒内 16 单位 viewBox 双圆 r2.4 渲染网点，覆盖率 14.1%，网点面积加权等效对比度 1.17:1——低于 3:1 表意线，也低于 .14 装饰档的 1.25:1；网点本体要到 3:1 需实印墨 ≥60% 覆盖率、墨 .70 ≥85%，已非网屏形态，故叠 1.5px 墨 .70 描边承载表意，描边线色实测 3.76:1 过线）/ 细线（转引未核实，1.5px 墨 .70 描边，本页 15 条无此档，仅定义形态备用）；≤960px 双栏区间浮层宽度约束在栏内（min(320px, calc(100% - 44px))），展开浮层的条目抬 z-index:1 防被后绘条目遮挡；悬停浮层为占位，精确定位与移动端 tap 行为留给 M4，视觉稿阶段 tap 即切换浮层。
+-->
+</body>
+</html>

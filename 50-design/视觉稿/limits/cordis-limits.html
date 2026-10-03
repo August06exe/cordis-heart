@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>边界与代价 · Cordis 思想图鉴</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:       oklch(0.984 0.004 106.5);        /* 纸白 #FAFAF7 */
+    --fg:       oklch(0.449 0.182 265);          /* 全页唯一墨色：钴蓝 #2148B8 */
+    --ink:      var(--fg);
+    --ink-14:   oklch(0.449 0.182 265 / .14);    /* 浅墨 · 基座与悬停一闪 */
+    --ink-20:   oklch(0.449 0.182 265 / .20);    /* 分隔细线 */
+    --ink-70:   oklch(0.449 0.182 265 / .70);    /* 图解曲线 · 实算 3.778:1 */
+    --ink-78:   oklch(0.449 0.182 265 / .78);    /* 小字 / 图注 · 实算 4.524:1 */
+    --ink-82:   oklch(0.449 0.182 265 / .82);    /* 正文 · 实算 4.966:1 */
+    --paper:    var(--bg);
+    --serif: "Noto Serif SC","Songti SC","SimSun",serif;
+    --sans:  "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    --mono:  "IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection{ background: var(--ink-14); }
+  :focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+
+  /* 印刷开本：四缘一圈细墨线，满高用 min-height */
+  .sheet{
+    position:relative;
+    min-height: calc(100dvh - 44px);
+    margin:22px;
+    border:1px solid var(--ink-20);
+    display:flex;
+    flex-direction:column;
+  }
+  .wrap{ width:100%; max-width:1180px; margin-inline:auto; padding-inline:clamp(22px, 4.5vw, 72px); }
+
+  /* ── 报头 ─────────────────────────────────── */
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:24px;
+    padding:26px 0 20px;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .masthead .wrap{ display:flex; align-items:baseline; justify-content:space-between; gap:24px; width:100%; }
+  .wordmark{ display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  .wordmark .latin{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:19px;
+    letter-spacing:.34em;
+  }
+  .wordmark .zh{
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:.18em;
+    color:var(--ink-82);
+  }
+  .masthead .folio{
+    font-size:12px;
+    letter-spacing:.22em;
+    color:var(--ink-78);
+    white-space:nowrap;
+  }
+
+  /* ── 通用节律 ─────────────────────────────── */
+  .sect{ padding-block:clamp(76px, 9vw, 132px); }
+  .sect + .sect{ border-top:1px solid var(--ink-20); }
+
+  .kicker{
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.42em;
+    color:var(--ink-78);
+  }
+  .sect-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:24px 48px;
+    flex-wrap:wrap;
+    margin-bottom:clamp(36px, 5vw, 64px);
+  }
+  h2.sect-title{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:clamp(30px, 3vw, 38px);
+    line-height:1.3;
+    letter-spacing:.015em;
+  }
+  .body-copy{
+    font-size:16px;
+    line-height:2.0;
+    color:var(--ink-82);
+    max-width:26em;
+  }
+  .body-copy strong{ font-weight:700; color:var(--ink); }
+
+  /* 可靠度徽标：印刷隐喻，实印 / 网屏点纹 / 细线 */
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+    white-space:nowrap;
+  }
+  .badge .glyph{ width:13px; height:13px; flex:none; }
+  .glyph-solid{ background:var(--ink); }
+  .glyph-screen{ display:block; }
+  .glyph-hairline{ display:block; }
+  .badge-inline{ font-size:11.5px; margin-left:12px; position:relative; top:-2px; }
+
+  .caption{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+  .caption .rule{ flex:1; height:1px; background:var(--ink-20); }
+
+  /* ── 第一节 · type-led declaration ────────── */
+  .s1-grid{
+    display:grid;
+    grid-template-columns:minmax(0, 11fr) minmax(0, 9fr);
+    gap:clamp(40px, 5vw, 88px);
+    align-items:center;
+  }
+  h1.display{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:clamp(58px, 3.6vw, 72px);   /* 下限 58px：58/11.5 = 5.04 过 5 倍线 */
+    line-height:1.26;
+    letter-spacing:.01em;
+    max-width:8em;
+    margin:30px 0 36px;
+    text-wrap:balance;
+  }
+  .s1-copy .body-copy + .body-copy{ margin-top:1.4em; }
+  .s1-copy .cite{
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+    white-space:nowrap;
+  }
+  .s1-figure{ min-width:0; }
+  .s1-figure .svg-scroll{ width:100%; }
+  .s1-figure svg{ width:100%; height:auto; display:block; }
+
+  /* ── 第二节 · 边界清单（编号长排，禁卡片阵列）─ */
+  .boundaries{ border-top:1px solid var(--ink-20); }
+  .boundary-item{
+    display:grid;
+    grid-template-columns:72px minmax(0, 1fr);
+    gap:8px 28px;
+    padding-block:clamp(28px, 3.5vw, 44px);
+    border-bottom:1px solid var(--ink-20);
+  }
+  .boundary-item .no{
+    font-family:var(--mono);
+    font-weight:500;
+    font-size:13px;
+    letter-spacing:.14em;
+    color:var(--ink-78);
+    padding-top:7px;
+  }
+  .boundary-item h3{
+    font-size:20px;
+    font-weight:700;
+    letter-spacing:.02em;
+    color:var(--ink);
+    margin-bottom:12px;
+  }
+
+  /* ── 第三节 · 账页对照表 ──────────────────── */
+  .s3-lead{ margin-bottom:clamp(32px, 4vw, 52px); }
+  .ledger{ border-top:1px solid var(--ink-20); }
+  .ledger-row{
+    display:grid;
+    grid-template-columns:minmax(0, 2fr) minmax(0, 3fr);
+    gap:6px 40px;
+    padding:clamp(22px, 2.8vw, 34px) 6px;
+    border-bottom:1px solid var(--ink-20);
+    transition:background-color .18s ease;
+  }
+  .ledger-row:hover{ background:var(--ink-14); }
+  .l-scene{
+    font-size:16px;
+    font-weight:500;
+    line-height:1.9;
+    color:var(--ink-82);
+  }
+  .l-verdict{
+    font-size:16px;
+    line-height:1.9;
+    color:var(--ink-82);
+    max-width:26em;
+  }
+  .l-verdict strong{ font-weight:700; color:var(--ink); }
+  .ledger-head{
+    display:grid;
+    grid-template-columns:minmax(0, 2fr) minmax(0, 3fr);
+    gap:6px 40px;                       /* 与 .ledger-row 同参，列头对齐列起点 */
+    padding:0 6px 14px;
+    border-bottom:1px solid var(--ink-20);
+  }
+  .ledger-head span{
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+  /* focal 行：实印加粗，不是颜色变化 */
+  .ledger-row.focal .l-scene,
+  .ledger-row.focal .l-verdict{ font-weight:700; color:var(--ink); }
+  .go-mark{
+    display:inline-block;
+    width:9px; height:9px;
+    background:var(--ink);
+    margin-right:12px;
+    vertical-align:.12em;
+  }
+
+  /* ── 带走物 · 自查清单面板 ────────────────── */
+  .checklist-panel{
+    border:2px solid var(--ink);
+    padding:clamp(28px, 4vw, 56px);
+    max-width:820px;
+  }
+  .check-item{
+    display:grid;
+    grid-template-columns:26px 44px minmax(0, 1fr);
+    align-items:baseline;
+    gap:14px;
+    padding-block:16px;
+  }
+  .check-item + .check-item{ border-top:1px solid var(--ink-20); }
+  .check-item input[type="checkbox"]{
+    appearance:none;
+    -webkit-appearance:none;
+    width:20px; height:20px;
+    border:1.5px solid var(--ink);
+    background:var(--paper);
+    cursor:pointer;
+    position:relative;
+    top:3px;
+    transition:background-color .15s ease;
+  }
+  .check-item input[type="checkbox"]:checked{
+    background:var(--ink);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3.4 3.4L15 7' fill='none' stroke='%23FAFAF7' stroke-width='2.2'/%3E%3C/svg%3E");
+    background-size:16px 16px;
+    background-position:center;
+    background-repeat:no-repeat;
+  }
+  .check-item .no{
+    font-family:var(--mono);
+    font-weight:500;
+    font-size:14px;
+    letter-spacing:.14em;
+    color:var(--ink-78);
+  }
+  .check-item .q{
+    font-size:16px;
+    line-height:1.9;
+    color:var(--ink-82);
+    max-width:26em;
+  }
+  .check-note{ margin-top:clamp(28px, 4vw, 44px); }
+
+  /* ── 页脚 ─────────────────────────────────── */
+  .colophon{
+    margin-top:auto;
+    border-top:1px solid var(--ink-20);
+  }
+  .colophon .wrap{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:16px 24px;
+    flex-wrap:wrap;
+    padding-block:18px 22px;
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+
+  /* ── SVG 图解语言 ─────────────────────────── */
+  .block-box{ fill:var(--paper); stroke:var(--ink); stroke-width:2; }
+  .block-label{
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:.05em;
+    fill:var(--ink);
+    text-anchor:middle;
+  }
+  .block-label.gate{ font-family:var(--serif); font-weight:900; font-size:21px; }
+  .zone-label{
+    font-family:var(--sans);
+    font-weight:500;
+    font-size:12px;
+    letter-spacing:.22em;
+    fill:var(--ink-78);
+    text-anchor:middle;
+  }
+  .block-index{
+    font-family:var(--mono);
+    font-weight:400;
+    font-size:10px;
+    letter-spacing:.16em;
+    fill:var(--ink-78);
+  }
+  .dep-curve{ fill:none; stroke:var(--ink-70); stroke-width:1.6; }
+  .dep-arrow{ fill:var(--ink-70); }
+  .bypass{ fill:none; stroke:var(--ink-70); stroke-width:1.6; stroke-dasharray:7 5; } /* 表意图形线：.70 过 3:1 红线，虚线线型区分语义 */
+  .bypass-arrow{ fill:var(--ink-70); }
+  .plinth{ fill:var(--ink-14); }
+  .scene-note{
+    font-family:var(--sans);
+    font-weight:500;
+    font-size:11px;
+    letter-spacing:.2em;
+    fill:var(--ink-78);
+  }
+
+  /* ── 动效：进视口一次性显影 ────────────────── */
+  /* 常规节：轻交叉淡，纯透明度、无位移（brief 动效纪律） */
+  .js .fx{ opacity:0; transition:opacity .55s ease; }
+  .js .fx.in{ opacity:1; }
+  /* 唯一编排时刻：对照表逐条显影，60ms stagger */
+  .js .ledger .ledger-row{ opacity:0; transform:translateY(12px); transition:opacity .5s ease, transform .5s ease, background-color .18s ease; }
+  .js .ledger.in .ledger-row{ opacity:1; transform:none; transition-delay:calc(var(--i) * 60ms), calc(var(--i) * 60ms), 0s; }
+
+  @media (prefers-reduced-motion: reduce){
+    .js .fx, .js .ledger .ledger-row{
+      opacity:1 !important;
+      transform:none !important;
+      transition:none !important;
+    }
+  }
+
+  /* ── 响应式：<960px 塌单栏，禁止横向滚动 ───── */
+  @media (max-width: 960px){
+    .sheet{ margin:14px; min-height:calc(100dvh - 28px); }
+    .masthead .wrap{ flex-direction:column; align-items:flex-start; gap:10px; }
+    .s1-grid{ grid-template-columns:1fr; }
+    .s1-figure{ order:2; }
+    .boundary-item{ grid-template-columns:1fr; gap:10px; }
+    .boundary-item .no{ padding-top:0; }
+    .ledger-row{ grid-template-columns:1fr; gap:8px; }
+    .ledger-head{ grid-template-columns:1fr; gap:8px; }
+    .sect{ padding-block:64px; }
+    .svg-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .svg-scroll svg{ min-width:640px; }
+  }
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js');</script>
+<div class="sheet" data-od-id="page-sheet">
+
+  <!-- 报头 -->
+  <header class="masthead" data-od-id="masthead">
+    <div class="wrap">
+      <div class="wordmark">
+        <span class="latin">CORDIS</span>
+        <span class="zh">DSH 的心脏 · 思想图鉴</span>
+      </div>
+      <span class="folio">边界与代价</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- 第一节 · 最大成本是纪律 -->
+    <section class="sect" data-od-id="section-discipline">
+      <div class="wrap s1-grid">
+        <div class="s1-copy">
+          <p class="kicker fx" data-od-id="s1-kicker">这套思想的边界与代价</p>
+          <h1 class="display fx" data-od-id="s1-display">最大成本是纪律</h1>
+          <div class="badge fx" data-od-id="s1-badge" style="margin-bottom:30px;">
+            <svg class="glyph" viewBox="0 0 13 13" aria-hidden="true">
+              <rect x="0" y="0" width="13" height="13" fill="var(--ink)"/>
+            </svg>
+            论文原文核实
+          </div>
+          <p class="body-copy fx" data-od-id="s1-p1">这套范式的前提，是<strong>一切共享状态绑成键、一切交互走语境</strong>。前提成立，两个保证才成立。</p>
+          <p class="body-copy fx" data-od-id="s1-p2">论文在第 31 页把界划得很直：<strong>绕过语境的共享位置，落在定理保护之外</strong> <span class="cite">论文原文，第 31 页</span>。采用它是改造，不是安装；一半状态走语境、一半不走的用法，比不用更危险，因为你会误以为自己有保证。</p>
+        </div>
+        <figure class="s1-figure fx" data-od-id="figure-gate">
+          <div class="svg-scroll" data-od-id="svg-scroll">
+          <svg viewBox="0 200 780 390" role="img" xmlns="http://www.w3.org/2000/svg" aria-labelledby="gate-title">
+            <title id="gate-title">语境之门图解：状态键实线经语境之门进入组件区，受定理保护；一条虚线绕过门直连组件区，落在定理保护之外</title>
+            <defs>
+              <marker id="dep-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 Z" class="dep-arrow"/>
+              </marker>
+              <marker id="bypass-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 Z" class="bypass-arrow"/>
+              </marker>
+            </defs>
+
+            <!-- 绕行虚线（墨 .70，虚线线型区分语义）：从状态键 C 越过门直连组件区 -->
+            <path class="bypass" d="M 190 380 C 262 236, 560 226, 646 372" marker-end="url(#bypass-head)" data-od-id="bypass-path"/>
+            <text class="scene-note" x="417" y="254" text-anchor="middle">定理保护之外</text>
+
+            <!-- 受保护曲线：状态键 A / B 经门进入组件区 -->
+            <path class="dep-curve" d="M 138 448 C 250 448, 430 440, 552 443" marker-end="url(#dep-head)" data-od-id="protected-curve-a"/>
+            <path class="dep-curve" d="M 242 462 C 330 462, 480 482, 644 480" marker-end="url(#dep-head)" data-od-id="protected-curve-b"/>
+            <text class="scene-note" x="492" y="424">受保护</text>
+
+            <!-- 语境之门 -->
+            <g data-od-id="gate">
+              <rect class="block-box" x="330" y="372" width="26" height="136" rx="8"/>
+              <rect class="block-box" x="424" y="372" width="26" height="136" rx="8"/>
+              <rect class="block-box" x="312" y="336" width="156" height="36" rx="8"/>
+              <text class="block-label gate" x="390" y="430">语境</text>
+            </g>
+
+            <!-- 左：状态键积木（两块落地，一块叠放） -->
+            <g data-od-id="state-key-a">
+              <rect class="block-box" x="44" y="416" width="92" height="92" rx="10"/>
+              <text class="block-index" x="58" y="438">01</text>
+              <text class="block-label" x="90" y="470">状态键 A</text>
+            </g>
+            <g data-od-id="state-key-b">
+              <rect class="block-box" x="148" y="416" width="92" height="92" rx="10"/>
+              <text class="block-index" x="162" y="438">02</text>
+              <text class="block-label" x="194" y="470">状态键 B</text>
+            </g>
+            <g data-od-id="state-key-c">
+              <rect class="block-box" x="96" y="352" width="92" height="64" rx="10"/>
+              <text class="block-index" x="110" y="372">03</text>
+              <text class="block-label" x="142" y="392">状态键 C</text>
+            </g>
+
+            <!-- 右：组件区 -->
+            <g data-od-id="component-zone">
+              <text class="zone-label" x="600" y="368">组件区</text>
+              <rect class="block-box" x="540" y="380" width="200" height="128" rx="10"/>
+              <rect class="block-box" x="558" y="398" width="78" height="92" rx="8"/>
+              <rect class="block-box" x="650" y="398" width="72" height="92" rx="8"/>
+            </g>
+
+            <!-- 浅墨基座 -->
+            <rect class="plinth" x="28" y="508" width="724" height="8" rx="4" data-od-id="gate-plinth"/>
+            <text class="scene-note" x="28" y="542">一切共享状态绑成键</text>
+            <text class="scene-note" x="752" y="542" text-anchor="end">CORDIS RUNTIME</text>
+          </svg>
+          </div>
+          <figcaption class="caption" style="margin-top:22px;" data-od-id="gate-caption">
+            <span>图 01</span>
+            <span class="rule" aria-hidden="true"></span>
+            <span>语境之门：实线经门受保护，虚线绕行落在保护之外</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 第二节 · 边界清单 -->
+    <section class="sect" data-od-id="section-boundaries">
+      <div class="wrap">
+        <div class="sect-head fx">
+          <h2 class="sect-title" data-od-id="s2-title">边界清单</h2>
+          <span class="badge" data-od-id="s2-badge">
+            <svg class="glyph" viewBox="0 0 13 13" aria-hidden="true">
+              <rect x="0" y="0" width="13" height="13" fill="var(--ink)"/>
+            </svg>
+            论文原文核实为主，个别标合理解读
+          </span>
+        </div>
+        <div class="boundaries" data-od-id="boundary-list">
+          <article class="boundary-item fx" data-od-id="boundary-item-1">
+            <span class="no">01</span>
+            <div>
+              <h3>撤销的正确性仍由作者负责</h3>
+              <p class="body-copy">框架保证到点执行撤销函数，但卡片上写的办法灵不灵，运行时不验证（第 59 页）。防得了「忘了写」，防不了「写错了」。</p>
+            </div>
+          </article>
+          <article class="boundary-item fx" data-od-id="boundary-item-2">
+            <span class="no">02</span>
+            <div>
+              <h3>内存状态不保留</h3>
+              <p class="body-copy">这套机制是「卸了重装」，组件自己的内存状态热重载后不保留；想留，就得放进更长寿的依赖里。</p>
+            </div>
+          </article>
+          <article class="boundary-item fx" data-od-id="boundary-item-3">
+            <span class="no">03</span>
+            <div>
+              <h3>边界外收不回</h3>
+              <p class="body-copy">数据一旦发出系统（写盘、发包）就只剩两条路：扣住不发，或者事后补偿（删文件、退款）；补偿的数学保证需要另行验证。</p>
+            </div>
+          </article>
+          <article class="boundary-item fx" data-od-id="boundary-item-4">
+            <span class="no">04</span>
+            <div>
+              <h3>版本与命名是开放问题</h3>
+              <p class="body-copy">依赖按名字连接，接口漂移和键名撞车都会「连接成立但运行出错」。命名空间、peer 依赖、结构兼容三条路各有局限，论文自己承认没有统一解。</p>
+            </div>
+          </article>
+          <article class="boundary-item fx" data-od-id="boundary-item-5">
+            <span class="no">05</span>
+            <div>
+              <h3>循环依赖查得出但拆着疼 <span class="badge badge-inline"><svg class="glyph glyph-screen" viewBox="0 0 13 13" aria-hidden="true"><g fill="var(--ink)"><circle cx="2.5" cy="2.5" r="1.05"/><circle cx="6.5" cy="2.5" r="1.05"/><circle cx="10.5" cy="2.5" r="1.05"/><circle cx="2.5" cy="6.5" r="1.05"/><circle cx="6.5" cy="6.5" r="1.05"/><circle cx="10.5" cy="6.5" r="1.05"/><circle cx="2.5" cy="10.5" r="1.05"/><circle cx="6.5" cy="10.5" r="1.05"/><circle cx="10.5" cy="10.5" r="1.05"/></g></svg>合理解读</span></h3>
+              <p class="body-copy">从声明就能静态检出，不会死锁，只会永久休眠；但拆起来要新写专门的胶水组件，十个互相缠绕的组件，最坏要新写几十个胶水件。正确性和运行速度不受影响，疼的是写配置和理解系统的人。</p>
+            </div>
+          </article>
+          <article class="boundary-item fx" data-od-id="boundary-item-6">
+            <span class="no">06</span>
+            <div>
+              <h3>证据是观察性的</h3>
+              <p class="body-copy">单一生态、单一语言（TypeScript）、无对照实验；性能开销，论文自己承认未量化。</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第三节 · 什么时候别用 -->
+    <section class="sect" data-od-id="section-when-not">
+      <div class="wrap">
+        <div class="sect-head fx">
+          <h2 class="sect-title" data-od-id="s3-title">什么时候别用</h2>
+          <span class="badge" data-od-id="s3-badge">
+            <svg class="glyph glyph-screen" viewBox="0 0 13 13" aria-hidden="true">
+              <g fill="var(--ink)">
+                <circle cx="2.5" cy="2.5" r="1.05"/><circle cx="6.5" cy="2.5" r="1.05"/><circle cx="10.5" cy="2.5" r="1.05"/>
+                <circle cx="2.5" cy="6.5" r="1.05"/><circle cx="6.5" cy="6.5" r="1.05"/><circle cx="10.5" cy="6.5" r="1.05"/>
+                <circle cx="2.5" cy="10.5" r="1.05"/><circle cx="6.5" cy="10.5" r="1.05"/><circle cx="10.5" cy="10.5" r="1.05"/>
+              </g>
+            </svg>
+            合理解读
+          </span>
+        </div>
+        <p class="body-copy s3-lead fx" data-od-id="s3-lead">五个场景，先问纪律守不守得住，再问开销值不值。</p>
+        <div class="ledger" data-od-id="ledger" role="table" aria-label="场景与是否适用对照">
+          <div class="ledger-head" role="row" data-od-id="ledger-head">
+            <span role="columnheader">场景</span>
+            <span role="columnheader">是否适用</span>
+          </div>
+          <div class="ledger-row" style="--i:0" role="row" data-od-id="ledger-row-1">
+            <span class="l-scene" role="cell">一次性脚本、组件集合常年不动的工具</span>
+            <p class="l-verdict" role="cell"><strong>不适用</strong>：引入语境和生命周期管理是纯开销</p>
+          </div>
+          <div class="ledger-row" style="--i:1" role="row" data-od-id="ledger-row-2">
+            <span class="l-scene" role="cell">性能极度敏感且高频触碰共享状态的路径</span>
+            <p class="l-verdict" role="cell"><strong>不适用</strong>：intercept 和 isolate 都有成本，具体多大没人数</p>
+          </div>
+          <div class="ledger-row" style="--i:2" role="row" data-od-id="ledger-row-3">
+            <span class="l-scene" role="cell">真正的不可信代码</span>
+            <p class="l-verdict" role="cell"><strong>不适用</strong>：能力检查挡不住绕过代理的恶意代码，仍需独立沙箱</p>
+          </div>
+          <div class="ledger-row" style="--i:3" role="row" data-od-id="ledger-row-4">
+            <span class="l-scene" role="cell">没有把握维持「都走语境」纪律的团队</span>
+            <p class="l-verdict" role="cell"><strong>不适用</strong>：纪律守不住，保证就是纸面的</p>
+          </div>
+          <div class="ledger-row focal" style="--i:4" role="row" data-od-id="ledger-row-5">
+            <span class="l-scene" role="cell"><span class="go-mark" aria-hidden="true"></span>自进化 agent harness（快速替换组件 + 拓扑频繁变动）</span>
+            <p class="l-verdict" role="cell"><strong>适用</strong>：两个保证正好一一对应</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 带走物 · 采用前自查清单 -->
+    <section class="sect" data-od-id="section-checklist">
+      <div class="wrap">
+        <div class="sect-head fx">
+          <div>
+            <p class="kicker" style="margin-bottom:18px;" data-od-id="s4-kicker">带走物</p>
+            <h2 class="sect-title" data-od-id="s4-title">采用前自查清单</h2>
+          </div>
+          <span class="badge" data-od-id="s4-badge">
+            <svg class="glyph glyph-screen" viewBox="0 0 13 13" aria-hidden="true">
+              <g fill="var(--ink)">
+                <circle cx="2.5" cy="2.5" r="1.05"/><circle cx="6.5" cy="2.5" r="1.05"/><circle cx="10.5" cy="2.5" r="1.05"/>
+                <circle cx="2.5" cy="6.5" r="1.05"/><circle cx="6.5" cy="6.5" r="1.05"/><circle cx="10.5" cy="6.5" r="1.05"/>
+                <circle cx="2.5" cy="10.5" r="1.05"/><circle cx="6.5" cy="10.5" r="1.05"/><circle cx="10.5" cy="10.5" r="1.05"/>
+              </g>
+            </svg>
+            合理解读
+          </span>
+        </div>
+        <!-- 五问文案已按 30-site/content/limits.md「可带走物：采用前自查清单」定稿回填（M3.5） -->
+        <div class="checklist-panel fx" data-od-id="checklist-panel">
+          <label class="check-item" data-od-id="check-item-1">
+            <input type="checkbox">
+            <span class="no">01</span>
+            <span class="q">共享状态能全部绑成语境键吗？把跨组件共享的状态列成清单逐条对，有一条绕行（全局单例、模块级缓存、直接改别人的内部字段），这条就不过。</span>
+          </label>
+          <label class="check-item" data-od-id="check-item-2">
+            <input type="checkbox">
+            <span class="no">02</span>
+            <span class="q">组件真的需要运行中动态装卸吗？集合常年不动，这套机制的开销一分都收不回来。</span>
+          </label>
+          <label class="check-item" data-od-id="check-item-3">
+            <input type="checkbox">
+            <span class="no">03</span>
+            <span class="q">热路径会不会高频触碰共享状态？intercept 与 isolate 的代价还没有数字，拿到实测结果之前，别把「应该不大」当结论。</span>
+          </label>
+          <label class="check-item" data-od-id="check-item-4">
+            <input type="checkbox">
+            <span class="no">04</span>
+            <span class="q">要跑的代码里有不可信的吗？这套范式不替代独立沙箱，不可信代码混进来就是给恶意代码留门。</span>
+          </label>
+          <label class="check-item" data-od-id="check-item-5">
+            <input type="checkbox">
+            <span class="no">05</span>
+            <span class="q">团队守得住「都走语境」的纪律吗？半走半不走比不用更危险，这问答不出肯定句，就先按守不住算。</span>
+          </label>
+        </div>
+        <p class="caption check-note fx" data-od-id="checklist-note">
+          <span>注</span>
+          <span class="rule" aria-hidden="true"></span>
+          <span>把五问抄给自己，或者整段发给 AI，让它对着你的代码库逐条回答。每一问都连着上面的边界或场景判定。</span>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="colophon" data-od-id="colophon">
+    <div class="wrap">
+      <span>deepseek-harness / Cordis 支撑框架</span>
+      <span>边界与代价 · 单墨编辑印刷</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function revealNow(el) { el.classList.add('in'); }
+
+  // 常规节：进视口一次性轻显影
+  var fx = Array.prototype.slice.call(document.querySelectorAll('.fx'));
+  // 唯一编排时刻：对照表五行逐条显影（60ms stagger，位移 12px）
+  var ledger = document.querySelector('.ledger');
+
+  if (reduced || !('IntersectionObserver' in window)) {
+    fx.forEach(revealNow);
+    if (ledger) revealNow(ledger);
+    return;
+  }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      revealNow(entry.target);
+      io.unobserve(entry.target);
+    });
+  }, { threshold: 0.18 });
+
+  fx.forEach(function (el) { io.observe(el); });
+  if (ledger) io.observe(ledger);
+})();
+</script>
+
+<!--
+  设计说明 · /limits 边界与代价
+
+  配色：全页唯一墨色钴蓝 oklch(0.449 0.182 265)（#2148B8）对纸白 #FAFAF7，层次只靠 .14/.20/.70/.78/.82/1 六级透明度。
+  对比度经 node 按 8-bit sRGB 合成口径实算（先合成取整，再按 WCAG 相对亮度公式）：墨 1.0 = 7.483:1、.82 = 4.966:1、.78 = 4.524:1，
+  图解线 .70 = 3.778:1（图形 3:1 线之上），绕行虚线同为 .70、靠虚线线型区分语义；.14/.20 仅用于基座色块与分隔细线（装饰豁免），不做文字。
+  全部声明色值色相同属钴蓝 265 度一带（alpha 对纸白合成后色相在 265 至 270.4 间，为单一墨色透明度的数学结果），无第二色相，无纯黑与中性灰。
+
+  字体：Noto Serif SC 900 立大标题（clamp(58px, 3.6vw, 72px)，最小 58px 对最小功能字 11.5px 为 5.04 倍，全程过 5 倍跳变线）；
+  Noto Sans SC 400/500/700 正文与小字；IBM Plex Mono 仅用于条目编号与勾选清单编号。
+
+  构图：type-led declaration，第一节大字立骨、文案即主对象，文 11 图 9 两列编辑网格；边界清单为「编号 + 短句标题 + 正文」长排，
+  对照表为账页式两列细分隔线行（focal 行以实印加粗与行首实印方块落定，不动颜色），自查清单为 2px 墨线面板 + 真实勾选框；
+  空纸约四成，对齐左缘，无居中式构图，无卡片阵列。
+
+  动效分镜：全页唯一编排时刻是对照表五行的进视口逐条显影（每行 stagger 60ms、位移 12px 一次性上浮，「适用」行压轴落定）；
+  其余节仅做进视口一次性的轻交叉淡（纯透明度，无位移）；对照表行 hover 为背景淡墨 .14 一闪，无位移；
+  全部动效只动 transform 与 opacity，prefers-reduced-motion 时直接定格终态，内容不缺失。
+
+  回填说明：自查清单五问与清单注已按 30-site/content/limits.md「可带走物：采用前自查清单」定稿回填（M3.5）；页面所有数字均出自研读总览第六节素材或论文页码（第 31、59 页）。
+-->
+</body>
+</html>

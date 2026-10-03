@@ -1,0 +1,283 @@
+---
+import { getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+import Takeaway from '../components/Takeaway.astro';
+import GlossaryScene from '../components/glossary/GlossaryScene.astro';
+import GlossaryCard from '../components/glossary/GlossaryCard.astro';
+import PlateFigure from '../components/glossary/PlateFigure.astro';
+import SpecimenCard from '../components/glossary/SpecimenCard.astro';
+import { parseGlossary } from '../components/glossary/parse';
+import { SITE_PAGES } from '../data/site';
+
+// 文案与徽标计数一字不改照录 src/content/pages/glossary.md
+// （构建期结构化解析，见 components/glossary/parse.ts；结构对不上会在构建期抛错）
+const entry = await getEntry('pages', 'glossary');
+if (!entry) throw new Error('词典文稿缺失：src/content/pages/glossary.md');
+// entry.data 的生成类型偶发把必填字段带可选性（InferEntrySchema 依赖 content.config.js
+// 编译产物），此处显式收窄；badges 缺失时 parseCounts 的格式校验仍会在构建期抛错
+const data = parseGlossary(entry.body ?? '', String(entry.data.badges ?? ''));
+
+// 导航短标、页题、folio 章节名统一取自 site.ts（全站唯一数据源）
+const pageMeta = SITE_PAGES.find((p) => p.slug === 'glossary');
+if (!pageMeta) throw new Error('SITE_PAGES 缺 glossary 条目');
+
+// 14 张术语卡 + 快查尾卡同场：2 列栅格、gap 20px（v2 §3/§4 数字验收线）
+// M47：三张主图（05/06/08 卡后各一，2px 钴蓝框体 figure）与两张标本小卡
+// （07 卡后一词一画双子格）作为普通 grid 单元插入，随 14 卡同栅格呼吸；
+// 生图已出（gpt-image-2.5-ext，台账 public/images/m47/gen-ledger.json），
+// 五个图位全部接线 web 压缩档（900px 主图 / 600px 小卡，2K 原图留 m47/），
+// 组件占位井仅作 src 缺失时的兜底，常态不再出现。
+const description = `${data.subHtml.replace(/<[^>]+>/g, '').split('。')[0]}。`;
+---
+
+<BaseLayout title={pageMeta.title} slug="glossary" folio={pageMeta.folio} description={description} book={true}
+  toc={[
+    { id: 'glossary-grid', label: '十四张术语卡' },
+    { id: 'glossary-outtake', label: '可带走物' },
+  ]}
+>
+  <div data-glossary>
+    <section class="intro">
+      <div class="copy">
+        <h1 class="headline">{data.headline}</h1>
+        <p class="sub" set:html={data.subHtml} />
+        <div class="intro-badges">
+          <span class="badges-note">{data.counts.note}</span>
+        </div>
+      </div>
+      <div class="scene">
+        <GlossaryScene />
+      </div>
+    </section>
+
+    <section class="grid-wrap" id="glossary-grid" aria-label="术语卡网格">
+      <div class="grid">
+        {data.cards.map((card) => (
+          <Fragment>
+            <GlossaryCard
+              n={card.n}
+              zh={card.zh}
+              en={card.en}
+              defHtml={card.defHtml}
+              analogyHtml={card.analogyHtml}
+              sourceHtml={card.sourceHtml}
+            />
+
+            {card.n === '05' && (
+              <PlateFigure
+                no="1"
+                title="响应式：拔掉→熄灭，换源→复明"
+                caption="同一摊位两幕对照——接着隔壁电源时随对方收摊熄灯，换上自发电源后原地复明；断供休眠、回供复工，全程无人盯守。"
+                promptFile="m47/prompts/glossary-1.txt"
+                src="/images/web/glossary-1.jpg"
+              />
+            )}
+            {card.n === '06' && (
+              <PlateFigure
+                no="2"
+                title="依赖注入：挂号等叫号"
+                caption="登记科室、坐着等叫号，叫到才进诊室——组件只声明「我要什么」，框架等依赖就绪才让它上岗，不必反复敲门追问。"
+                promptFile="m47/prompts/glossary-2.txt"
+                src="/images/web/glossary-2.jpg"
+              />
+            )}
+            {card.n === '07' && (
+              <div class="mini-cell" aria-label="一词一画标本小卡">
+                <SpecimenCard word="插头" term="05 响应式" promptFile="m47/prompts/glossary-card1.txt" src="/images/web/cards/glossary-card1.jpg" />
+                <SpecimenCard word="储物柜" term="07 隔离" promptFile="m47/prompts/glossary-card2.txt" src="/images/web/cards/glossary-card2.jpg" />
+              </div>
+            )}
+            {card.n === '08' && (
+              <PlateFigure
+                no="3"
+                title="拦截：安检门只换告示"
+                caption="顾客照常进出，规矩改在门口那块告示上换——在「用依赖」的动作外叠一层规则，上下游店铺一家不动，改规则也不必重启。"
+                promptFile="m47/prompts/glossary-3.txt"
+                src="/images/web/glossary-3.jpg"
+              />
+            )}
+          </Fragment>
+        ))}
+
+        <!-- 快查词条收进尾卡（本页要点 3）：跨双栏的末张卡，接住栅格收尾 -->
+        <aside class="quick card">
+          <h3 class="quick-head">{data.quick.heading}</h3>
+          <ul class="quick-list">
+            {data.quick.termsHtml.map((term) => <li set:html={term} />)}
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="outtake" id="glossary-outtake">
+      <Takeaway title={data.outtake.heading}>
+        <pre class="takeaway-pre"><code>{data.outtake.code}</code></pre>
+      </Takeaway>
+      <p class="next-line">
+        <a class="next-link" href={data.outtake.nextHref}>{data.outtake.nextLabel}</a>
+      </p>
+    </section>
+
+    <p class="coda">{data.coda}</p>
+  </div>
+</BaseLayout>
+
+<!-- 词典页无进场编排：2026-10 评审 P0 打回「初始帧不可见」，旧 glossary-motion.ts
+     进场 stagger（IntersectionObserver 显影）已移除，卡片默认帧完整可见（v2 §5.3 精神），
+     页级动效仅保留标本小卡 hover 位移（M47 小卡规约），本页归于安静（v2 §1 其余页强度 5）。
+     M47 book 壳：BaseLayout book={true}，左右 gutter 由 main.reading（56px）统一供给，
+     页内各节水平 padding 归零，只留纵向节奏。 -->
+
+<style>
+  /* 信息带：book 阅读栏（720px）内改上下堆叠——文案先行、图解居中收底。
+     原 40/60 非对称双栏是全幅版式的规约，窄栏下改堆叠不损失信息（图解为
+     纯装饰 aria-hidden，见 GlossaryScene 注释）。 */
+  .intro {
+    border-bottom: 1px solid var(--border);
+  }
+  .copy {
+    padding: 4px 0 28px;
+    min-width: 0;
+  }
+  .headline {
+    letter-spacing: .01em;
+    text-wrap: balance;
+  }
+  .sub {
+    margin-top: 20px;
+    font-size: 17.5px;      /* v2 §2 正文档 */
+    line-height: 1.9;
+    color: var(--text-body);
+    max-width: 30em;
+  }
+  .sub :global(strong) {
+    font-weight: 700;
+    color: var(--ink);      /* 重点保留钴蓝（去蓝令豁免项） */
+  }
+  .intro-badges {
+    margin-top: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .badges-note {
+    font-size: 14px;        /* v2 §2 小字档（评审 P1：11.5px 打回） */
+    letter-spacing: .14em;
+    color: var(--text-body); /* M47 去蓝：说明行随正文近黑，蓝只留标题/重点/框线/链接 */
+  }
+
+  .scene {
+    padding: 0 0 36px;
+    min-width: 0;
+  }
+  .scene :global(svg) {
+    max-width: 540px;
+    margin-inline: 0;       /* 全站左锚节奏：装饰场景也贴左，不单独居中 */
+  }
+
+  /* 术语卡栅格：两列、gap 20px（v2 §4 点名 14 卡两列栅格）。
+     M47 嵌图：主图 figure 与标本小卡双子格均作普通 grid 单元插入，
+     14 卡 + 3 图 + 1 小卡组 = 18 单元，两列恰好排满九行无空洞。 */
+  .grid-wrap {
+    padding: 32px 0;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: stretch;
+  }
+  .grid > :global(*) {
+    min-width: 0;
+  }
+
+  /* 一词一画标本小卡组：单格内的双子格，小卡 hover 位移在组件内 */
+  .mini-cell {
+    align-self: start;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* 快查尾卡：跨双栏收尾，词目细线成排 */
+  .quick {
+    grid-column: 1 / -1;
+  }
+  .quick-head {
+    font-size: 20px;
+    line-height: 1.4;
+    letter-spacing: .02em;
+  }
+  .quick-list {
+    margin-top: 14px;
+    list-style: none;
+  }
+  .quick-list li {
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    font-size: 17.5px;      /* v2 §2 正文档（评审 P1：16px 打回，验收线 ≥17px） */
+    line-height: 1.9;
+    color: var(--text-body);
+  }
+  .quick-list li:last-child { border-bottom: 1px solid var(--border); }
+  .quick-list :global(strong) {
+    font-weight: 700;
+    color: var(--ink);      /* 词条名重点，保留钴蓝 */
+  }
+  .quick-list :global(code) {
+    font-family: var(--mono);
+    font-size: .92em;
+  }
+  .quick-list :global(.mark) {
+    text-decoration: underline dotted;
+    text-decoration-color: var(--ink-70);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  /* 可带走物：共享 Takeaway 面板（卡片原语词汇），尾接跳转链接 */
+  .outtake :global(.takeaway) {
+    margin: 28px 0;         /* book 壳 gutter 由 .reading 供给，页内只留纵向节奏 */
+  }
+  .outtake {
+    padding: 0 0 24px;
+  }
+  .takeaway-pre {
+    font-family: var(--mono);
+    font-size: 14px;        /* v2 §2 小字档 */
+    line-height: 2;
+    color: var(--text-body);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .next-line {
+    margin: 0;
+  }
+  .next-link {
+    display: inline-block;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);      /* 链接保留钴蓝（去蓝令豁免项） */
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 5px;
+  }
+  .next-link:hover { background: var(--ink-14); }
+
+  .coda {
+    padding: 0 0 4px;
+    font-size: 14px;        /* v2 §2 小字档（与 .badges-note 同批 P1 整改） */
+    letter-spacing: .2em;
+    color: var(--text-body); /* M47 去蓝：快照行随正文近黑 */
+  }
+
+  /* 响应式（铁律 6）：<960 栅格塌单栏，主图/小卡随单栏满宽 */
+  @media (max-width: 960px) {
+    .grid { grid-template-columns: 1fr; }
+    .mini-cell { grid-template-columns: 1fr 1fr; max-width: 420px; }
+    /* 窄档护栏：上面的 takeaway margin 覆盖不得压过 global.css 移动档 gutter 24px */
+    .outtake :global(.takeaway) { margin: 32px 0; }
+  }
+</style>

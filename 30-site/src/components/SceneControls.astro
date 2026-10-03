@@ -1,0 +1,20 @@
+---
+/**
+ * 场景控制条：播放 / 暂停 / 重播（编码铁律 5，每个动画场景必须暴露）。
+ * 具体行为由各场景脚本绑定：滚动擦洗场景里「播放」恢复 ScrollTrigger 驱动、
+ * 「暂停」冻结场景、「重播」回到钉住起点重走；prefers-reduced-motion 下
+ * 播放与暂停置灰（场景为静态终态），重播按钮改「终态与拔除中态」淡切。
+ */
+interface Props {
+  /** 场景 id，须与 registerScene 的 id 一致 */
+  scene: string;
+}
+
+const { scene } = Astro.props;
+---
+
+<div class="scene-controls" data-scene-controls={scene} role="group" aria-label="场景控制：播放、暂停、重播">
+  <button type="button" class="ctl" data-ctl="play">播放</button>
+  <button type="button" class="ctl" data-ctl="pause">暂停</button>
+  <button type="button" class="ctl" data-ctl="restart">重播</button>
+</div>

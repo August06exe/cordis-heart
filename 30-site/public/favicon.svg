@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 单墨令牌：钴蓝 #2148B8 / 纸白 #FAFAF7（catalog 原值） -->
+  <rect width="64" height="64" rx="10" fill="#2148B8"/>
+  <text x="32" y="45" font-family="Georgia, 'Noto Serif SC', serif" font-weight="900" font-size="36" fill="#FAFAF7" text-anchor="middle">C</text>
+</svg>

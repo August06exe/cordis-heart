@@ -1,0 +1,35 @@
+---
+/**
+ * 三级可靠度徽标（PRD 4.2、6.3；04-DesignRead 定稿「全站件」条）。
+ * 三级用墨的密度区分（实印 / 网屏 / 细线的印刷隐喻），不引入第二色相。
+ * title 悬停显依据（basis 进 title 属性；键盘用户可从页面文稿正文的
+ * 「可靠度 / 依据」引文块取同一信息）。
+ * M4.5 v2 重排：基础档 12px（原 11px，可读性上调）；新增 size="lg"
+ * 展示档（14px，v2 §2 小字档），供徽标标本卡等展示场景使用，
+ * 不传即走基础档，既有页面渲染不变。
+ */
+interface Props {
+  /** 1 论文原文核实（实印）/ 2 合理解读（网屏）/ 3 转引未核实（细线） */
+  level: 1 | 2 | 3;
+  /** 悬停显示的依据 */
+  basis?: string;
+  /** 覆盖默认文字（如带计数的「原文核实 2」） */
+  label?: string;
+  /** 展示档：md=行内默认；lg=标本卡展示（14px 加大） */
+  size?: 'md' | 'lg';
+}
+
+const { level, basis, label, size = 'md' } = Astro.props;
+
+const DEFAULT_LABELS: Record<1 | 2 | 3, string> = {
+  1: '论文原文核实',
+  2: '合理解读',
+  3: '转引未核实',
+};
+const text = label ?? DEFAULT_LABELS[level];
+---
+
+<span class={`badge badge-l${level}${size === 'lg' ? ' badge-lg' : ''}`} title={basis ? `依据：${basis}` : undefined}>
+  <span class="badge-swatch" aria-hidden="true"></span>
+  <span>{text}</span>
+</span>

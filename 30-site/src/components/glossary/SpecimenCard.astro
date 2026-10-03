@@ -1,0 +1,101 @@
+---
+/**
+ * 词典页标本小卡（M47 小卡规约）：「一词一画」的 1:1 小卡，
+ * 2px 钴蓝框体 + 4px 偏移实影；hover 上浮 translate(-4px,-4px)
+ * 且阴影加深（4px/墨.14 → 9px/墨.20），transition 只声明
+ * transform / box-shadow 两项（只动这两条通道）。
+ * 生图通道阻断期（2026-10-03）渲染占位井（虚线内框 + 待补标），
+ * src 补跑传入即换图，框体与词条带不动。
+ */
+interface Props {
+  /** 一词一画的「词」（物件名） */
+  word: string;
+  /** 所属术语，如 "05 响应式" */
+  term: string;
+  /** 占位期指向落盘 prompt */
+  promptFile?: string;
+  /** 生图补跑后传入即替换占位 */
+  src?: string;
+}
+
+const { word, term, promptFile, src } = Astro.props;
+---
+
+<div class="spec" title={promptFile ? `生图待补 · ${promptFile}` : word}>
+  <div class="well">
+    {src ? (
+      <img src={src} alt={`${word} · ${term} 一词一画`} loading="lazy" />
+    ) : (
+      <div class="ph" role="img" aria-label={`${word}（生图待补占位）`}>
+        <span class="ph-tag">待补</span>
+      </div>
+    )}
+  </div>
+  <div class="lbl">
+    <b class="word">{word}</b>
+    <span class="term">{term} · 一词一画</span>
+  </div>
+</div>
+
+<style>
+  .spec {
+    min-width: 0;
+    border: 2px solid var(--ink);        /* 2px 钴蓝框体 */
+    background: var(--paper);
+    box-shadow: 4px 4px 0 var(--ink-14);
+    /* 动效卡片：transition 只动 transform / box-shadow，其余一律不过渡 */
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .spec:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 9px 9px 0 var(--ink-20); /* 阴影加深 */
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spec:hover { transform: none; }     /* 降级：保留阴影反馈，去掉位移 */
+  }
+  .well {
+    position: relative;
+    aspect-ratio: 1 / 1;
+  }
+  .well img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .ph {
+    position: absolute;
+    inset: 9px;
+    border: 1px dashed var(--ink-70);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ph-tag {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: .22em;
+    color: var(--ink);                  /* kicker 家族标记，保留钴蓝 */
+  }
+  /* 词条带：词作小标题（钴蓝，标本卡题字），所属术语随正文近黑 */
+  .lbl {
+    border-top: 1px solid var(--border);
+    padding: 8px 10px 9px;
+    display: grid;
+    gap: 2px;
+  }
+  .word {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 15px;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+  .term {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    color: var(--text-body);
+  }
+</style>

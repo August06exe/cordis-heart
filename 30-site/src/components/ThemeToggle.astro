@@ -1,0 +1,11 @@
+---
+/**
+ * 主题切换按钮：只负责展示与点击，状态逻辑在 BaseLayout 的全局脚本
+ * （事件委托，跨 View Transitions 存活）。SSR 阶段不知道主题，先给中性文案，
+ * astro:page-load 时由全局脚本按 documentElement.dataset.theme 回填。
+ */
+---
+
+<button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false">
+  主题
+</button>

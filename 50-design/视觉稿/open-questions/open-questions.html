@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="存疑与答问：十项存疑、六问六答，以及证据成色徽标的使用说明。">
+<meta name="theme-color" content="#FAFAF7">
+<title>存疑与答问 · DSH 的心脏</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:     oklch(0.984 0.004 106.5);      /* 纸白 #FAFAF7 */
+    --fg:     oklch(0.449 0.182 265);        /* 钴蓝 #2148B8，全页唯一墨 */
+    --ink:    var(--fg);
+    --paper:  var(--bg);
+    --ink-14: oklch(0.449 0.182 265 / .14);  /* 基座色块 */
+    --ink-20: oklch(0.449 0.182 265 / .20);  /* 分隔细线 */
+    --ink-70: oklch(0.449 0.182 265 / .70);  /* 图解线、细线徽标描边 */
+    --ink-78: oklch(0.449 0.182 265 / .78);  /* 小字注脚 */
+    --ink-82: oklch(0.449 0.182 265 / .82);  /* 正文 */
+    --serif: "Noto Serif SC","Songti SC","SimSun",serif;
+    --sans:  "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    --mono:  "IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  ::selection{ background:var(--ink-14); }
+  :focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+
+  /* 印刷开本：四缘一圈细墨线，页边距桌面 22px、移动 14px */
+  .sheet{
+    min-height:100vh;
+    min-height:100dvh;
+    margin:22px;
+    border:1px solid var(--ink-20);
+    display:flex;
+    flex-direction:column;
+  }
+  .wrap{
+    max-width:1240px;
+    margin:0 auto;
+    width:100%;
+    padding-left:clamp(24px,5vw,72px);
+    padding-right:clamp(24px,5vw,72px);
+  }
+  main{ flex:1; }
+
+  /* 报头：wordmark 左，folio 右，单行高不超过 80px */
+  .masthead{ border-bottom:1px solid var(--ink-20); }
+  .masthead-in{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px 24px;
+    flex-wrap:wrap;
+    padding-top:24px;
+    padding-bottom:18px;
+  }
+  .wordmark{ display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  .wordmark .latin{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:19px;
+    letter-spacing:.34em;
+  }
+  .wordmark .zh{ font-size:13px; font-weight:500; letter-spacing:.18em; color:var(--ink-82); }
+  .folio{ font-size:12px; letter-spacing:.22em; color:var(--ink-78); white-space:nowrap; }
+
+  /* 开篇声明区：标题与副文两栏编辑网格 */
+  .opening{ padding-top:clamp(76px,9vw,132px); padding-bottom:clamp(52px,6vw,84px); }
+  .kicker{ font-size:12px; font-weight:500; letter-spacing:.42em; color:var(--ink-78); }
+  .opening-grid{
+    display:grid;
+    grid-template-columns:minmax(0,58fr) minmax(0,42fr);
+    gap:24px clamp(28px,4vw,72px);
+    align-items:end;
+    margin-top:30px;
+  }
+  h1.display{
+    font-family:var(--serif);
+    font-weight:900;
+    /* display 下限恒定 58px：对最小功能字 11.5px 全程保持 5.04 倍字号跳变 */
+    font-size:58px;
+    line-height:1.3;
+    letter-spacing:.015em;
+    max-width:12em;
+    text-wrap:balance;
+  }
+  .sub{
+    font-size:16px;
+    line-height:2.0;
+    color:var(--ink-82);
+    max-width:26em;
+    padding-bottom:8px;
+  }
+  .page-compose{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin-top:clamp(48px,5vw,72px);
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+  .rule{ flex:1 1 32px; height:1px; background:var(--ink-20); min-width:32px; align-self:center; }
+
+  /* 时效声明横幅：全页唯一非用户触发的编排时刻 */
+  .timeliness{
+    border-top:2px solid var(--ink);
+    border-bottom:2px solid var(--ink);
+  }
+  .js .timeliness{ opacity:0; transform:translateY(8px); }
+  .js .timeliness.is-in{
+    opacity:1;
+    transform:translateY(0);
+    transition:opacity .4s ease-out, transform .4s ease-out;
+  }
+  .tl-text{
+    padding-top:24px;
+    padding-bottom:24px;
+    font-size:16px;
+    line-height:1.95;
+    color:var(--ink-82);
+    max-width:64em;
+  }
+  .tl-text strong{ font-weight:700; color:var(--ink); }
+
+  /* 数据场景：版本号、star 数、快照日期 */
+  code{
+    font-family:var(--mono);
+    font-weight:500;
+    font-size:.88em;
+    letter-spacing:0;
+    color:var(--ink);
+    overflow-wrap:break-word;
+  }
+
+  /* 节头：衬线中标题，不加眉标 */
+  .sec-head{ display:flex; align-items:baseline; gap:18px; }
+  .sec-title{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:22px;
+    letter-spacing:.06em;
+    white-space:nowrap;
+  }
+  .sec-note{ font-size:11.5px; letter-spacing:.16em; color:var(--ink-78); }
+
+  /* 证据成色徽标：可复用件，后续八页引用 */
+  .badge{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    font-size:11.5px;
+    font-weight:500;
+    letter-spacing:.18em;
+    line-height:1;
+    white-space:nowrap;
+    vertical-align:middle;
+  }
+  .badge .badge-txt{ position:relative; z-index:1; }
+  .badge .badge-tex{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+  }
+  .badge-verify{ background:var(--ink); color:var(--paper); border:1px solid var(--ink); padding:8px 12px 7px; }
+  .badge-interpret{ background:var(--paper); color:var(--ink); border:2px solid var(--ink); padding:7px 11px 6px; }
+  .badge-quote{ background:var(--paper); color:var(--ink); border:1px solid var(--ink-70); padding:8px 12px 7px; }
+
+  /* 依据浮层：hover 或键盘聚焦时淡入并轻上浮 8px */
+  .badge .pop{
+    position:absolute;
+    top:calc(100% + 10px);
+    left:-1px;
+    z-index:30;
+    width:min(300px,76vw);
+    background:var(--paper);
+    border:2px solid var(--ink);
+    box-shadow:5px 5px 0 var(--ink-14);
+    padding:14px 16px;
+    font-size:12.5px;
+    font-weight:400;
+    line-height:1.9;
+    letter-spacing:.02em;
+    color:var(--ink-82);
+    text-align:left;
+    white-space:normal;
+    opacity:0;
+    transform:translateY(8px);
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .22s ease-out, transform .22s ease-out, visibility 0s linear .22s;
+  }
+  .badge-live:hover .pop,
+  .badge-live:focus .pop{
+    opacity:1;
+    transform:translateY(0);
+    visibility:visible;
+    transition:opacity .22s ease-out, transform .22s ease-out;
+  }
+  /* 台账行的徽标贴右缘：浮层向左展开，不越出页面 */
+  .d-badge .pop{ left:auto; right:-1px; }
+
+  /* 徽标使用说明区：图版与标本两栏 */
+  .badges{ padding-top:clamp(68px,8vw,116px); }
+  .badge-grid{
+    display:grid;
+    grid-template-columns:minmax(0,58fr) minmax(0,42fr);
+    gap:40px clamp(36px,5vw,80px);
+    align-items:start;
+    margin-top:40px;
+  }
+  figure.figure{ margin:0; max-width:640px; }
+  .figure-svg{ width:100%; height:auto; display:block; }
+  .ladder-mobile{ display:none; }
+  .figcaption{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin-top:26px;
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+  .specimens{ display:flex; flex-direction:column; align-items:flex-start; gap:22px; padding-top:8px; }
+  .spec-hint{ font-size:11.5px; letter-spacing:.18em; color:var(--ink-78); margin-bottom:4px; }
+
+  /* SVG 图解词汇 */
+  .ht-dot{ fill:var(--ink-70); }   /* 网点用墨 .70，不落淡墨文字档 */
+  .step-solid{ fill:var(--ink); }
+  .step-screen{ fill:var(--paper); stroke:var(--ink); stroke-width:2; }
+  .step-line{ fill:var(--paper); stroke:var(--ink-70); stroke-width:1.3; }
+  .step-dots{ fill:url(#ht-dots); }
+  .plinth{ fill:var(--ink); opacity:.14; }
+  .lv-name{ font-family:var(--sans); font-weight:700; font-size:18px; letter-spacing:.14em; fill:var(--ink); text-anchor:middle; }
+  .lv-crit{ font-family:var(--sans); font-weight:500; font-size:14px; letter-spacing:.03em; fill:var(--ink); text-anchor:middle; }
+  .lv-name.on-ink{ fill:var(--paper); }
+  .lv-crit.on-ink{ fill:var(--paper); }
+
+  /* 存疑清单：勘误台账，逐行 1px 细线 */
+  .doubts{ padding-top:clamp(76px,9vw,128px); }
+  .ledger{
+    border-top:2px solid var(--ink);
+    border-bottom:2px solid var(--ink);
+    margin-top:36px;
+  }
+  .doubt{
+    display:grid;
+    grid-template-columns:104px minmax(0,1fr) auto;
+    grid-template-areas:"no main badge";
+    column-gap:clamp(24px,3vw,44px);
+    align-items:start;
+    padding:30px 0;
+  }
+  .doubt + .doubt{ border-top:1px solid var(--ink-20); }
+  .d-no{ grid-area:no; display:flex; flex-direction:column; gap:7px; padding-top:3px; }
+  .d-no .zh{ font-size:11.5px; font-weight:500; letter-spacing:.3em; color:var(--ink-78); }
+  .d-no .num{ font-family:var(--mono); font-weight:500; font-size:15px; letter-spacing:.06em; color:var(--ink); }
+  .d-main{ grid-area:main; min-width:0; }
+  .d-title{ font-size:16px; font-weight:700; line-height:1.7; color:var(--ink); }
+  .d-body{
+    margin-top:10px;
+    font-size:16px;
+    line-height:2.0;
+    color:var(--ink-82);
+    max-width:26em;
+  }
+  .d-badge{ grid-area:badge; justify-self:end; padding-top:5px; }
+
+  /* 答读者问：悬挂编号的问答组 */
+  .qa-sec{ padding-top:clamp(76px,9vw,128px); padding-bottom:clamp(28px,4vw,48px); }
+  .qa-list{ margin-top:44px; }
+  .qa{
+    display:grid;
+    grid-template-columns:clamp(56px,7vw,88px) minmax(0,1fr);
+    column-gap:clamp(16px,2vw,28px);
+    align-items:start;
+  }
+  .qa + .qa{ margin-top:clamp(44px,5vw,60px); }
+  .q-no{
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.1em;
+    color:var(--ink);
+    padding-top:5px;
+    white-space:nowrap;
+  }
+  .q-q{
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:19px;
+    line-height:1.75;
+    color:var(--ink);
+  }
+  .q-a{
+    margin-top:16px;
+    font-size:16px;
+    line-height:2.0;
+    color:var(--ink-82);
+    max-width:26em;
+  }
+  .q-a .badge{ margin:0 4px; }
+  .xref{
+    color:var(--ink);
+    text-decoration:underline;
+    text-decoration-thickness:1px;
+    text-decoration-color:var(--ink-70);
+    text-underline-offset:.22em;
+  }
+  .xref:hover{ text-decoration-color:var(--ink); }
+  del{ text-decoration:line-through; text-decoration-thickness:1.5px; }
+
+  /* 带走物 */
+  .takeaway{ padding-top:clamp(64px,8vw,120px); padding-bottom:clamp(80px,10vw,140px); }
+  .take-box{
+    max-width:640px;
+    border:2px solid var(--ink);
+    padding:26px 30px 30px;
+  }
+  .take-label{ font-size:11.5px; font-weight:500; letter-spacing:.3em; color:var(--ink-78); }
+  .take-line{
+    margin-top:16px;
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:21px;
+    line-height:1.9;
+    color:var(--ink);
+    max-width:24em;
+  }
+
+  /* 页脚与设计说明 */
+  .colophon{ border-top:1px solid var(--ink-20); }
+  .colophon-in{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px 24px;
+    flex-wrap:wrap;
+    padding-top:18px;
+    padding-bottom:20px;
+    font-size:11.5px;
+    letter-spacing:.2em;
+    color:var(--ink-78);
+  }
+  .dnotes{ border-top:1px solid var(--ink-20); }
+  .dnotes-in{ padding-top:22px; padding-bottom:40px; }
+  .dn{
+    font-size:11.5px;
+    line-height:2.0;
+    letter-spacing:.06em;
+    color:var(--ink-78);
+    max-width:72em;
+  }
+  .dn + .dn{ margin-top:6px; }
+  .dn strong{ font-weight:700; letter-spacing:.14em; color:var(--ink); }
+
+  /* 键盘聚焦浮层随焦点显隐；reduced-motion 下浮层只淡切、横幅直出 */
+  @media (prefers-reduced-motion: reduce){
+    .js .timeliness{ opacity:1; transform:none; transition:none; }
+    .badge .pop{ transform:none; transition:opacity .15s linear; }
+    .badge-live:hover .pop,
+    .badge-live:focus .pop{ transition:opacity .15s linear; }
+  }
+
+  /* 响应式：<960px 塌单栏，台账行塌为上下两段 */
+  @media (max-width:960px){
+    .sheet{ margin:14px; }
+    .masthead-in{ padding-top:18px; padding-bottom:14px; row-gap:6px; }
+    .wordmark{ gap:10px 14px; }
+    .wordmark .latin{ font-size:16px; letter-spacing:.26em; }
+    .wordmark .zh{ font-size:12px; letter-spacing:.12em; }
+    .folio{ font-size:11px; letter-spacing:.16em; }
+    .opening{ padding-top:56px; padding-bottom:44px; }
+    .opening-grid{ grid-template-columns:1fr; align-items:start; gap:20px; }
+    .sub{ padding-bottom:0; }
+    .page-compose{ margin-top:40px; }
+    .tl-text{ font-size:15px; padding-top:20px; padding-bottom:20px; }
+    .badges{ padding-top:56px; }
+    .badge-grid{ grid-template-columns:1fr; gap:36px; margin-top:30px; }
+    .doubts, .qa-sec{ padding-top:60px; }
+    .sec-head{ flex-wrap:wrap; gap:10px 14px; }
+    .doubt{
+      grid-template-columns:minmax(0,1fr) auto;
+      grid-template-areas:"no badge" "main main";
+      row-gap:14px;
+      padding:24px 0;
+    }
+    .d-no{ flex-direction:row; align-items:baseline; gap:10px; padding-top:0; }
+    .d-badge{ padding-top:0; }
+    .qa{ grid-template-columns:1fr; row-gap:8px; }
+    .q-no{ padding-top:0; }
+    .qa + .qa{ margin-top:40px; }
+    .takeaway{ padding-top:52px; padding-bottom:72px; }
+    .take-box{ padding:22px 22px 26px; }
+    /* 窄屏：浮层贴徽标下方流式定位，宽随视口，不再向侧向展开 */
+    .badge{ position:static; }
+    .badge .pop{
+      position:relative;
+      top:auto; left:auto; right:auto;
+      display:none;
+      width:auto;
+      max-width:none;
+      margin-top:10px;
+    }
+    .badge-live:hover .pop,
+    .badge-live:focus .pop{ display:block; }
+    .colophon-in{ padding-top:16px; padding-bottom:18px; }
+  }
+
+  /* 窄屏换用竖排阶梯图版 */
+  @media (max-width:700px){
+    .ladder-desktop{ display:none; }
+    .ladder-mobile{ display:block; }
+    figure.figure{ max-width:420px; }
+  }
+</style>
+<script>
+(function(){
+  /* 时效横幅进视口淡入一次：任何失败路径都保证横幅最终可见 */
+  var d = document;
+  d.documentElement.classList.add('js');
+  function arm(){
+    var b = d.getElementById('timeliness');
+    if(!b) return;
+    var show = function(){ b.classList.add('is-in'); };
+    try{
+      var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduced || !('IntersectionObserver' in window)){ show(); return; }
+      var io = new IntersectionObserver(function(es){
+        for(var i = 0; i < es.length; i++){
+          if(es[i].isIntersecting){ show(); io.disconnect(); break; }
+        }
+      }, { threshold: 0.15 });
+      io.observe(b);
+      setTimeout(show, 1600);
+    }catch(e){ show(); }
+  }
+  if(d.readyState === 'loading'){ d.addEventListener('DOMContentLoaded', arm); }
+  else{ arm(); }
+})();
+</script>
+</head>
+<body>
+
+<!-- 徽标网屏点纹：全站件，各页徽标共用 -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+  <defs>
+    <pattern id="ht-dots" width="3.6" height="3.6" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+      <circle class="ht-dot" cx="1.4" cy="1.4" r="0.85"/>
+    </pattern>
+  </defs>
+</svg>
+
+<div class="sheet" data-od-id="page-sheet">
+
+  <!-- 报头 -->
+  <header class="masthead" data-od-id="masthead">
+    <div class="wrap masthead-in">
+      <div class="wordmark">
+        <span class="latin">CORDIS</span>
+        <span class="zh">DSH 的心脏 · 思想图鉴</span>
+      </div>
+      <span class="folio">存疑与答问 · 诚实下限</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- 开篇声明区 -->
+    <section class="opening wrap" data-od-id="opening">
+      <p class="kicker" data-od-id="kicker">诚实下限 · 存疑与答问</p>
+      <div class="opening-grid">
+        <h1 class="display" data-od-id="headline">哪里靠不住，写在这里</h1>
+        <p class="sub" data-od-id="sub-copy">本页收录研读总览的十项存疑与第一轮试读的六问六答，每条挂证据成色徽标：能核实的、推出来的、听来的，分开摆。</p>
+      </div>
+      <div class="page-compose" data-od-id="page-compose">
+        <span>本页组成</span>
+        <span class="rule" aria-hidden="true"></span>
+        <span>徽标说明、存疑 10 条、答 6 问</span>
+      </div>
+    </section>
+
+    <!-- 时效声明横幅：唯一编排时刻 -->
+    <section class="timeliness" id="timeliness" data-od-id="timeliness" aria-label="时效声明">
+      <div class="wrap">
+        <p class="tl-text"><strong>时效声明</strong>：deepseek-harness 处于 developer preview，自曝会有破坏性变更。本页所有 star 数与版本号为 <code>2026-10-01</code> 勘察快照（<code>241,568</code> star、<code>0.2.0-rc.2</code>），读到时可能已变。</p>
+      </div>
+    </section>
+
+    <!-- 徽标使用说明区（全站首秀） -->
+    <section class="badges wrap" data-od-id="badge-guide">
+      <div class="sec-head">
+        <h2 class="sec-title" data-od-id="badge-title">先认徽标，再读正文</h2>
+      </div>
+      <div class="badge-grid">
+        <figure class="figure" data-od-id="ladder-figure">
+          <svg class="figure-svg ladder-desktop" viewBox="0 0 760 400" role="img" xmlns="http://www.w3.org/2000/svg">
+            <title>证据成色阶梯：实印满墨、网屏网点、细线描边，墨越实，话越硬</title>
+            <rect class="step-solid" x="48" y="118" width="200" height="248"/>
+            <rect class="step-dots" x="280" y="188" width="200" height="178"/>
+            <rect class="step-screen" x="280" y="188" width="200" height="178"/>
+            <rect class="step-line" x="512" y="248" width="200" height="118"/>
+            <text class="lv-name on-ink" x="148" y="176">论文原文核实</text>
+            <text class="lv-crit on-ink" x="148" y="210">页码可查、原文照录</text>
+            <text class="lv-name" x="380" y="240">合理解读</text>
+            <text class="lv-crit" x="380" y="274">由材料推导或综合得出</text>
+            <text class="lv-name" x="612" y="296">转引未核实</text>
+            <text class="lv-crit" x="612" y="328">转引自论文或官网</text>
+            <text class="lv-crit" x="612" y="352">本机无法复核</text>
+            <rect class="plinth" x="24" y="366" width="712" height="8" rx="4"/>
+          </svg>
+          <svg class="figure-svg ladder-mobile" viewBox="0 0 360 400" role="img" xmlns="http://www.w3.org/2000/svg">
+            <title>证据成色阶梯：实印满墨、网屏网点、细线描边，墨越实，话越硬</title>
+            <rect class="step-solid" x="24" y="28" width="312" height="112"/>
+            <rect class="step-dots" x="24" y="150" width="312" height="112"/>
+            <rect class="step-screen" x="24" y="150" width="312" height="112"/>
+            <rect class="step-line" x="24" y="272" width="312" height="114"/>
+            <text class="lv-name on-ink" x="180" y="76" style="font-size:16px">论文原文核实</text>
+            <text class="lv-crit on-ink" x="180" y="108" style="font-size:13px">页码可查、原文照录</text>
+            <text class="lv-name" x="180" y="198" style="font-size:16px">合理解读</text>
+            <text class="lv-crit" x="180" y="230" style="font-size:13px">由材料推导或综合得出</text>
+            <text class="lv-name" x="180" y="316" style="font-size:16px">转引未核实</text>
+            <text class="lv-crit" x="180" y="346" style="font-size:13px">转引自论文或官网</text>
+            <text class="lv-crit" x="180" y="368" style="font-size:13px">本机无法复核</text>
+            <rect class="plinth" x="16" y="386" width="328" height="8" rx="4"/>
+          </svg>
+          <figcaption class="figcaption" data-od-id="ladder-caption">
+            <span>图 01</span>
+            <span class="rule" aria-hidden="true"></span>
+            <span>证据成色：墨越实，话越硬</span>
+          </figcaption>
+        </figure>
+
+        <div class="specimens" data-od-id="badge-specimens">
+          <p class="spec-hint" data-od-id="spec-hint">指向标本或以 Tab 聚焦，查阅该级的依据。</p>
+          <span class="badge badge-verify badge-live" tabindex="0" aria-describedby="pop-verify" data-od-id="badge-verify">
+            <span class="badge-txt">论文原文核实</span>
+            <span class="pop" id="pop-verify" role="tooltip">页码可查、原文照录。例：Koishi 用 v3，论文脚注与依赖声明两路一致。</span>
+          </span>
+          <span class="badge badge-interpret badge-live" tabindex="0" aria-describedby="pop-interpret" data-od-id="badge-interpret">
+            <svg class="badge-tex" aria-hidden="true" focusable="false"><rect width="100%" height="100%" fill="url(#ht-dots)"/></svg>
+            <span class="badge-txt">合理解读</span>
+            <span class="pop" id="pop-interpret" role="tooltip">由材料推导或综合得出，标注推断人。例：概念映射表，两边对上靠研读员推断。</span>
+          </span>
+          <span class="badge badge-quote badge-live" tabindex="0" aria-describedby="pop-quote" data-od-id="badge-quote">
+            <span class="badge-txt">转引未核实</span>
+            <span class="pop" id="pop-quote" role="tooltip">转引自论文或官网，本机无法复核。例：VSCode 87/100 统计，脚注自称检索于 2026-06-09。</span>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 存疑清单：勘误台账 -->
+    <section class="doubts wrap" data-od-id="doubts">
+      <div class="sec-head">
+        <h2 class="sec-title" data-od-id="doubts-title">存疑清单</h2>
+        <p class="sec-note">出处：研读总览第七节</p>
+      </div>
+      <div class="ledger" data-od-id="doubt-ledger">
+
+        <article class="doubt" id="doubt-01" data-od-id="doubt-row-01">
+          <div class="d-no"><span class="zh">存疑</span><span class="num">01</span></div>
+          <div class="d-main">
+            <h3 class="d-title">fiber 在 dsh 里去哪了</h3>
+            <p class="d-body">论文的核心概念，dsh 的 <code>README</code>、<code>architecture.md</code>、<code>cordis-primer</code>、<code>glossary</code> 全都没有这个词，隔离由 <code>per-agent scope</code> 承担；是改名、封装进运行时还是有意不暴露，材料没说。</p>
+          </div>
+          <div class="d-badge"><span class="badge badge-interpret"><svg class="badge-tex" aria-hidden="true" focusable="false"><rect width="100%" height="100%" fill="url(#ht-dots)"/></svg><span class="badge-txt">合理解读</span></span></div>
+        </article>
+
+        <article class="doubt" id="doubt-02" data-od-id="doubt-row-02">
+          <div class="d-no"><span class="zh">存疑</span><span class="num">02</span></div>
+          <div class="d-main">
+            <h3 class="d-title">概念映射表是解读，不是核对</h3>
+            <p class="d-body">论文概念与 dsh 对应物的对照表，两边对上靠研读员推断；55 个包只勘察到目录名加架构文档深度，源码未逐行读。</p>
+          </div>
+          <div class="d-badge"><span class="badge badge-interpret"><svg class="badge-tex" aria-hidden="true" focusable="false"><rect width="100%" height="100%" fill="url(#ht-dots)"/></svg><span class="badge-txt">合理解读</span></span></div>
+        </article>
+
+        <article class="doubt" id="doubt-03" data-od-id="doubt-row-03">
+          <div class="d-no"><span class="zh">存疑</span><span class="num">03</span></div>
+          <div class="d-main">
+            <h3 class="d-title">有序拦截与交换性纪律的张力（撰写者补充）</h3>
+            <p class="d-body">论文明确点名「中间件的有序链不可交换」，而 dsh 的核心拦截机制恰是瀑布式事件的 <code>next()</code> 有序链；两套秩序如何分工共存，读到的材料没有明说。</p>
+          </div>
+          <div class="d-badge"><span class="badge badge-interpret"><svg class="badge-tex" aria-hidden="true" focusable="false"><rect width="100%" height="100%" fill="url(#ht-dots)"/></svg><span class="badge-txt">合理解读</span></span></div>
+        </article>
+
+        <article class="doubt" id="doubt-04" data-od-id="doubt-row-04">
+          <div class="d-no"><span class="zh">存疑</span><span class="num">04</span></div>
+          <div class="d-main">
+            <h3 class="d-title">VSCode 的两个统计无法复现</h3>
+            <p class="d-body">论文脚注：前 100 个扩展里 87 个含可执行代码、卸载需重启宿主，只有 7 个声明过对其他扩展的依赖；脚注自称检索于 2026-06-09 的 VSCode 市场，本机无法复现，只能照录。</p>
+          </div>
+          <div class="d-badge"><span class="badge badge-quote"><span class="badge-txt">转引未核实</span></span></div>
+        </article>
+
+        <article class="doubt" id="doubt-05" data-od-id="doubt-row-05">
+          <div class="d-no"><span class="zh">存疑</span><span class="num">05</span></div>
+          <div class="d-main">
+            <h3 class="d-title">证明与形式细节全部跳过</h3>
+            <p class="d-body">各定理只读了结论陈述，未复核证明；撤销函数按动手那一刻的状态定制、恢复目标未被波及就算数，实现里怎么处理论文没给例子；笔记摘录的编号可能有提取误差。</p>
+          </div>
+          <div class="d-badge"><span class="badge badge-quote"><span class="badge-txt">转引未核实</span></span></div>
+        </article>
+
+        <article class="doubt" id="doubt-06" data-od-id="doubt-row-06">
+          <div class="d-no"><span class="zh">存疑</span><span class="num">06</span></div>
+          <div class="d-main">
+            <h3 class="d-title">语言无关性只有论述，没有第二实现</h3>
+            <p class="d-body">换 Rust、Haskell、Python 的最小要求列了清单（闭包、模块动态装卸、类型扩展、访问拦截），但 Cordis 之外没有实现，实际移植工作量未知。</p>
+          </div>
+          <div class="d-badge"><span class="badge badge-quote"><span class="badge-txt">转引未核实</span></span></div>
+        </article>
+
+        <article class="doubt" id="doubt-07" data-od-id="doubt-row-07">
+          <div class="d-no"><span class="zh">存疑</span><span class="num">07</span></div>
+          <div class="d-main">
+            <h3 class="d-title">性能没有数字</h3>
+            <p class="d-body">论文承认抽象的性能开销未量化；dsh 的 <code>benchmarks/</code> 按用户路径场景组织（会话开启、长会话浏览器、流式重连等），测墙钟时间与保留内存，说明文件不含阈值数字，也没有 <code>intercept</code>、<code>isolate</code> 专项微基准；本次未运行任何基准。</p>
+          </div>
+          <div class="d-badge"><span class="badge badge-interpret"><svg class="badge-tex" aria-hidden="true" focusable="false"><rect width="100%" height="100%" fill="url(#ht-dots)"/></svg><span class="badge-txt">合理解读</span></span></div>
+        </article>
+
+        <article class="doubt" id="doubt-08" data-od-id="doubt-row-08">
+          <div class="d-no"><span class="zh">存疑</span><span class="num">08</span></div>
+          <div class="d-main">
+            <h3 class="d-title">数字都是时点值或转引</h3>
+            <p class="d-body">dsh <code>241,568</code> star（2026-10-01 勘察）、Koishi <code>6,239</code> star、Cordis <code>8,938</code> star；Koishi 插件数论文说 4000+，仓库勘察时官网口径 3000+；均未独立核实，会随时间变化。</p>
+          </div>
+          <div class="d-badge"><span class="badge badge-quote"><span class="badge-txt">转引未核实</span></span></div>
+        </article>
+
+        <article class="doubt" id="doubt-09" data-od-id="doubt-row-09">
+          <div class="d-no"><span class="zh">存疑</span><span class="num">09</span></div>
+          <div class="d-main">
+            <h3 class="d-title">抓取与提取的方法限制</h3>
+            <p class="d-body"><code>github.com</code> 网页版抓取超时，仓库信息以 GitHub API 与 raw 文件双路验证；论文 PDF 经 <code>pdftotext/pypdf</code> 提取，数学符号可能有排版损失；<code>cordis-primer</code> 独立仓库 raw README 404，入门文档以 dsh 仓库内版本为准。</p>
+          </div>
+          <div class="d-badge"><span class="badge badge-interpret"><svg class="badge-tex" aria-hidden="true" focusable="false"><rect width="100%" height="100%" fill="url(#ht-dots)"/></svg><span class="badge-txt">合理解读</span></span></div>
+        </article>
+
+        <article class="doubt" id="doubt-10" data-od-id="doubt-row-10">
+          <div class="d-no"><span class="zh">存疑</span><span class="num">10</span></div>
+          <div class="d-main">
+            <h3 class="d-title">dsh 的 API 会漂</h3>
+            <p class="d-body">项目自曝 developer preview、会有破坏性变更；借鉴 <code>ctx</code> 键名、<code>profile</code> 体系这类 API 形态有随时过时的风险，思想比 API 稳。</p>
+          </div>
+          <div class="d-badge"><span class="badge badge-quote"><span class="badge-txt">转引未核实</span></span></div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- 答读者问 -->
+    <section class="qa-sec wrap" data-od-id="qa">
+      <div class="sec-head">
+        <h2 class="sec-title" data-od-id="qa-title">答读者问</h2>
+        <p class="sec-note">出处：研读总览第八节，第一轮试读反馈</p>
+      </div>
+      <div class="qa-list">
+
+        <article class="qa" data-od-id="qa-1">
+          <span class="q-no">问 1</span>
+          <div>
+            <h3 class="q-q">「提供者在定义处一次性认证交换性」具体是个什么动作？</h3>
+            <p class="q-a">论文层面和实现层面是两回事：形式模型里它是随键定义一起提交的数学证明（论文第 29 页）；Cordis 真实代码的五个原语（<code>effect</code>、<code>set/get</code>、<code>isolate</code>、<code>intercept</code>、<code>use</code>）里没有任何证明或校验设施，落地后它退化成一条设计义务，即提供者把操作写成天然可乱序的形状，框架既不跑测试也不校验。这份义务的工件就是「你定义键的那段代码本身的形状」。从论文要求到实现无校验这条连线是撰写者综合两份笔记的推断。<span class="badge badge-verify"><span class="badge-txt">论文原文核实</span></span><span class="badge badge-interpret"><svg class="badge-tex" aria-hidden="true" focusable="false"><rect width="100%" height="100%" fill="url(#ht-dots)"/></svg><span class="badge-txt">合理解读</span></span></p>
+          </div>
+        </article>
+
+        <article class="qa" data-od-id="qa-2">
+          <span class="q-no">问 2</span>
+          <div>
+            <h3 class="q-q">Koishi 四五年实践里，撤销函数写坏导致残留的真实频率有多高？</h3>
+            <p class="q-a">回答不了。论文与七份笔记都没有失败率数据：论文给的是观察性证据（存在且有人用），没有统计清理缺陷发生率。可行线索是 dsh 仓库 <code>docs/</code> 下的 <code>postmortem/</code> 子目录（勘察时见过目录名，未读）与 Koishi 的 issue 跟踪，本次都没有翻。<span class="badge badge-quote"><span class="badge-txt">转引未核实</span></span></p>
+          </div>
+        </article>
+
+        <article class="qa" data-od-id="qa-3">
+          <span class="q-no">问 3</span>
+          <div>
+            <h3 class="q-q">dsh 的瀑布式 <code>next()</code> 有序拦截，和论文「有序链不可交换」的纪律怎么分工共存？</h3>
+            <p class="q-a">说不清，即<a class="xref" href="#doubt-03">存疑 03</a>。能确认的只有两件事：论文把有序链划为需要别的机制管的形状；dsh 确实在用有序瀑布做拦截。替换拦截器时靠什么保持秩序，读到的文档没有讲。<span class="badge badge-verify"><span class="badge-txt">论文原文核实</span></span></p>
+          </div>
+        </article>
+
+        <article class="qa" data-od-id="qa-4">
+          <span class="q-no">问 4</span>
+          <div>
+            <h3 class="q-q">Koishi 到底在用 Cordis v3 还是 v4？</h3>
+            <p class="q-a">v3，论文脚注和依赖声明两路一致。2026-10-01 复核：<code>@koishijs/core</code> <code>4.18.11</code> 声明依赖 <code>cordis ^3.18.1</code>（v3 系）；npm 注册表上 <code>cordis</code> 的 latest 是 <code>4.0.0-rc.10</code>、<code>@cordisjs/core</code> 的 latest 是 <code>3.18.1</code>，v4 至今只有候选版，没有稳定版可迁。勘误留痕：初版总览写作 <del><code>cordis ^4.6.0</code></del>，订正为 <code>cordis ^3.18.1</code>，4.6.0 在两个包里都不存在。<span class="badge badge-verify"><span class="badge-txt">论文原文核实</span></span></p>
+          </div>
+        </article>
+
+        <article class="qa" data-od-id="qa-5">
+          <span class="q-no">问 5</span>
+          <div>
+            <h3 class="q-q">性能到底差多少？<code>benchmarks/</code> 里有什么数字？</h3>
+            <p class="q-a">没有数字可给。论文自己承认性能开销未量化。<code>benchmarks/</code> 的说明文件按用户路径组织场景、测墙钟时间与保留内存，只定义指标规范、不含阈值数值；目录清单里没有 <code>intercept</code>、<code>isolate</code> 的专项微基准。本次没有运行任何基准，两者在 agent 高频工具调用路径上的实测代价仍是未知数。<span class="badge badge-interpret"><svg class="badge-tex" aria-hidden="true" focusable="false"><rect width="100%" height="100%" fill="url(#ht-dots)"/></svg><span class="badge-txt">合理解读</span></span></p>
+          </div>
+        </article>
+
+        <article class="qa" data-od-id="qa-6">
+          <span class="q-no">问 6</span>
+          <div>
+            <h3 class="q-q">「永不复用编号，新旧输出一模一样也触发下游重新适配」，为什么是对的？</h3>
+            <p class="q-a">机制理由：若按「值一样就算没变」判断，提供者已经换人时下游会继续用旧件，而旧件马上要被拆走，等于骑在一匹正被牵走的马上。编号不同就是换了人，下游重新接一遍，保证读到的依赖永远来自当前在岗的提供者。「白白抖动」确实是代价：货没变、只换了商家也会触发一次重启。机制出自论文第 4 章；「代价是偶发多余重启」这半句是撰写者按机制推出来的。<span class="badge badge-verify"><span class="badge-txt">论文原文核实</span></span><span class="badge badge-interpret"><svg class="badge-tex" aria-hidden="true" focusable="false"><rect width="100%" height="100%" fill="url(#ht-dots)"/></svg><span class="badge-txt">合理解读</span></span></p>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- 带走物 -->
+    <section class="takeaway wrap" data-od-id="takeaway">
+      <div class="take-box">
+        <p class="take-label">带走物</p>
+        <p class="take-line">借思想，别抄 API。dsh 自曝会有破坏性变更，思想比 API 稳。</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="colophon" data-od-id="colophon">
+    <div class="wrap colophon-in">
+      <span>deepseek-harness / Cordis 支撑框架</span>
+      <span>存疑与答问 · 单墨编辑印刷</span>
+    </div>
+  </footer>
+
+  <!-- 设计说明 -->
+  <aside class="dnotes" data-od-id="design-notes" aria-label="设计说明">
+    <div class="wrap dnotes-in">
+      <p class="dn"><strong>配色</strong>　全页唯一墨色钴蓝对纸白，层次只走透明度阶梯：墨 1.0 实印 7.48:1，正文 0.82 档 4.97:1，图解线 0.70 档 3.78:1，淡墨 0.14 与 0.20 只做基座与细线，无第二色相。</p>
+      <p class="dn"><strong>字体</strong>　Noto Serif SC 900 立标题，Noto Sans SC 承正文，版本号与 star 数用 IBM Plex Mono；display 恒定 58px，对最小功能字 11.5px 保持 5.04 倍字号跳变。</p>
+      <p class="dn"><strong>构图</strong>　版式族全页只落 editorial journal：开篇声明、徽标图版、勘误台账、悬挂问答依期刊体例纵向展开，左缘对齐的编辑网格，节与节形态不重复；四缘细线框，图版立于浅墨基座，留白按 25% 至 50% 档控制。</p>
+      <p class="dn"><strong>动效分镜</strong>　全页唯一编排时刻是时效横幅进视口淡入一次（8px 位移、400ms）；徽标浮层于 hover 或键盘聚焦时淡入轻浮，reduced-motion 下横幅直出、浮层只淡切。</p>
+    </div>
+  </aside>
+</div>
+</body>
+</html>

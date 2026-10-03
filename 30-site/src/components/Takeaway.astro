@@ -1,0 +1,27 @@
+---
+/**
+ * 可带走物容器（PRD 4.3）：2px 墨线面板，尾部可选复制按钮。
+ * 复制交互复用 04-DesignRead 定稿 steal-this 页口径：点击后就地切「已复制」，
+ * 两秒后切回。复制逻辑在 BaseLayout 全局脚本，事件委托。
+ */
+interface Props {
+  title?: string;
+  copy?: boolean;
+}
+
+const { title = '可带走物', copy = true } = Astro.props;
+---
+
+<aside class="takeaway">
+  <p class="takeaway-head">
+    <span>{title}</span>
+    {copy && (
+      <button type="button" class="copy-btn" data-takeaway-copy data-label="复制">
+        复制
+      </button>
+    )}
+  </p>
+  <div class="takeaway-body">
+    <slot />
+  </div>
+</aside>

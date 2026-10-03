@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swiss Demo · DSH 的心脏</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ══════════════════════════════════════════════════════════
+     SWISS INTERNATIONAL STYLE DEMO
+     12 栏网格 / Inter / 黑 + 白 + 钴蓝 #2148B8
+     文字一律左对齐、右边不齐；细线分区；编号 + 年份地点
+     ══════════════════════════════════════════════════════════ */
+  :root {
+    --black: #111111;
+    --white: #ffffff;
+    --blue: #2148B8;
+    --hairline: #111111;
+    --gray: #6b6b6b;
+    --col-gap: 24px;
+    --page-pad: 40px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--white);
+    color: var(--black);
+    font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 15.5px;
+    line-height: 1.65;
+    text-align: left;              /* 全站左对齐，右边不齐 */
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Demo 工具条（不属于设计本体） ─────────────────── */
+  .demo-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 90;
+    display: flex; align-items: center; gap: 16px;
+    background: var(--black); color: var(--white);
+    font-size: 11px; letter-spacing: .12em;
+    padding: 8px var(--page-pad);
+  }
+  .demo-bar .grow { flex: 1; }
+  .demo-bar button {
+    background: none; border: 1px solid var(--white); color: var(--white);
+    font: inherit; letter-spacing: .12em;
+    padding: 4px 12px; cursor: pointer;
+  }
+  .demo-bar button:hover { background: var(--white); color: var(--black); }
+
+  /* ── 12 栏网格基础设施 ─────────────────────────────── */
+  .g {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: var(--col-gap);
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 var(--page-pad);
+  }
+  .c1  { grid-column: 1 / 2; }   .c2  { grid-column: 2 / 3; }
+  .c3  { grid-column: 3 / 4; }   .c4  { grid-column: 4 / 5; }
+  .c5  { grid-column: 5 / 6; }   .c6  { grid-column: 6 / 7; }
+  .c7  { grid-column: 7 / 8; }   .c8  { grid-column: 8 / 9; }
+  .c9  { grid-column: 9 / 10; }  .c10 { grid-column: 10 / 11; }
+  .c11 { grid-column: 11 / 12; } .c12 { grid-column: 12 / 13; }
+  .s1-7   { grid-column: 1 / 8; }
+  .s1-9   { grid-column: 1 / 10; }
+  .s1-12  { grid-column: 1 / 13; }
+  .s5-12  { grid-column: 5 / 13; }
+  .s8-12  { grid-column: 8 / 13; }
+  .s9-12  { grid-column: 9 / 13; }
+
+  .rule { border: 0; border-top: 1px solid var(--hairline); }
+
+  /* ── 小型元信息（编号 · 年份 · 地点） ──────────────── */
+  .meta {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: .14em;
+    color: var(--gray);
+    display: flex; gap: 14px; flex-wrap: wrap;
+  }
+  .meta .no { color: var(--blue); }
+  .meta em { font-style: normal; font-weight: 400; }
+
+  /* ── 报头 ──────────────────────────────────────────── */
+  .masthead { padding-top: 72px; }
+  .masthead .brand {
+    grid-column: 1 / 4;
+    font-size: 21px; font-weight: 800; letter-spacing: .06em;
+  }
+  .masthead .brand span { color: var(--blue); }
+  .masthead .tag {
+    grid-column: 10 / 13;
+    font-size: 11px; letter-spacing: .14em; color: var(--gray);
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .masthead-row { padding: 18px 0 20px; align-items: baseline; }
+
+  /* ── Hero ──────────────────────────────────────────── */
+  .hero { padding: 96px 0 84px; }
+  .hero h1 {
+    grid-column: 1 / 11;
+    font-size: clamp(52px, 7.2vw, 104px);
+    line-height: 1.04;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 22px 0 36px;
+    text-wrap: balance;
+  }
+  .hero h1 .blue { color: var(--blue); }
+  .hero .sub {
+    grid-column: 1 / 6;
+    font-size: 16px; line-height: 1.75; color: var(--black);
+    margin-bottom: 34px;
+  }
+  .hero .actions { grid-column: 1 / 8; display: flex; gap: 14px; }
+  .btn {
+    display: inline-block; text-decoration: none;
+    font-size: 14px; font-weight: 600; letter-spacing: .04em;
+    padding: 12px 26px;
+  }
+  .btn.solid { background: var(--blue); color: var(--white); }
+  .btn.line  { border: 1px solid var(--black); color: var(--black); }
+  .btn.line:hover { background: var(--black); color: var(--white); }
+  /* 蓝色方块：瑞士海报的几何点缀 */
+  .hero .sq {
+    grid-column: 12 / 13;
+    width: 100%; aspect-ratio: 1;
+    background: var(--blue);
+    align-self: start;
+  }
+
+  /* ── 数字带 ────────────────────────────────────────── */
+  .figures { padding: 44px 0 52px; }
+  .fig { border-top: 2px solid var(--black); padding-top: 18px; }
+  .fig .n {
+    font-size: clamp(44px, 4.6vw, 64px);
+    font-weight: 800; letter-spacing: -0.02em; line-height: 1;
+    display: block; margin-bottom: 10px;
+  }
+  .fig .n small { font-size: .38em; font-weight: 600; color: var(--gray); margin-left: 4px; }
+  .fig .l { font-size: 12.5px; color: var(--gray); letter-spacing: .04em; }
+  .fig.blue .n { color: var(--blue); }
+
+  /* ── 章节头（编号 + 标题 + 元信息） ─────────────────── */
+  .sec { padding: 64px 0 28px; }
+  .sec .no {
+    grid-column: 1 / 2;
+    font-size: 15px; font-weight: 700; color: var(--blue);
+  }
+  .sec .meta-line { grid-column: 2 / 13; align-self: baseline; }
+  .sec h2 {
+    grid-column: 1 / 9;
+    font-size: clamp(28px, 3.4vw, 44px);
+    font-weight: 800; letter-spacing: -0.01em; line-height: 1.15;
+    margin-top: 26px;
+  }
+
+  /* ── 正文两栏（瑞士式：窄栏引文 + 宽栏正文） ────────── */
+  .body-two { padding-bottom: 56px; }
+  .body-two .lead-col { grid-column: 1 / 5; font-size: 17px; font-weight: 500; line-height: 1.8; }
+  .body-two .text-col { grid-column: 6 / 13; font-size: 15px; line-height: 1.85; }
+  .body-two p + p { margin-top: 14px; }
+  .body-two strong { font-weight: 700; }
+  .body-two .kw { color: var(--blue); font-weight: 600; }
+
+  /* ── 时间线表（年份 × 事件，细线行） ───────────────── */
+  .timeline { padding-bottom: 64px; }
+  .t-row {
+    display: grid; grid-template-columns: subgrid;
+    grid-column: 1 / 13;
+    padding: 16px 0;
+    border-top: 1px solid var(--hairline);
+    align-items: baseline;
+  }
+  .t-row:last-child { border-bottom: 1px solid var(--hairline); }
+  .t-row .yr { font-size: 15px; font-weight: 700; }
+  .t-row .ev { font-size: 14.5px; }
+  .t-row .ev b { font-weight: 700; }
+  .t-row .loc { font-size: 11px; letter-spacing: .12em; color: var(--gray); text-align: left; }
+
+  /* ── 目录（编号行 + 细线） ─────────────────────────── */
+  .toc { padding-bottom: 64px; }
+  .trow {
+    grid-column: 1 / 13;
+    display: grid; grid-template-columns: subgrid;
+    align-items: baseline;
+    padding: 20px 0;
+    border-top: 1px solid var(--hairline);
+    text-decoration: none; color: var(--black);
+  }
+  .trow:hover { background: #f5f6fa; }
+  .trow .no {
+    grid-column: 1 / 2;
+    font-size: 14px; font-weight: 700; color: var(--blue);
+  }
+  .trow .ti { grid-column: 2 / 8; font-size: 17px; font-weight: 700; }
+  .trow .ti small { display: block; font-size: 13px; font-weight: 400; color: var(--gray); margin-top: 3px; }
+  .trow .pg { grid-column: 10 / 11; font-size: 12px; color: var(--gray); }
+  .trow .ar { grid-column: 12 / 13; font-size: 16px; color: var(--black); }
+
+  /* ── 词条示例（词典页的瑞士长相） ──────────────────── */
+  .terms { padding-bottom: 72px; }
+  .term-row {
+    grid-column: 1 / 13;
+    display: grid; grid-template-columns: subgrid;
+    padding: 24px 0;
+    border-top: 1px solid var(--hairline);
+  }
+  .term-row .no { grid-column: 1 / 2; font-size: 13px; font-weight: 700; color: var(--blue); align-self: start; padding-top: 4px; }
+  .term-row .head { grid-column: 2 / 5; }
+  .term-row .head b { font-size: 19px; font-weight: 800; display: block; }
+  .term-row .head i { font-size: 12px; font-style: normal; color: var(--gray); letter-spacing: .08em; }
+  .term-row .def { grid-column: 5 / 10; font-size: 14.5px; line-height: 1.8; }
+  .term-row .an  { grid-column: 10 / 13; font-size: 13.5px; line-height: 1.7; color: var(--gray); border-left: 1px solid var(--hairline); padding-left: 18px; }
+  .term-row .an b { color: var(--black); display: block; margin-bottom: 4px; }
+
+  /* ── 页脚 ──────────────────────────────────────────── */
+  footer { padding: 26px 0 60px; }
+  footer .f1 { grid-column: 1 / 7; font-size: 11px; letter-spacing: .14em; color: var(--gray); }
+  footer .f2 { grid-column: 8 / 13; font-size: 11px; letter-spacing: .14em; color: var(--gray); }
+  footer .f2 span { color: var(--blue); }
+
+  /* ── 网格开关覆盖层 ────────────────────────────────── */
+  .grid-overlay {
+    position: fixed; inset: 0; z-index: 80;
+    pointer-events: none; display: none;
+    padding: 0 var(--page-pad);
+    max-width: 1440px; margin: 0 auto;
+  }
+  body.show-grid .grid-overlay { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--col-gap); }
+  .grid-overlay div { background: rgba(33, 72, 184, 0.055); border-left: 1px solid rgba(33, 72, 184, 0.22); border-right: 1px solid rgba(33, 72, 184, 0.22); }
+
+  @media (max-width: 960px) {
+    :root { --page-pad: 20px; --col-gap: 14px; }
+    .masthead .brand { grid-column: 1 / 9; }
+    .masthead .tag { grid-column: 9 / 13; }
+    .hero h1 { grid-column: 1 / 13; }
+    .hero .sub { grid-column: 1 / 13; }
+    .hero .sq { display: none; }
+    .fig { grid-column: 1 / 13 !important; }
+    .body-two .lead-col, .body-two .text-col { grid-column: 1 / 13; }
+    .t-row .loc { display: none; }
+    .trow .ti { grid-column: 2 / 12; }
+    .trow .pg, .trow .ar { display: none; }
+    .term-row .no { display: none; }
+    .term-row .head { grid-column: 1 / 13; margin-bottom: 10px; }
+    .term-row .def { grid-column: 1 / 13; margin-bottom: 10px; }
+    .term-row .an { grid-column: 1 / 13; border-left: none; padding-left: 0; }
+    .sec h2 { grid-column: 1 / 13; }
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  <span>SWISS&nbsp;DEMO&nbsp;V1</span>
+  <span style="opacity:.55">— 12栏网格 · INTER · 黑白 + 钴蓝 #2148B8</span>
+  <span class="grow"></span>
+  <button id="gridToggle" type="button">显示网格</button>
+  <a href="/" style="color:var(--white);text-decoration:none;border:1px solid var(--white);padding:4px 12px;">返回站点</a>
+</div>
+
+<div class="grid-overlay" aria-hidden="true">
+  <div></div><div></div><div></div><div></div><div></div><div></div>
+  <div></div><div></div><div></div><div></div><div></div><div></div>
+</div>
+
+<!-- ═══════════ 报头 ═══════════ -->
+<header class="g masthead">
+  <p class="brand">CORDIS<span>.</span></p>
+  <div class="tag">
+    <span>DSH 的心脏 · 思想图鉴</span>
+    <span>EDITION 2026-10 · SNAPSHOT</span>
+  </div>
+</header>
+<hr class="rule g s1-12" style="margin-top:14px;">
+
+<!-- ═══════════ 01 · Hero ═══════════ -->
+<section class="g hero">
+  <p class="meta s1-12">
+    <span class="no">01</span>
+    <span>开篇</span>
+    <em>2026 · 北京大学 × DEEPSEEK-AI</em>
+  </p>
+  <h1>让运行中的软件<br><span class="blue">换零件</span>，还能<br>原样退回去。</h1>
+  <p class="sub">
+    DeepSeek 开源的 dsh，七周 24 万 star。它敢把「一切皆插件」写进招牌，
+    靠的是一颗跑了七年的心脏：Cordis，与它背后一篇 88 页的论文。
+  </p>
+  <div class="actions">
+    <a class="btn solid" href="#toc">开始阅读 →</a>
+    <a class="btn line" href="/sandbox/">直接去沙盒</a>
+  </div>
+  <div class="sq" aria-hidden="true"></div>
+</section>
+
+<!-- ═══════════ 02 · 数字带 ═══════════ -->
+<section class="g figures">
+  <div class="fig c1-4">
+    <span class="n">9<small>页</small></span>
+    <span class="l">从现象到机制的完整图鉴</span>
+  </div>
+  <div class="fig c5-8">
+    <span class="n">14<small>张</small></span>
+    <span class="l">术语卡，每个词都配生活类比</span>
+  </div>
+  <div class="fig blue c9-12">
+    <span class="n">240<small>k STAR</small></span>
+    <span class="l">dsh 七周成绩【转引 · 2026-10-01 实测】</span>
+  </div>
+</section>
+
+<hr class="rule g s1-12">
+
+<!-- ═══════════ 03 · 由来 ═══════════ -->
+<section class="g sec">
+  <span class="no">03</span>
+  <div class="meta meta-line">
+    <span>由来</span>
+    <em>2019—2026 · KOISHI → CORDIS → DSH</em>
+  </div>
+  <h2>一颗跑了七年的心脏。</h2>
+</section>
+
+<section class="g body-two">
+  <p class="lead-col">
+    24 万 star 的项目不是七周长出来的。dsh 的底气，来自一个
+    QQ 机器人时代就开始迭代的插件内核。
+  </p>
+  <div class="text-col">
+    <p>2019 年底，开发者 <strong>Shigma（石逸凡）</strong>开源聊天机器人框架 Koishi：几千个互不相识的人写的插件，塞进同一个进程，随时装卸、互相调用，还要不把彼此弄死。2022 年，他把最硬的内核拆出来，取名 <span class="kw">Cordis</span>——拉丁语的「心脏」。此后四年，它在 Koishi 身上养出 4000 多个插件的生态。</p>
+    <p>2026 年 8 月，石逸凡（北京大学 &amp; DeepSeek-AI）与合作者把它写成论文《时空可组装性的一种编程范式》；同月，DeepSeek 把 Cordis 装进 dsh。分工一句话：<strong>论文立论，Cordis 做成框架，Koishi 是先例，dsh 是 agent 时代的地基。</strong></p>
+  </div>
+</section>
+
+<section class="g timeline">
+  <div class="t-row">
+    <span class="yr c1-2">2019</span>
+    <span class="ev c3-9"><b>Koishi 开源</b> · 跨平台聊天机器人框架，从第一天就面对「陌生人插件共存」问题</span>
+    <span class="loc c10-12">开源社区 · SHIGMA</span>
+  </div>
+  <div class="t-row">
+    <span class="yr c1-2">2022</span>
+    <span class="ev c3-9"><b>Cordis 独立开源</b> · 从 Koishi 拆出的插件内核，自述「时空可组合性元框架」</span>
+    <span class="loc c10-12">CORDIVERSE / MIT</span>
+  </div>
+  <div class="t-row">
+    <span class="yr c1-2">2026.08</span>
+    <span class="ev c3-9"><b>论文发表 + dsh 开源</b> · 88 页论文立论；DeepSeek 把 Cordis 装进 agent 框架</span>
+    <span class="loc c10-12">PKU × DEEPSEEK-AI</span>
+  </div>
+  <div class="t-row">
+    <span class="yr c1-2">2026.10</span>
+    <span class="ev c3-9"><b>本站快照</b> · 241,568 star，PR 编号四位数，最近提交密集</span>
+    <span class="loc c10-12">GITHUB API 实测</span>
+  </div>
+</section>
+
+<!-- ═══════════ 04 · 目录 ═══════════ -->
+<section class="g sec" id="toc">
+  <span class="no">04</span>
+  <div class="meta meta-line">
+    <span>全书目录</span>
+    <em>01—09 · 九页，约 40 分钟</em>
+  </div>
+  <h2>从通勤阅读，到动手照抄。</h2>
+</section>
+
+<nav class="g toc" aria-label="全书九页">
+  <a class="trow" href="/why/">
+    <span class="no">01</span>
+    <span class="ti">序章 · 为什么<small>重启的代价，与两个会让你吃惊的统计</small></span>
+    <span class="pg">10 MIN</span>
+    <span class="ar">→</span>
+  </a>
+  <a class="trow" href="/glossary/">
+    <span class="no">02</span>
+    <span class="ti">术语图鉴<small>14 张卡，把吓人的词翻译成日常</small></span>
+    <span class="pg">15 MIN</span>
+    <span class="ar">→</span>
+  </a>
+  <a class="trow" href="/ideas/">
+    <span class="no">03</span>
+    <span class="ti">五个核心思想<small>问题、解法、类比、例子，一个不少</small></span>
+    <span class="pg">20 MIN</span>
+    <span class="ar">→</span>
+  </a>
+  <a class="trow" href="/sandbox/">
+    <span class="no">04</span>
+    <span class="ti">组件沙盒<small>六幕亲手操作：装上、接线、供电、拔掉、换源、复原</small></span>
+    <span class="pg">动手</span>
+    <span class="ar">→</span>
+  </a>
+  <a class="trow" href="/field-notes/">
+    <span class="no">05</span>
+    <span class="ti">实录<small>论文说的数字，我们去仓库数了一遍</small></span>
+    <span class="pg">8 MIN</span>
+    <span class="ar">→</span>
+  </a>
+  <a class="trow" href="/steal-this/">
+    <span class="no">06</span>
+    <span class="ti">借鉴清单<small>15 条打法，勾走你要的，拼成给 AI 的需求书</small></span>
+    <span class="pg">工具</span>
+    <span class="ar">→</span>
+  </a>
+  <a class="trow" href="/limits/">
+    <span class="no">07</span>
+    <span class="ti">边界与代价<small>什么时候别用，采用前自查五问</small></span>
+    <span class="pg">8 MIN</span>
+    <span class="ar">→</span>
+  </a>
+</nav>
+
+<!-- ═══════════ 05 · 词条示例（词典页的瑞士长相） ═══════════ -->
+<section class="g sec">
+  <span class="no">05</span>
+  <div class="meta meta-line">
+    <span>词条示例</span>
+    <em>词典页 · 三张样卡</em>
+  </div>
+  <h2>术语的瑞士长相。</h2>
+</section>
+
+<section class="g terms">
+  <div class="term-row">
+    <span class="no">01</span>
+    <div class="head"><b>效应</b><i>EFFECT</i></div>
+    <p class="def">插件对系统做的每个改动——开的端口、写的配置、注册的命令。论文立的规矩：动手的当场，交出撤销办法。</p>
+    <div class="an"><b>装修留收据</b>工人每动一处留一张「怎么复原」，退租时按倒序执行。</div>
+  </div>
+  <div class="term-row">
+    <span class="no">04</span>
+    <div class="head"><b>反效应</b><i>COEFFECT</i></div>
+    <p class="def">效应说「我对世界做了什么」，反效应说「世界得先给我什么」。说白了：组件进门先交的依赖清单。</p>
+    <div class="an"><b>餐馆挂牌</b>「本店需要水、电、燃气」——停水那一刻自动歇业。</div>
+  </div>
+  <div class="term-row">
+    <span class="no">11</span>
+    <div class="head"><b>语境</b><i>CONTEXT</i></div>
+    <p class="def">全系统共用的一本大账：状态、撤销办法、依赖登记全在上面。纲领就一句——每次交互都经过它，谁也不许绕开。</p>
+    <div class="an"><b>酒店总账</b>动任何东西都记台账，退房按「下一位客人察觉不出」验收。</div>
+  </div>
+</section>
+
+<hr class="rule g s1-12">
+
+<!-- ═══════════ 页脚 ═══════════ -->
+<footer class="g">
+  <p class="f1">DSH 的心脏 · CORDIS 思想图鉴</p>
+  <p class="f2">DEVELOPER PREVIEW · 快照 2026-10 · <span>SWISS DEMO V1</span></p>
+</footer>
+
+<script>
+  var btn = document.getElementById('gridToggle');
+  btn.addEventListener('click', function () {
+    var on = document.body.classList.toggle('show-grid');
+    btn.textContent = on ? '隐藏网格' : '显示网格';
+  });
+</script>
+
+</body>
+</html>
