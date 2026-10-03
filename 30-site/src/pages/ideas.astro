@@ -68,15 +68,18 @@ import SandboxScene from '../components/ideas/SandboxScene.astro';
       </div>
     </section>
 
-    <!-- 本章母题 · 一词一画小卡（ideas-card1 已接入 /images/web/cards/，1K 1:1）。
-         动效卡：hover 平移 -4px,-4px + 阴影加深，transition 只挂 transform/box-shadow。
-         ideas-card2 生成失败（gen-ledger.json），回旋箭头位暂留 .ph 占位待补。 -->
+    <!-- 本章母题 · 一词一画小卡（ideas-card1/2 已接入 /images/web/cards/，2K 生图压 600 档）。
+         动效卡：hover 平移 -4px,-4px + 阴影加深，transition 只挂 transform/box-shadow。 -->
     <div class="mini-grid" data-reveal>
       <figure class="mini-card">
-        <div class="ph ph-11" role="img" aria-label="一词一画占位：回旋箭头，撤销">
-          <p class="ph-tag">生图待补</p>
-          <p class="ph-ref">m47/prompts/ideas-card2.txt</p>
-        </div>
+        <img
+          src="/images/web/cards/ideas-card2.jpg"
+          alt="单墨钴蓝小卡：一支回旋箭头经 U 形回环指回自己的起点圆点，回环内侧走半调网屏"
+          width="600"
+          height="600"
+          loading="lazy"
+          decoding="async"
+        />
         <figcaption class="mini-cap">
           <b>回旋箭头 · 撤销</b>
           <span>思想一 UNDO：一笔画出，原路回得去。</span>
@@ -780,7 +783,6 @@ import SandboxScene from '../components/ideas/SandboxScene.astro';
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--card-gap);
-    max-width: 420px;
   }
   .mini-card {
     margin: 0;

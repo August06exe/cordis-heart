@@ -1,10 +1,10 @@
 ---
 /**
- * 生成器预览面板：M4 只做视觉壳与占位容器（交互演示本体属 M5，见任务范围边界）。
+ * 生成器预览面板（M5 已实装，逻辑在页级脚本 steal-this.ts setupChecklist）：
  * 面板微文案照录视觉稿定稿（30-site/src/content/pages/steal-this.md「这页怎么用」）：
  * 计数「已选 n 条」、空态「勾选左侧条目，这里逐条拼出可带走的清单」、按钮「复制」「下载 .md」。
- * 计数随勾选实时变化（真实计数，页级脚本 steal-this.ts）；mdview 为 M5 挂载点；
- * 两个按钮 M4 置灰占位，M5 接管生成器逻辑后启用。
+ * 拼装/复制/下载/初始预勾选（01/04/13）均按下方 M5 分镜注记实现；两按钮默认禁用，
+ * 勾选数 > 0 时由脚本解禁。
  */
 ---
 
@@ -30,8 +30,8 @@
   -->
   <pre class="mdview" data-md-slot><code class="md-empty" data-gen-empty>勾选左侧条目，这里逐条拼出可带走的清单</code></pre>
   <div class="pactions">
-    <button class="btn" type="button" disabled data-m5="copy" title="生成器逻辑属 M5，当前为占位">复制</button>
-    <button class="btn" type="button" disabled data-m5="download" title="生成器逻辑属 M5，当前为占位">下载 .md</button>
+    <button class="btn" type="button" disabled data-m5="copy">复制</button>
+    <button class="btn" type="button" disabled data-m5="download">下载 .md</button>
   </div>
 </aside>
 
@@ -82,6 +82,19 @@
     font-family: var(--sans);
     font-size: 12.5px;
     color: var(--muted);
+  }
+  /* 生成器块（steal-this.ts 渲染）：每条一块，块内 pre-wrap 继承；
+     .md-flash 是墨 .14 高亮覆盖层，插入瞬间 opacity 1→0（只动 opacity） */
+  .md-block {
+    position: relative;
+    display: block;
+  }
+  .md-flash {
+    position: absolute;
+    inset: 0;
+    background: var(--ink-14);
+    opacity: 0;
+    pointer-events: none;
   }
 
   .pactions {

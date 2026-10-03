@@ -299,32 +299,46 @@ import Takeaway from '../components/Takeaway.astro';
   .s1-copy .body-copy + .body-copy { margin-top: var(--space-p); }
 
   /* ── 生图版位（M47）：2px 钴蓝框体 + 8px 偏移实影，图注走 .fig-note ────
-     生图已出（/images/web/，台账 gen-ledger.json），.ph-box 占位已整块换 <img>：
-     主图 900×1200（3:4）、小卡 600×600（1:1），width/height 属性先声明内在比，
-     加载期无布局跳动。主图 3:4 左对齐（版画自身的不对称构图），不吃满栏宽。 */
+     版心重排（2026-10-03）：孤竖版统一「画|注」双格全宽（与 why 同口径），
+     取消 400px 限宽；小卡 1:1 双卡 2 列吃满，不再 440px 限宽。 */
   .plate {
-    width: min(100%, 400px);
+    width: 100%;
     margin: 40px 0 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
     border: 2px solid var(--ink);
     background: var(--paper);
     box-shadow: 8px 8px 0 var(--ink-14);
   }
-  .plate-note { margin: 14px 2px 0; }
+  .plate-note {
+    margin: 0;
+    padding: 18px 20px;
+    border-left: 1px solid var(--border);
+    align-self: center;
+    flex-direction: column;   /* 双格右半竖排：标签行/说明行各占一行（横排 rule 是全宽形态的） */
+    gap: 8px;
+  }
+  .plate-note .rule { display: none; }
   .plate-img,
   .card-img {
     display: block;
     width: 100%;
     height: auto;
   }
+  .plate .plate-img {
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 3 / 4;
+  }
 
-  /* ── 小卡网格（M47 动效卡片）：1:1 小卡两张，hover 位移 + 阴影加深 ─────
+  /* ── 小卡网格（M47 动效卡片）：1:1 小卡两张 2 列吃满，hover 位移 + 阴影加深 ──
      铁律：transition 只动 transform / box-shadow，不碰颜色与布局属性；
      位移 -4px/-4px，实影从 8px ink-.14 加深到 12px ink-.20。 */
   .mini-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--card-gap);
-    max-width: 440px;
     margin-top: 40px;
   }
   .mini-card {

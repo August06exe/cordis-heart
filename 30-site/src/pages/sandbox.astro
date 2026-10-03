@@ -287,8 +287,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   /* ── 小卡动效：hover 抬升 + 阴影加深；transition 只动 transform / box-shadow ── */
   .mcards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(168px, 208px));
-    gap: var(--card-gap); justify-content: start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--card-gap);
     margin-top: var(--card-gap);
   }
   .mcard {

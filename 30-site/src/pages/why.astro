@@ -315,20 +315,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   /* ── 图版（.plate）：2px 钴蓝框体 + 偏移实影，与 .card 同族 ───────────────
-     悬右错位（margin-left:auto）是本页图版的编辑签名，与 .next-link 同侧；
+     版心重排（2026-10-03）：孤竖版统一「画|注」双格全宽——左格 3:4 画、右格图注，
+     取消 460px 限宽与悬右错位（全站图卡一律 2 列等宽节奏，孤单元件左锚）；
      深色主题下图版按「纸上的印刷品」整卡呈现（06-插图清单 §3）。 */
   .plate {
     margin: 44px 0 0;
-    margin-left: auto;
-    width: min(460px, 100%);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
     border: 2px solid var(--ink);
     background: var(--paper);
     box-shadow: 8px 8px 0 var(--ink-14);
   }
-  .plate-img {
+  .plate > .plate-img {
     display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 3 / 4;
   }
   /* 小卡图（.mini-img 与 .plate-img 同族：块级、满宽、按比例） */
   .mini-card .plate-img {
@@ -336,10 +340,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     object-fit: cover;
   }
 
-  /* 图注：图号·标题一行 + 一句话说明（小字档 14px / 墨 .78） */
-  .plate-cap {
-    padding: 12px 16px 14px;
-    border-top: 1px solid var(--border);
+  /* 图注：右格竖排（画|注 双格的右半，只作用于 .plate 直接子注；
+     mini 卡图注走 .mini-cap 卡内下方原样） */
+  .plate > .plate-cap {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    padding: 18px 20px;
+    border-left: 1px solid var(--border);
   }
   .cap-line {
     display: flex;
@@ -368,16 +377,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--muted);
   }
 
-  /* ── 动效小卡（mini-card）：小尺寸卡片，hover 抬升 + 阴影加深 ─────────────
+  /* ── 动效小卡（mini-card）：占 2 列栅格左半栏，孤卡不再缩小悬右 ─────────────
      transition 只动 transform / box-shadow（任务规约）；减动效直出静止。 */
   .mini-grid {
     margin-top: 32px;
-    display: flex;
-    justify-content: flex-end;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--card-gap);
   }
   .mini-card {
     margin: 0;
-    width: min(220px, 100%);
+    min-width: 0;
     border: 2px solid var(--ink);
     background: var(--paper);
     box-shadow: 6px 6px 0 var(--ink-14);
@@ -521,13 +531,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     margin-top: 24px;
   }
 
-  /* ── 下一站：悬右错位，卡片词汇的链接 ───────────────────────────────── */
+  /* ── 下一站：卡片词汇的链接，孤单元件左锚（与全站 2 列节奏同侧） ─────── */
   .next-sec {
     margin-top: 20px;
   }
   .next-inner {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
   }
   .next-link {
     display: inline-block;
@@ -560,15 +570,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* ── 响应式：<960px 阅读栏已塌全宽（global.css），这里只收卡片网格 ────── */
   @media (max-width: 960px) {
-    .plate {
-      margin-left: auto;
-    }
     .dim-grid,
     .g-grid {
       grid-template-columns: 1fr;
     }
-    .next-inner {
-      justify-content: flex-start;
+    .plate {
+      grid-template-columns: 1fr;   /* 画|注 双格塌竖排：画上注下 */
+    }
+    .plate-cap {
+      border-left: none;
+      border-top: 1px solid var(--border);
+    }
+    .mini-grid {
+      grid-template-columns: 1fr;
     }
     .next-link {
       width: 100%;

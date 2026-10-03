@@ -24,6 +24,9 @@ interface OpenPop {
   scope: HTMLElement | null;
 }
 
+import { STEAL_ITEMS } from './items';
+import type { StealItem } from './items';
+
 let active: OpenPop | null = null;
 
 function closeActive(): void {
@@ -96,12 +99,98 @@ function setupPopovers(): void {
 function setupChecklist(): void {
   const numEl = document.querySelector<HTMLElement>('[data-gen-num]');
   const emptyEl = document.querySelector<HTMLElement>('[data-gen-empty]');
+  const slot = document.querySelector<HTMLElement>('[data-md-slot]');
+  const copyBtn = document.querySelector<HTMLButtonElement>('[data-m5="copy"]');
+  const dlBtn = document.querySelector<HTMLButtonElement>('[data-m5="download"]');
   const boxes = Array.from(document.querySelectorAll<HTMLInputElement>('[data-idea-cbx]:not([data-cbx-init])'));
+  // astro:page-load 与模块直跑会让本函数执行两次：第二次 boxes 为空（全带 init 标记），
+  // 若继续跑预勾选之后的 sync()，会把首次建立的勾选与面板状态覆盖回空（真机断言确诊）
+  if (boxes.length === 0) return;
+  const byN = new Map(STEAL_ITEMS.map((item) => [item.n, item]));
+  const reduceMotion =
+    typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const syncCount = (): void => {
-    const n = boxes.filter((box) => box.checked).length;
+  /** 导出 markdown 单块：条目号与模式名 / 大白话 / 出处行带档位 / 复制给 AI 段（GenPanel 规格） */
+  const block = (item: StealItem): string =>
+    [
+      `## ${item.n} · ${item.title}`,
+      '',
+      item.plain,
+      '',
+      `出处：${item.source}（${item.level === 1 ? '论文原文核实' : '合理解读'}）`,
+      '',
+      '复制给 AI：',
+      item.prompt,
+    ].join('\n');
+
+  /** 当前勾选（条目号升序）对应的条目清单 */
+  const collect = (): StealItem[] =>
+    boxes
+      .filter((box) => box.checked)
+      .map((box) => byN.get(box.dataset.ideaCbx ?? ''))
+      .filter((item): item is StealItem => Boolean(item))
+      .sort((a, b) => a.n.localeCompare(b.n));
+
+  const sync = (): void => {
+    const picked = collect();
+    const n = picked.length;
     if (numEl) numEl.textContent = String(n);
     if (emptyEl) emptyEl.hidden = n > 0;
+    const disabled = n === 0;
+    for (const btn of [copyBtn, dlBtn]) {
+      if (!btn) continue;
+      btn.disabled = disabled;
+      if (disabled) btn.removeAttribute('title');
+    }
+    if (!slot) return;
+    if (n === 0) {
+      slot.replaceChildren();
+      const code = document.createElement('code');
+      code.className = 'md-empty';
+      code.dataset.genEmpty = '';
+      code.textContent = '勾选左侧条目，这里逐条拼出可带走的清单';
+      slot.append(code);
+      return;
+    }
+    // 已有块复用、新块淡入、取消块淡出（brief §4；reduced-motion 直切）
+    const texts = picked.map(block);
+    const existing = Array.from(slot.querySelectorAll<HTMLElement>('.md-block'));
+    texts.forEach((text, i) => {
+      let el = existing[i];
+      if (!el) {
+        el = document.createElement('span');
+        el.className = 'md-block';
+        el.textContent = i === 0 ? text : `\n\n${text}`;
+        slot.append(el);
+        if (!reduceMotion) {
+          el.animate(
+            [
+              { opacity: '0', transform: 'translateY(8px)' },
+              { opacity: '1', transform: 'translateY(0)' },
+            ],
+            { duration: 240, easing: 'ease-out' },
+          );
+          const flash = document.createElement('span');
+          flash.className = 'md-flash';
+          el.append(flash);
+          flash
+            .animate([{ opacity: '1' }, { opacity: '0' }], { duration: 600, easing: 'ease-out' })
+            .addEventListener('finish', () => flash.remove());
+        }
+      } else {
+        if (el.textContent !== text) el.textContent = text;
+      }
+    });
+    for (const el of existing.slice(texts.length)) {
+      if (reduceMotion) {
+        el.remove();
+        continue;
+      }
+      el.animate([{ opacity: '1' }, { opacity: '0' }], { duration: 200, easing: 'ease-in' }).addEventListener(
+        'finish',
+        () => el.remove(),
+      );
+    }
   };
 
   for (const box of boxes) {
@@ -110,13 +199,41 @@ function setupChecklist(): void {
     const apply = (): void => { row?.classList.toggle('is-on', box.checked); };
     box.addEventListener('change', () => {
       apply();
-      syncCount();
-      // M5 分镜注记：在此钩生成器块的插入（勾选）与移除（取消），
-      // 规格见 GenPanel.astro 顶部注释；数据源 items.ts。
+      sync();
     });
     apply();
   }
-  syncCount();
+  // 初始预勾选 01/04/13（视觉稿定稿口径：面板载入即有成果）
+  for (const n of ['01', '04', '13']) {
+    const box = boxes.find((b) => b.dataset.ideaCbx === n);
+    if (box) {
+      box.checked = true;
+      box.closest<HTMLElement>('[data-idea-item]')?.classList.add('is-on');
+    }
+  }
+  sync();
+
+  // 复制：导出全文进剪贴板，按钮就地切「已复制」两秒回弹（与带走物复制同口径）
+  copyBtn?.addEventListener('click', () => {
+    const md = collect().map(block).join('\n\n');
+    navigator.clipboard
+      ?.writeText(md)
+      .then(() => {
+        copyBtn.textContent = '已复制';
+        window.setTimeout(() => { copyBtn.textContent = '复制'; }, 2000);
+      })
+      .catch(() => { /* 剪贴板不可用：静默，mdview 内容仍可手选 */ });
+  });
+  // 下载：导出全文存 cordis-steal-this.md（GenPanel 规格）
+  dlBtn?.addEventListener('click', () => {
+    const md = collect().map(block).join('\n\n');
+    const url = URL.createObjectURL(new Blob([md], { type: 'text/markdown;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cordis-steal-this.md';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
 }
 
 function initPage(): void {

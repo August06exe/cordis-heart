@@ -18,8 +18,8 @@ import { SITE_PAGES } from '../data/site';
         <p class="two">设计原则。<br>生产先例。</p>
         <p class="sub">写给想给 DeepSeek 的 dsh 开插件、以及想给自己项目偷几招的人。不用会编程。</p>
         <div class="land-cta">
-          <a class="primary" href="#toc">开始阅读 →</a>
-          <a class="ghost" href="/why/">先看序章</a>
+          <a class="primary" href="/why/">开始阅读 →</a>
+          <a class="ghost" href="#toc">先翻翻目录</a>
         </div>
         <p class="byline">作者：<a href="https://github.com/shigma">石逸凡</a> 等著 · 北京大学 &amp; DeepSeek-AI</p>
       </div>
@@ -62,7 +62,7 @@ import { SITE_PAGES } from '../data/site';
           <span class={`no${i === 1 ? ' hot' : ''}`}>{String(i).padStart(2, '0')}</span>
           <span class="t">
             <b>{page.nav === '开篇' ? '开篇 · 这颗心脏是什么' : page.title}</b>
-            <span>{['重启的代价，与两个会让你吃惊的统计。', '14 张术语卡，把吓人的词翻译成日常。', '每个思想：问题、解法、类比、例子。', '亲手拔积木，看连锁熄灭与复原。', '论文说的数字，我们去仓库数了一遍。', '15 条打法，勾走你要的，拼成给 AI 的需求书。', '什么时候别用，自查五问。', '哪里靠不住，写在这里。', ''][i] ?? ''}</span>
+            <span>{['来自 DeepSeek 的一本开源图鉴，就从这一页开始。', '重启的代价，与两个会让你吃惊的统计。', '14 张术语卡，把吓人的词翻译成日常。', '每个思想：问题、解法、类比、例子。', '亲手拔积木，看连锁熄灭与复原。', '论文说的数字，我们去仓库数了一遍。', '15 条打法，勾走你要的，拼成给 AI 的需求书。', '什么时候别用，自查五问。'][i] ?? ''}</span>
           </span>
           <span class="arr">→</span>
         </a>
@@ -89,7 +89,7 @@ import { SITE_PAGES } from '../data/site';
           <span>拔掉一块，看依赖它的积木熄灭、换源、复明。</span>
         </div>
       </a>
-      <a class="gal-card" href="/limits/">
+      <a class="gal-card gal-card--wide" href="/limits/">
         <img src="/images/web/I-08.jpg" alt="单墨插画：围栏将一块区域圈在保护之内，围栏外的位置无人看管" loading="lazy" />
         <div class="gal-cap">
           <b>围墙内外</b>
@@ -130,7 +130,7 @@ import { SITE_PAGES } from '../data/site';
   .hero-fig figcaption span { opacity: .68; }
 
   /* ── 插图走廊 ── */
-  .gal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 26px; }
+  .gal { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-top: 26px; }
   .gal-card {
     border: 2px solid var(--ink);
     background: var(--paper);
@@ -141,6 +141,9 @@ import { SITE_PAGES } from '../data/site';
   }
   .gal-card:hover { transform: translate(-3px, -3px); box-shadow: 12px 12px 0 var(--ink-14); }
   .gal-card img { width: 100%; aspect-ratio: 4 / 4.6; object-fit: cover; display: block; border-bottom: 2px solid var(--ink); }
+  /* 第三张跨双列收尾：宽幅横裁，与上方两张方卡组成 2+1 节奏 */
+  .gal-card--wide { grid-column: 1 / -1; }
+  .gal-card--wide img { aspect-ratio: 21 / 9; }
   .gal-cap { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 4px; }
   .gal-cap b { font-family: var(--serif); font-weight: 900; font-size: 17px; }
   .gal-cap span { font-size: 14px; opacity: .72; line-height: 1.7; }
