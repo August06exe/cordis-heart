@@ -24,10 +24,10 @@ src/
     demos/          八个演示：七个套 Stage 逐拍播放，TwoWindows 是单步对照
     figs/           四张程序化图：Lineage、PaperMap、TwoAxes、Lines
   data/             book.ts 章节表、terms.ts 术语、refs.ts 论文摘句、steal.ts 十五招、snippets.ts 代码对照
-  scripts/            probe-ux.mjs 交互回归；build-cordis.mjs + rebase.mjs 子路径发布；m47-、m5- 两个补图脚本留作出处
+  scripts/          stage.ts 拍点引擎、motion.ts 动效、ui.ts 浮层/本页目录/抽屉/进度条、copy.ts 复制
   styles/           tokens 令牌、base 正文、shell 版心、stage 演示、parts 零件
 public/images/web/  插图 web 档（母本在 40-assets，不入 git）
-scripts/            probe-ux.mjs 交互回归；m47-、m5- 两个补图脚本留作出处
+  scripts/          stage.ts 拍点引擎、motion.ts 动效、ui.ts 浮层/本页目录/抽屉/进度条、copy.ts 复制
 ```
 
 ## 约定
