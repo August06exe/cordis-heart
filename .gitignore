@@ -16,3 +16,6 @@ dist/
 nul
 .DS_Store
 Thumbs.db
+
+# ===== 推广素材（本地专用，不入库不上传） =====
+60-promo/
