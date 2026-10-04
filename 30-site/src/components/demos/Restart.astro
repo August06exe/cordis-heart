@@ -1,0 +1,107 @@
+---
+import Stage from '../Stage.astro';
+const tiles = [
+  { k: 'w', name: '天气插件', v: '版本 v1' },
+  { k: 'r', name: '提醒插件', v: '待发提醒 3 条' },
+  { k: 'c', name: '聊天连接', v: '已在线 12:00' },
+  { k: 'k', name: '缓存', v: '已缓存 248 条' },
+];
+---
+<Stage demo="restart" kicker="演示 2.1 · 可以点" title="升级一个插件：整机重启 vs 原地换"
+  intro="小周的机器人跑在一个进程里，里面有四块东西各忙各的。她要把天气插件从 v1 升到 v2。按「开始」，先看它正常跑起来。">
+  <div class="zone rs-proc" data-proc>
+    <div class="cap">一个进程 · 小周的机器人</div>
+    <div class="rs-grid">
+      {tiles.map((t) => (
+        <div class="nd" data-t={t.k} data-s="on">
+          <div class="nd-top"><span class="nd-name">{t.name}</span><span class="chip on">在岗</span></div>
+          <div class="nd-sub rs-v" data-v={t.k}>{t.v}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</Stage>
+
+<style>
+  .rs-proc { padding: 16px 18px 20px; transition: background-color 0.3s; }
+  .rs-proc.is-down { background: var(--screen), var(--paper); }
+  .rs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .rs-v { font-size: 13px; font-variant-numeric: tabular-nums; }
+  @container canvas (max-width: 440px) { .rs-grid { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  import { mount, stage } from '../../scripts/stage';
+  import { make, stamp, nudge, setState, wait } from '../../scripts/motion';
+
+  mount('restart', (root) => {
+    const tile = (k: string) => root.querySelector<HTMLElement>(`[data-t="${k}"]`)!;
+    const val = (k: string) => root.querySelector<HTMLElement>(`[data-v="${k}"]`)!;
+    const proc = root.querySelector<HTMLElement>('[data-proc]')!;
+    const KEYS = ['w', 'r', 'c', 'k'];
+    const fresh = () => ({ cache: 248, sec: 720, rem: 3, ver: 'v1' });
+    let st = fresh();
+    let live = false;
+    const mmss = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+    const paint = () => {
+      val('w').textContent = `版本 ${st.ver}`;
+      val('r').textContent = `待发提醒 ${st.rem} 条`;
+      val('c').textContent = `已在线 ${mmss(st.sec)}`;
+      val('k').textContent = `已缓存 ${st.cache} 条`;
+    };
+    setInterval(() => {
+      if (!live || document.hidden) return;
+      st.cache += 1 + Math.floor(Math.random() * 3);
+      st.sec += 0.6;
+      paint();
+    }, 600);
+    const clean = () => root.querySelectorAll('.stamp').forEach((s) => s.remove());
+    const mark = async (host: HTMLElement, text: string, dark = false) => {
+      const s = make(`<span class="stamp${dark ? ' dark' : ''}" hidden>${text}</span>`);
+      host.append(s);
+      await stamp(s);
+    };
+    const reset = () => {
+      live = false; st = fresh(); paint(); clean();
+      proc.classList.remove('is-down');
+      KEYS.forEach((k) => setState(tile(k), 'on'));
+    };
+
+    stage(root, [
+      { label: '正常跑', say: '缓存在涨，聊天连接一直在线，提醒插件手里排着 3 条待发的提醒。\n\n这些都是进程里慢慢攒起来的状态，存在内存里。',
+        run: async () => { live = true; for (const k of KEYS) { await nudge(tile(k)); } } },
+      { label: '整机重启', say: '老办法：为了换一个插件，整个进程停下重来。\n\n缓存清零要重新攒，连接断了要重连，排着的 3 条提醒直接丢了。真实系统里，这一停就是几秒到几分钟。',
+        run: async () => {
+          live = false;
+          proc.classList.add('is-down');
+          KEYS.forEach((k) => setState(tile(k), 'off', '停'));
+          await mark(proc, '整机重启中', true);
+          await wait(1300);
+          clean();
+          proc.classList.remove('is-down');
+          st = { cache: 0, sec: 0, rem: 0, ver: 'v2' }; paint();
+          KEYS.forEach((k) => setState(tile(k), 'on'));
+          setState(tile('c'), 'wait', '重连中');
+          live = true;
+          await mark(tile('r'), '丢了 3 条', true);
+          await wait(700);
+          setState(tile('c'), 'on');
+        } },
+      { label: '原地换', say: '回到升级之前，换 Cordis 的做法：只把天气插件拆下来（按它的回执撤干净），装上 v2。\n\n其余三块从头到尾没停：缓存照涨，连接照连，提醒一条没丢。',
+        run: async () => {
+          live = false; clean(); st = fresh(); paint();
+          KEYS.forEach((k) => setState(tile(k), 'on'));
+          live = true;
+          await wait(400);
+          const w = tile('w');
+          await nudge(w);
+          setState(w, 'off', '拆下');
+          await wait(650);
+          st.ver = 'v2'; paint();
+          setState(w, 'on', '换好了');
+          ['r', 'c', 'k'].forEach((k) => setState(tile(k), 'on', '没停过'));
+          await mark(w, '原地换好');
+        } },
+    ], { reset, done: '论文要的就是第三拍：只动要换的那一块，其余组件感觉不到。怎么拆得干净，看第 04 章；怎么接得稳，看第 05 章。' });
+  });
+</script>

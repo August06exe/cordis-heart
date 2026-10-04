@@ -1,0 +1,120 @@
+---
+import { TRICKS, GROUPS, PRESETS } from '../data/steal';
+---
+<section class="sb wide" data-sb>
+  <div class="sb-presets" role="group" aria-label="快速选择">
+    <span class="kicker">一键套餐</span>
+    {PRESETS.map((p) => <button type="button" class="btn btn-sm" data-preset={p.id}>{p.name}</button>)}
+    <button type="button" class="btn btn-sm" data-preset="none">清空</button>
+  </div>
+  <div class="sb-body">
+    <div class="sb-list">
+      {GROUPS.map((g) => (
+        <fieldset class="sb-g">
+          <legend><span class="mono">{g.ch}</span> {g.name}</legend>
+          {TRICKS.filter((t) => t.g === g.g).map((t) => (
+            <label class="sb-item">
+              <input type="checkbox" value={t.id} data-trick />
+              <span class="sb-t"><b>{t.title}</b><span>{t.gist}</span></span>
+            </label>
+          ))}
+        </fieldset>
+      ))}
+    </div>
+    <aside class="sb-out" aria-label="生成的指令">
+      <div class="sb-out-head">
+        <span class="kicker">发给 AI 的指令 · <span data-count>0</span> 招</span>
+        <label class="sb-mode"><input type="checkbox" data-audit /> 先只体检，不改代码</label>
+      </div>
+      <pre class="sb-pre" data-out aria-live="polite"></pre>
+      <div class="sb-actions">
+        <button type="button" class="btn is-solid" data-copyout disabled>复制</button>
+        <button type="button" class="btn" data-download disabled>下载 .md</button>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<style>
+  .sb { border: 2px solid var(--ink); box-shadow: var(--shadow); background: var(--paper); }
+  .sb-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 14px 18px; border-bottom: 2px solid var(--ink); }
+  .sb-presets .kicker { margin-right: 4px; }
+  .sb-presets .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .sb-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); }
+  .sb-list { padding: 8px 18px 18px; }
+  .sb-g { border: 0; padding: 0; margin-top: 14px; }
+  .sb-g legend { padding: 0 0 6px; font: 900 15px/1.4 var(--serif); color: var(--ink); }
+  .sb-g legend .mono { font-size: 12px; margin-right: 6px; }
+  .sb-item { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; align-items: start; padding: 8px 10px; margin: 0 -10px; cursor: pointer; transition: background-color 0.12s; }
+  .sb-item:hover { background: var(--ink-04); }
+  .sb-item:has(input:checked) { background: var(--ink-08); }
+  .sb-item input { margin-top: 4px; }
+  .sb-t b { display: block; font-size: 15.5px; line-height: 1.5; }
+  .sb-t span { display: block; font-size: 13.5px; line-height: 1.6; color: var(--text-2); }
+  .sb-out { position: sticky; top: calc(var(--top-h) + 12px); align-self: start; display: flex; flex-direction: column; max-height: calc(100vh - var(--top-h) - 24px); border-left: 1px solid var(--ink-30); background: var(--ink-04); }
+  .sb-out-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 14px; padding: 14px 18px 10px; }
+  .sb-mode { display: flex; align-items: center; gap: 6px; font-size: 13.5px; cursor: pointer; }
+  .sb-pre { flex: 1; min-height: 260px; margin: 0 18px; padding: 14px 16px; overflow: auto; background: var(--paper); border: 1px dashed var(--ink-30); font: 400 13.5px/1.8 var(--mono); white-space: pre-wrap; color: var(--text); }
+  .sb-pre.is-empty { color: var(--text-2); }
+  .sb-actions { display: flex; gap: 10px; padding: 14px 18px 18px; }
+  @media (max-width: 960px) {
+    .sb-body { grid-template-columns: 1fr; }
+    .sb-out { position: static; max-height: none; border-left: 0; border-top: 1px solid var(--ink-30); }
+  }
+</style>
+
+<script>
+  import { TRICKS, PRESETS } from '../data/steal';
+  import { copyText } from '../scripts/copy';
+
+  document.querySelectorAll<HTMLElement>('[data-sb]').forEach((root) => {
+    const boxes = [...root.querySelectorAll<HTMLInputElement>('[data-trick]')];
+    const audit = root.querySelector<HTMLInputElement>('[data-audit]')!;
+    const out = root.querySelector<HTMLElement>('[data-out]')!;
+    const count = root.querySelector<HTMLElement>('[data-count]')!;
+    const copyBtn = root.querySelector<HTMLButtonElement>('[data-copyout]')!;
+    const dlBtn = root.querySelector<HTMLButtonElement>('[data-download]')!;
+    const presetBtns = [...root.querySelectorAll<HTMLButtonElement>('[data-preset]')];
+
+    const build = () => {
+      const picked = TRICKS.filter((t) => boxes.find((b) => b.value === t.id)?.checked);
+      count.textContent = String(picked.length);
+      copyBtn.disabled = dlBtn.disabled = picked.length === 0;
+      out.classList.toggle('is-empty', picked.length === 0);
+      if (!picked.length) { out.textContent = '左边勾几招，或者点上面的一键套餐。'; return ''; }
+      const head = audit.checked
+        ? '请按下面几条规矩，给这个项目做一次体检。先只列出不符合的地方（文件、行号、原因），不要改代码。'
+        : '请按下面几条规矩改造这个项目。每改一处，说明改了什么、为什么。';
+      const body = picked.map((t, i) => `${i + 1}. 【${t.title}】${t.prompt}`).join('\n');
+      const tail = audit.checked
+        ? '最后按影响大小排序，告诉我先改哪一处。'
+        : '改完后用这几句验收：卸载后不留残留；依赖不齐时安静待命；依赖换了人会重新接上；任意顺序装卸后，结果和按最终配置从零启动一致。';
+      const text = `${head}\n\n${body}\n\n${tail}\n\n（这些规矩来自论文 A Programming Paradigm for Spatiotemporal Composability，arXiv:2608.25512，即 Cordis 框架。）`;
+      out.textContent = text;
+      return text;
+    };
+    const markPreset = (id?: string) => presetBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.preset === id)));
+
+    boxes.forEach((b) => b.addEventListener('change', () => { markPreset(); build(); }));
+    audit.addEventListener('change', build);
+    presetBtns.forEach((btn) => btn.addEventListener('click', () => {
+      const p = PRESETS.find((x) => x.id === btn.dataset.preset);
+      boxes.forEach((b) => (b.checked = !!p?.pick.includes(b.value)));
+      audit.checked = !!(p && 'audit' in p && p.audit);
+      markPreset(p?.id);
+      build();
+    }));
+    copyBtn.addEventListener('click', async () => {
+      if (!(await copyText(build()))) return;
+      copyBtn.textContent = '已复制 ✓';
+      setTimeout(() => (copyBtn.textContent = '复制'), 1800);
+    });
+    dlBtn.addEventListener('click', () => {
+      const url = URL.createObjectURL(new Blob([build()], { type: 'text/markdown;charset=utf-8' }));
+      const a = Object.assign(document.createElement('a'), { href: url, download: 'cordis-rules.md' });
+      document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+    root.querySelector<HTMLButtonElement>('[data-preset="audit"]')!.click();
+  });
+</script>

@@ -1,0 +1,78 @@
+---
+const SEGS = [
+  { n: '·', t: '摘要与目录', p: '1–3', len: 3, s: '一页摘要，两页目录。', ch: '' },
+  { n: '1', t: '引言', p: '4–6', len: 3, easy: true, s: '问题与动机：VSCode 的统计、agent 自我修改的风险、重启的代价，以及五项贡献。', ch: 'problem' },
+  { n: '2', t: '预备知识', p: '7–8', len: 2, s: '效应与反效应这两个老概念，在编程语言理论里原本是什么意思。', ch: 'undo' },
+  { n: '3', t: '两个机制', p: '9–30', len: 22, s: '可逆效应、响应式反效应、把两者统一的语境范式、观察等价、怎样做到互不干扰。全书最核心的一章。', ch: 'undo' },
+  { n: '4', t: '动态组装演算', p: '31–56', len: 26, s: '把机制合成「组件」，给出运行规则，证明保持、时间可组装、空间可组装、进展、汇聚五条性质。公式最密。', ch: 'lifecycle' },
+  { n: '5', t: '实现与 Koishi', p: '57–69', len: 13, easy: true, s: 'Cordis 核心库怎么写、声明式加载器、热重载，以及 Koishi 四千插件的案例。', ch: 'cordis-dsh' },
+  { n: '6', t: '讨论', p: '70–76', len: 7, easy: true, s: '系统边界在哪、发出去的东西怎么补偿、服务复用与滚动升级、开放问题。', ch: 'limits' },
+  { n: '7', t: '相关工作', p: '77–81', len: 5, s: '和效应系统、动态更新、组件框架等已有研究的比较。', ch: '' },
+  { n: '8', t: '结论', p: '82–83', len: 2, s: '一页总结，外加下一步：自进化的 agent harness。', ch: 'origin' },
+  { n: '参', t: '参考文献', p: '83–92', len: 9, s: '六十多条参考文献。', ch: '' },
+];
+const NAME: Record<string, string> = { problem: '02 问题', undo: '04–06 三个思想', lifecycle: '07 一生', 'cordis-dsh': '08 落地', limits: '10 边界', origin: '01 由来' };
+---
+<figure class="pm wide" data-pm>
+  <div class="pm-head">
+    <span class="kicker">图 3.1 · 92 页长什么样</span>
+    <span class="pm-legend"><i></i>不碰公式也能读</span>
+  </div>
+  <div class="pm-bar" role="tablist" aria-label="论文各章">
+    {SEGS.map((g, i) => (
+      <button type="button" role="tab" class:list={['pm-seg', { easy: g.easy }]} style={`flex-grow:${g.len}`} data-i={i} aria-selected={i === 3 ? 'true' : 'false'} aria-label={`第 ${g.n} 章 ${g.t}`}>
+        <span>{g.n}</span>
+      </button>
+    ))}
+  </div>
+  <div class="pm-ticks" aria-hidden="true"><span>p.1</span><span>p.30</span><span>p.56</span><span>p.92</span></div>
+  {SEGS.map((g, i) => (
+    <div class="pm-card" data-c={i} hidden={i !== 3} role="tabpanel">
+      <div class="pm-t"><b>{g.n === '·' || g.n === '参' ? g.t : `第 ${g.n} 章 · ${g.t}`}</b><span class="mono">第 {g.p} 页 · {g.len} 页</span></div>
+      <p>{g.s}</p>
+      {g.ch && <a href={`/${g.ch}/`}>本书在 {NAME[g.ch]} 讲它 →</a>}
+    </div>
+  ))}
+  <figcaption class="pm-cap">点色块看每章讲什么。只想读原文又怕公式：先读第 1、5、6 章，一共 23 页。</figcaption>
+</figure>
+
+<style>
+  .pm { padding: 20px 22px 18px; border: 2px solid var(--ink); box-shadow: var(--shadow); background: var(--paper); }
+  .pm-head { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .pm-legend { display: flex; align-items: center; gap: 8px; font: 400 12px/1 var(--mono); color: var(--text-2); }
+  .pm-legend i { width: 14px; height: 14px; border: 1.5px solid var(--ink); background: var(--ink); }
+  .pm-bar { display: flex; height: 56px; border: 2px solid var(--ink); }
+  .pm-seg { flex-basis: 0; min-width: 22px; display: flex; align-items: flex-end; justify-content: flex-start; padding: 5px 6px; background: var(--screen), var(--paper); color: var(--ink); font: 500 12px/1 var(--mono); transition: background-color 0.15s; }
+  .pm-seg + .pm-seg { border-left: 1.5px solid var(--ink); }
+  .pm-seg.easy { background: var(--ink); color: var(--paper); }
+  .pm-seg:hover { background: var(--ink-14); color: var(--ink); }
+  .pm-seg[aria-selected="true"] { box-shadow: inset 0 0 0 3px var(--ink), inset 0 0 0 5px var(--paper); background: var(--paper); color: var(--ink); font-weight: 700; }
+  .pm-ticks { display: flex; justify-content: space-between; margin-top: 6px; font: 400 11px/1 var(--mono); color: var(--text-2); }
+  .pm-card { margin-top: 16px; padding: 14px 16px; border: 1px solid var(--ink-30); background: var(--ink-04); }
+  .pm-t { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px; margin-bottom: 6px; }
+  .pm-t b { font: 900 18px/1.4 var(--serif); color: var(--ink); }
+  .pm-t span { font-size: 12px; color: var(--text-2); }
+  .pm-card p { font-size: 15.5px; line-height: 1.8; }
+  .pm-card a { display: inline-block; margin-top: 6px; font-size: 14px; font-weight: 700; color: var(--ink); }
+  .pm-cap { margin-top: 14px; font-size: 14px; color: var(--text-2); }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-pm]').forEach((root) => {
+    const segs = [...root.querySelectorAll<HTMLButtonElement>('.pm-seg')];
+    const cards = [...root.querySelectorAll<HTMLElement>('.pm-card')];
+    const pick = (i: number) => {
+      segs.forEach((s, k) => s.setAttribute('aria-selected', String(k === i)));
+      cards.forEach((c, k) => (c.hidden = k !== i));
+    };
+    segs.forEach((s, i) => {
+      s.addEventListener('click', () => pick(i));
+      s.addEventListener('keydown', (e) => {
+        const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!d) return;
+        const j = (i + d + segs.length) % segs.length;
+        pick(j); segs[j].focus();
+      });
+    });
+  });
+</script>

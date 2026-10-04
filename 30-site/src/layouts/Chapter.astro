@@ -1,0 +1,75 @@
+---
+import Base from './Base.astro';
+import { CHAPTERS, PARTS, href, neighbors, PAPER_URL, DSH_URL, CORDIS_URL } from '../data/book';
+
+interface Props {
+  frontmatter: { slug: string; kicker: string; title: string; lede: string; plate?: string; plateCap?: string };
+  headings?: { depth: number; slug: string; text: string }[];
+}
+const { frontmatter: fm, headings = [] } = Astro.props;
+const { prev, next, current } = neighbors(fm.slug);
+const toc = headings.filter((h) => h.depth === 2);
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const titleHtml = esc(fm.title).replace(/\[(.+?)\]/g, '<span class="hl">$1</span>').replace(/\|/g, '<br />');
+const plain = fm.title.replace(/[\[\]]/g, '').replace(/\|/g, '');
+const parts = (['A', 'B', 'C', 'X'] as const).map((p) => ({ p, name: PARTS[p], list: CHAPTERS.filter((c) => c.part === p) }));
+---
+<Base title={`${plain} · CORDIS · DSH 的心脏`} description={current?.blurb} where={`${current?.no === '附' ? '附录' : '第 ' + current?.no + ' 章'} · ${current?.short}`}>
+  <div class="book">
+    <nav class="side" id="side" aria-label="全书章节">
+      <a class="side-link side-home" href="/"><span class="no">◆</span>开篇</a>
+      {parts.map(({ name, list }) => (
+        <>
+          <div class="side-cap">{name}</div>
+          {list.map((c) => (
+            <a class="side-link" href={href(c.slug)} aria-current={c.slug === fm.slug ? 'page' : undefined}>
+              <span class="no">{c.no}</span>{c.short}
+            </a>
+          ))}
+        </>
+      ))}
+      <div class="side-foot">
+        <a href={PAPER_URL} target="_blank" rel="noopener">论文 arXiv:2608.25512 ↗</a>
+        <a href={DSH_URL} target="_blank" rel="noopener">deepseek-harness ↗</a>
+        <a href={CORDIS_URL} target="_blank" rel="noopener">cordis ↗</a>
+      </div>
+    </nav>
+    <div class="scrim" aria-hidden="true"></div>
+
+    <main class="main" id="main">
+      <header class="chead">
+        <div>
+          <div class="chead-no" aria-hidden="true">{current?.no}</div>
+          <div class="kicker">{fm.kicker}</div>
+          <h1 set:html={titleHtml} />
+          <p class="chead-lede">{fm.lede}</p>
+          <p class="chead-meta">约 {current?.minutes} 分钟 · 上一章 {prev ? `${prev.no} ${prev.short}` : '开篇'}{next && ` · 下一章 ${next.no} ${next.short}`}</p>
+        </div>
+        {fm.plate && (
+          <figure class="plate">
+            <div class="plate-frame"><img src={fm.plate} alt="" width="900" height="1200" /></div>
+            {fm.plateCap && <figcaption><b>题图</b>{fm.plateCap}</figcaption>}
+          </figure>
+        )}
+      </header>
+
+      <article class="prose"><slot /></article>
+
+      <nav class="pager" aria-label="翻页">
+        {prev
+          ? <a class="pg" href={href(prev.slug)}><span class="pg-l">← 上一章 · {prev.no}</span><span class="pg-t">{prev.title}</span></a>
+          : <a class="pg" href="/"><span class="pg-l">← 回到开篇</span><span class="pg-t">CORDIS · DSH 的心脏</span></a>}
+        {next
+          ? <a class="pg is-next" href={href(next.slug)}><span class="pg-l">下一章 · {next.no} →</span><span class="pg-t">{next.title}</span></a>
+          : <a class="pg is-next" href="/"><span class="pg-l">全书完 →</span><span class="pg-t">回到开篇，挑一章重读</span></a>}
+      </nav>
+    </main>
+
+    {toc.length > 1 && (
+      <aside class="toc" aria-label="本章目录">
+        <div class="toc-cap">本章</div>
+        {toc.map((h, k) => <a href={`#${h.slug}`}><span class="mono">{String(k + 1).padStart(2, '0')}</span> {h.text}</a>)}
+      </aside>
+    )}
+  </div>
+</Base>

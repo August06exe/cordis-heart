@@ -1,0 +1,87 @@
+/* ── 演示舞台：标题 + 拍点 | 画布 + 旁白 | 主按钮 ──────────────────── */
+.stage { container: stage / inline-size; border: 2px solid var(--ink); box-shadow: var(--shadow); background: var(--paper); }
+.st-head {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+  gap: 10px 20px; padding: 14px 20px; border-bottom: 2px solid var(--ink);
+}
+.st-title { font: 900 19px/1.35 var(--serif); color: var(--text); }
+.st-title .kicker { display: block; margin-bottom: 5px; }
+.st-beats { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; }
+.st-beats li { padding: 2px 9px; border: 1px solid var(--ink-30); font: 500 12px/1.6 var(--mono); color: var(--text-2); transition: background-color 0.2s, color 0.2s; }
+.st-beats li[data-s="now"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.st-beats li[data-s="done"] { border-color: var(--ink); color: var(--ink); }
+.st-body { display: grid; grid-template-columns: minmax(0, 1fr) 252px; }
+.st-canvas {
+  container: canvas / inline-size;
+  position: relative; min-width: 0; min-height: 360px; padding: 24px 22px;
+  background-color: var(--paper);
+  background-image: linear-gradient(var(--ink-04) 1px, transparent 1px), linear-gradient(90deg, var(--ink-04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.st-say { padding: 20px 20px 22px; border-left: 1px solid var(--ink-30); font-size: 15.5px; line-height: 1.85; }
+.st-say [data-say] { white-space: pre-line; }
+.st-say .kicker { display: block; margin-bottom: 10px; }
+.st-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 20px; border-top: 1px solid var(--ink-30); }
+.st-hint { margin-left: auto; font: 400 12px/1.5 var(--mono); color: var(--text-2); }
+/* 断点看舞台宽度：画布放不下三栏时，旁白挪到画布下面 */
+@container stage (max-width: 880px) {
+  .st-body { grid-template-columns: 1fr; }
+  .st-say { border-left: 0; border-top: 1px solid var(--ink-30); min-height: 9.5em; }
+}
+@container stage (max-width: 640px) {
+  .st-canvas { min-height: 0; padding: 18px 14px; }
+  .st-hint { display: none; }
+}
+
+/* ── 画布里的零件 ─────────────────────────────────────────── */
+.cols { display: grid; gap: 18px; align-items: start; }
+.cap { margin-bottom: 9px; font: 500 11.5px/1.4 var(--mono); letter-spacing: 0.1em; color: var(--text-2); }
+.nd {
+  position: relative; padding: 10px 12px 11px;
+  border: 2px solid var(--ink); background: var(--paper); box-shadow: 4px 4px 0 var(--ink-14);
+  transition: border-color 0.25s, box-shadow 0.25s, color 0.25s, opacity 0.25s;
+}
+.nd-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.nd-name { font-weight: 700; font-size: 15px; line-height: 1.4; }
+.nd-sub { margin-top: 3px; font: 400 12px/1.55 var(--mono); color: var(--text-2); }
+.nd[data-s="wait"] { border-style: dashed; box-shadow: none; background: var(--screen), var(--paper); }
+.nd[data-s="off"] { border-color: var(--rule-2); box-shadow: none; color: var(--text-2); }
+.nd[data-s="fail"] { border-color: var(--text); box-shadow: none; }
+.nd.is-hot { box-shadow: 7px 7px 0 var(--ink-30); }
+
+.chip { display: inline-block; flex: none; padding: 0 7px; border: 1px solid var(--ink); font: 500 11.5px/1.65 var(--mono); color: var(--ink); white-space: nowrap; }
+.chip.on { background: var(--ink); color: var(--paper); }
+.chip.wait { border-style: dashed; background: var(--screen), var(--paper); }
+.chip.off { border-color: var(--rule-2); color: var(--text-2); }
+.chip.bad { border-color: var(--text); background: var(--text); color: var(--paper); }
+
+.stack { display: flex; flex-direction: column; gap: 7px; min-height: 40px; }
+.rc {
+  display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+  border: 1.5px solid var(--ink); border-left-width: 5px; background: var(--paper);
+  font: 500 12.5px/1.45 var(--mono); color: var(--ink);
+}
+.rc::before { content: "↶"; font: 700 14px/1 var(--sans); }
+.rc.is-used { background: var(--ink); color: var(--paper); }
+.slot { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border: 1px solid var(--ink-30); background: var(--paper); font-size: 14px; line-height: 1.5; }
+.slot.is-ghost { flex-wrap: wrap; border: 1.5px dashed var(--text); animation: ghost 1.2s steps(1) infinite; }
+.slot.is-ghost .chip.bad { flex-basis: 100%; text-align: left; }
+@keyframes ghost { 50% { opacity: 0.38; } }
+.zone { position: relative; padding: 12px; border: 1px solid var(--ink-30); background: var(--paper); }
+.rc.is-hand { border-style: dashed; border-left-width: 1.5px; color: var(--text); }
+.rc.is-hand::before { content: "✎"; }
+.slot .chip { min-width: 3.4em; text-align: center; }
+.slot .rc { margin-left: auto; padding: 1px 7px; border-left-width: 3px; font-size: 11.5px; }
+.slot b { font: 700 15px/1 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.zone.is-out { border: 1.5px dashed var(--text-2); background: transparent; }
+.empty { padding: 8px 2px; font: 400 12.5px/1.5 var(--mono); color: var(--text-2); }
+
+.stamp {
+  position: absolute; z-index: 2; top: -11px; right: 10px; padding: 0 8px;
+  border: 2px solid currentColor; background: var(--paper); color: var(--ink);
+  font: 900 13px/1.55 var(--serif); letter-spacing: 0.12em; transform: rotate(-6deg); white-space: nowrap;
+}
+.stamp.dark { color: var(--text); }
+.log { margin-top: 14px; display: flex; flex-direction: column; gap: 4px; font: 400 12.5px/1.6 var(--mono); color: var(--text-2); }
+.log b { color: var(--ink); font-weight: 500; }
+[hidden] { display: none !important; }

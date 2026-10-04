@@ -1,0 +1,19 @@
+---
+interface Props { demo: string; kicker: string; title: string; intro: string; hint?: string; }
+const { demo, kicker, title, intro, hint = '按主按钮一拍一拍往下走' } = Astro.props;
+---
+<section class="stage wide" data-demo={demo} data-intro={intro} aria-label={title}>
+  <div class="st-head">
+    <div class="st-title"><span class="kicker">{kicker}</span>{title}</div>
+    <ol class="st-beats" aria-label="拍点"></ol>
+  </div>
+  <div class="st-body">
+    <div class="st-canvas"><slot /></div>
+    <div class="st-say"><span class="kicker">旁白</span><span data-say aria-live="polite">{intro}</span></div>
+  </div>
+  <div class="st-foot">
+    <button class="btn is-solid" type="button" data-next>开始</button>
+    <button class="btn" type="button" data-reset>重来</button>
+    <span class="st-hint">{hint}</span>
+  </div>
+</section>

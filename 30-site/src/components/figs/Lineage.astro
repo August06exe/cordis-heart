@@ -1,0 +1,63 @@
+---
+---
+<figure class="lin wide" data-in>
+  <div class="lin-grid">
+    <div class="lin-paper nd">
+      <div class="nd-top"><span class="nd-name">论文 · 2026.08</span><span class="chip">理论</span></div>
+      <div class="nd-sub">《时空可组装性的一种编程范式》92 页</div>
+    </div>
+    <div class="lin-v"><span>把跑通的做法写成理论</span></div>
+    <div class="lin-n nd">
+      <div class="nd-top"><span class="nd-name">Koishi</span><span class="chip">先例</span></div>
+      <div class="nd-sub">2019 · 聊天机器人框架<br />4000+ 社区插件</div>
+    </div>
+    <div class="lin-a"><span>拆出内核 · 2022</span></div>
+    <div class="lin-n nd lin-core">
+      <div class="nd-top"><span class="nd-name">Cordis</span><span class="chip on">心脏</span></div>
+      <div class="nd-sub">论文的实现<br />TypeScript 元框架</div>
+    </div>
+    <div class="lin-a"><span>整体搬进仓库 · 2026</span></div>
+    <div class="lin-n nd">
+      <div class="nd-top"><span class="nd-name">dsh</span><span class="chip">新用法</span></div>
+      <div class="nd-sub">DeepSeek 的 agent harness<br />一切皆插件</div>
+    </div>
+  </div>
+  <figcaption class="lin-cap"><b>图 1.2</b>四者的关系：先有跑了几年的 Koishi，从里面拆出 Cordis，再把 Cordis 的道理写成论文；dsh 是它最新、也最出名的用户。</figcaption>
+</figure>
+
+<style>
+  .lin { padding: 26px 26px 18px; border: 2px solid var(--ink); box-shadow: var(--shadow); background: var(--paper); }
+  .lin-grid { display: grid; grid-template-columns: 1fr 96px 1fr 96px 1fr; grid-template-rows: auto 56px auto; align-items: stretch; }
+  .lin-paper { grid-column: 3; grid-row: 1; border-style: double; border-width: 4px; }
+  .lin-v { grid-column: 3; grid-row: 2; position: relative; }
+  .lin-v::before { content: ""; position: absolute; left: 50%; top: 6px; bottom: 6px; border-left: 2px dashed var(--ink-50); }
+  .lin-v span { position: absolute; left: calc(50% + 12px); top: 50%; transform: translateY(-50%); font: 400 11.5px/1.4 var(--mono); color: var(--text-2); white-space: nowrap; }
+  .lin-n { grid-row: 3; }
+  .lin-core { box-shadow: 6px 6px 0 var(--ink-30); }
+  .lin-a { grid-row: 3; position: relative; display: flex; align-items: center; }
+  .lin-a::before { content: ""; position: absolute; left: 8px; right: 12px; top: 50%; border-top: 2px solid var(--ink); }
+  .lin-a::after { content: ""; position: absolute; right: 6px; top: calc(50% - 5px); border: 6px solid transparent; border-left: 8px solid var(--ink); border-right: 0; }
+  .lin-a span { position: absolute; left: 4px; right: 4px; bottom: calc(50% + 6px); text-align: center; font: 400 11px/1.35 var(--mono); color: var(--text-2); }
+  .lin-cap { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--rule); font-size: 14px; line-height: 1.7; color: var(--text-2); }
+  .lin-cap b { font: 500 12px var(--mono); color: var(--ink); margin-right: 10px; }
+  :global(.js) .lin[data-in] .nd, :global(.js) .lin[data-in] .lin-a, :global(.js) .lin[data-in] .lin-v { opacity: 0; transform: translateY(10px); }
+  :global(.js) .lin[data-in].is-in .nd, :global(.js) .lin[data-in].is-in .lin-a, :global(.js) .lin[data-in].is-in .lin-v { opacity: 1; transform: none; transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out); }
+  .lin.is-in .lin-n:nth-of-type(3) { transition-delay: 0s; }
+  .lin.is-in .lin-a { transition-delay: 0.18s; }
+  .lin.is-in .lin-core { transition-delay: 0.3s; }
+  .lin.is-in .lin-v { transition-delay: 0.6s; }
+  .lin.is-in .lin-paper { transition-delay: 0.72s; }
+  .lin.is-in .lin-n:last-child { transition-delay: 0.5s; }
+  @media (max-width: 860px) {
+    .lin-grid { grid-template-columns: 1fr; grid-template-rows: none; gap: 0; }
+    .lin-paper, .lin-v, .lin-n, .lin-a { grid-column: 1; grid-row: auto; }
+    .lin-v { height: 40px; }
+    .lin-a { height: 44px; }
+    .lin-a::before { left: 50%; right: auto; top: 6px; bottom: 10px; border-top: 0; border-left: 2px solid var(--ink); }
+    .lin-a::after { right: auto; left: calc(50% - 5px); top: auto; bottom: 2px; border: 6px solid transparent; border-top: 8px solid var(--ink); border-bottom: 0; }
+    .lin-a span { left: calc(50% + 12px); right: auto; bottom: auto; top: 50%; transform: translateY(-50%); text-align: left; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.js) .lin[data-in] .nd, :global(.js) .lin[data-in] .lin-a, :global(.js) .lin[data-in] .lin-v { opacity: 1; transform: none; }
+  }
+</style>

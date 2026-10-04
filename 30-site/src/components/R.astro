@@ -1,0 +1,9 @@
+---
+import { REFS } from '../data/refs';
+import { PAPER_URL } from '../data/book';
+interface Props { id: string; }
+const { id } = Astro.props;
+const r = REFS[id];
+if (!r) throw new Error(`未知出处 id：${id}`);
+---
+<a class="ref" href={PAPER_URL} target="_blank" rel="noopener" data-ref={id} aria-label={`论文第 ${r.page} 页`}>p.{r.page}</a>

@@ -1,6 +1,12 @@
 # 3011 · DSH 论文笔记
 
-把 DeepSeek 的 Cordis 论文（arXiv:2608.25512《A Programming Paradigm for Spatiotemporal Composability》）和 deepseek-ai/deepseek-harness 仓库研读透，做成一个面向 Vibe Coder 的交互式知识库网页。读者不懂底层技术、不读代码，但想把这些思想借鉴进自己的开源项目。
+把 DeepSeek 的 Cordis 论文（arXiv:2608.25512《A Programming Paradigm for Spatiotemporal Composability》）和 deepseek-ai/deepseek-harness 仓库研读透，做成一本面向 Vibe Coder 的 12 页交互式网页书。读者不用会编程：每个思想配一个能亲手点的演示，读完带走几条能直接发给 AI 的规矩。
+
+**线上**：https://augustyang.win/cordis/ （Cloudflare Pages 从 main 分支自动构建）
+
+![首页](40-assets/screenshots/home.jpg)
+
+![正文章节与演示](40-assets/screenshots/chapter.jpg)
 
 ## 目录
 
@@ -8,8 +14,8 @@
 | --- | --- |
 | `10-docs/` | 规划文档：PRD、技术方案、各里程碑报告与决策记录 |
 | `20-content/` | 内容源：知识库地图（00-MAP.md）、研读总览、7 份素材笔记 |
-| `30-site/` | Astro 站点工程（M0~M4.7 已交付）；本地跑 `cd 30-site && npm run dev` |
-| `40-assets/` | 设计资产：2K 插图母本与生图台账（母本不入 git，站点只发布 web 压缩档） |
+| `30-site/` | Astro 站点：12 页网页书（落地页 + 十章 + 术语表），文稿即 `src/pages/*.mdx`；本地跑 `cd 30-site && npm run dev` |
+| `40-assets/` | 设计资产：2K 插图母本、生图台账、README 用截图（母本不入 git，站点只发布 web 压缩档） |
 | `50-design/` | Design Read、色彩配方、OpenDesign 设计稿 |
 | `99-archive/` | 归档区：过程稿、评审截图、中间产物（不入 git） |
 
@@ -32,4 +38,6 @@
 - 2026-10-02：M4.5 视觉重排完成（四宗罪修复：排版阶梯 v2、卡片回归、拍数引导组件；九页 9/9 过截图评审）；文稿同步为新声音
 - 2026-10-03：M4.7 图文与导航升级完成（正文去蓝、翻页器+书页壳、八页嵌 29 张真图 8/8 过评、构建 exit 0）；生图通道双重故障与恢复留痕（M4.7b 补跑）
 - 2026-10-03：版心重排（阅读栏左锚 920px 禁居中、七页接右侧「本页目录」轨、卡片等宽归一、沙盒出血公式修正；astro check 0 错）；仓库大整理（2K 母本迁 40-assets、垃圾清理约 190M、git 首次快照）
-- 下一步：M5 交互填充（演示可玩化、降级纪律统一）→ M6 打磨上线
+- 2026-10-04：发布 GitHub 并经 Cloudflare Pages 上线（augustyang.win/cordis/，Worker 路由挂到子路径）；字体自托管（@fontsource，Noto / IBM Plex 均为 OFL 免费协议）；页脚加非官方声明与 AI 插图标识
+- 2026-10-04：文稿与网页全面重构（旧 PRD 与技术栈不再约束）：改成 12 页一本书，第 04–08 章与论文五项贡献一一对位；8 个演示从静帧做成能真玩的；比喻收成两条主干（时间 = 回执，空间 = 插座）；可信度改为行内出处小标（悬停出论文原句）；去掉深色模式、ClientRouter、content collections、OG 端点与 GSAP。astro check 0 错、12 页构建通过、`30-site/scripts/probe-ux.mjs` 交互回归全过、390～1920 无横向溢出。计划与诊断见 `99-archive/2026-10-04-重构/PLAN.md`
+- 下一步：通读验收 → 上线前定域名与部署

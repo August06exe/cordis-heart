@@ -1,0 +1,32 @@
+---
+interface Props { items: { line: string; tag: string; to?: string }[]; cap?: string; }
+const { items, cap } = Astro.props;
+---
+<figure class="lines wide">
+  <ol>
+    {items.map((it, i) => (
+      <li>
+        <span class="ln-no">{String(i + 1).padStart(2, '0')}</span>
+        <span class="ln-t">{it.line}</span>
+        <span class="ln-tag">{it.to ? <a href={it.to}>{it.tag} →</a> : it.tag}</span>
+      </li>
+    ))}
+  </ol>
+  {cap && <figcaption>{cap}</figcaption>}
+</figure>
+
+<style>
+  .lines ol { list-style: none; padding: 0; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+  .lines li { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: baseline; gap: 14px; padding: 18px 4px; }
+  .lines li + li { margin-top: 0; border-top: 1px solid var(--ink-30); }
+  .ln-no { font: 500 13px/1 var(--mono); color: var(--ink); }
+  .ln-t { font: 900 clamp(20px, 2.2vw, 25px)/1.45 var(--serif); color: var(--text); }
+  .ln-tag { font: 400 12.5px/1.4 var(--mono); color: var(--text-2); white-space: nowrap; }
+  .ln-tag a { color: var(--ink); text-decoration: none; }
+  .ln-tag a:hover { text-decoration: underline; }
+  .lines figcaption { margin-top: 12px; font-size: 14px; color: var(--text-2); }
+  @media (max-width: 640px) {
+    .lines li { grid-template-columns: 36px minmax(0, 1fr); }
+    .ln-tag { grid-column: 2; }
+  }
+</style>

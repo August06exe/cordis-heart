@@ -1,0 +1,33 @@
+---
+---
+<div class="axes wide">
+  <section class="ax">
+    <img src="/images/web/cards/ideas-card2.jpg" alt="" width="600" height="600" loading="lazy" />
+    <div>
+      <div class="kicker">第一道 · 时间</div>
+      <h3>拆得干净</h3>
+      <p>一个组件被拿走时，它对共享环境做过的每一个改动，都要完整、安全地撤回。</p>
+      <p class="ax-m">本书用<b>回执</b>来想：做一件事，留一张「怎么撤回」的回执。</p>
+    </div>
+  </section>
+  <section class="ax">
+    <img src="/images/web/cards/glossary-card1.jpg" alt="" width="600" height="600" loading="lazy" />
+    <div>
+      <div class="kicker">第二道 · 空间</div>
+      <h3>接得稳</h3>
+      <p>组件之间谁依赖谁，要能声明、能被找到；依赖一变，谁该上岗、谁该歇着，自动安排好。</p>
+      <p class="ax-m">本书用<b>插座</b>来想：进门先说清楚，自己要插哪几个插座。</p>
+    </div>
+  </section>
+</div>
+
+<style>
+  .axes { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .ax { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 18px; padding: 22px 22px 20px; border: 2px solid var(--ink); box-shadow: var(--shadow); background: var(--paper); }
+  .ax img { width: 92px; height: 92px; border: 1.5px solid var(--ink); background: #fff; }
+  .ax h3 { margin: 6px 0 8px; font-size: 24px; color: var(--ink); }
+  .ax p { font-size: 15.5px; line-height: 1.8; }
+  .ax-m { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--ink-30); color: var(--text-2); }
+  .ax-m b { color: var(--ink); }
+  @media (max-width: 860px) { .axes { grid-template-columns: 1fr; } }
+</style>

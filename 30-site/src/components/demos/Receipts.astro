@@ -1,0 +1,91 @@
+---
+import Stage from '../Stage.astro';
+---
+<Stage demo="receipts" kicker="演示 4.1 · 可以点" title="回执串：倒着撕，一张不落"
+  intro="这次换成提醒插件。它装上时要做三件事，而且后两件都要用到第一件打开的数据库连接。旁边还有个天气插件，看它会不会被连累。">
+  <div class="cols rcp-cols">
+    <div class="rcp-left">
+      <div class="cap">插件</div>
+      <div class="nd" data-plug data-s="off">
+        <div class="nd-top"><span class="nd-name">提醒插件</span><span class="chip off">未装</span></div>
+        <div class="nd-sub" data-why>按时发出提醒</div>
+      </div>
+      <div class="nd" data-s="on">
+        <div class="nd-top"><span class="nd-name">天气插件</span><span class="chip on">在岗</span></div>
+        <div class="nd-sub">邻居，和提醒无关</div>
+      </div>
+    </div>
+    <div>
+      <div class="cap">系统里多出来的东西</div>
+      <div class="zone rcp-env" data-env><div class="empty">（空）</div></div>
+    </div>
+    <div>
+      <div class="cap">回执串 · 新的压在上面</div>
+      <div class="stack" data-rcs><div class="empty">（空）</div></div>
+    </div>
+  </div>
+</Stage>
+
+<style>
+  .rcp-cols { grid-template-columns: 0.9fr 1.1fr 1fr; }
+  .rcp-left { display: flex; flex-direction: column; gap: 14px; }
+  .rcp-left .cap { margin-bottom: -5px; }
+  .rcp-env { min-height: 150px; display: flex; flex-direction: column; gap: 8px; }
+  @container canvas (max-width: 560px) { .rcp-cols { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  import { mount, stage } from '../../scripts/stage';
+  import { make, show, drop, stamp, nudge, shake, setState, wait } from '../../scripts/motion';
+
+  const FX = [
+    { kind: '连接', slot: '数据库连接', undo: '关闭数据库连接' },
+    { kind: '监听', slot: '监听「新消息」', undo: '取消监听' },
+    { kind: '端口', slot: '网页端口 8080', undo: '关闭端口 8080' },
+  ];
+
+  mount('receipts', (root) => {
+    const q = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const plug = q('[data-plug]'), env = q('[data-env]'), rcs = q('[data-rcs]'), why = q('[data-why]');
+    const empty = (box: HTMLElement) => box.replaceChildren(make('<div class="empty">（空）</div>'));
+    const reset = () => {
+      empty(env); empty(rcs); setState(plug, 'off'); why.textContent = '按时发出提醒';
+      root.querySelectorAll('.stamp').forEach((s) => s.remove());
+    };
+    const doFx = async (f: (typeof FX)[number]) => {
+      env.querySelector('.empty')?.remove(); rcs.querySelector('.empty')?.remove();
+      const s = make(`<div class="slot" hidden data-k="${f.kind}"><span class="chip">${f.kind}</span>${f.slot}</div>`);
+      env.append(s); await show(s);
+      const r = make(`<div class="rc" hidden data-k="${f.kind}">${f.undo}</div>`);
+      rcs.prepend(r); await show(r, 'translateY(-14px)'); await wait(140);
+    };
+    const undoAll = async () => {
+      for (const r of [...rcs.querySelectorAll<HTMLElement>('.rc')]) {
+        r.classList.add('is-used');
+        const s = env.querySelector<HTMLElement>(`.slot[data-k="${r.dataset.k}"]`);
+        if (s) { await nudge(s); await drop(s); }
+        await drop(r, 'translateX(30px)');
+      }
+      empty(env); empty(rcs);
+    };
+
+    stage(root, [
+      { label: '装上', say: '提醒插件按顺序做了三件事：打开数据库连接，监听新消息，开一个网页端口。\n\n每做一件，就有一张回执压到最上面。三张回执串在一起，这就是它的回执串。',
+        run: async () => { setState(plug, 'on'); await nudge(plug); for (const f of FX) await doFx(f); } },
+      { label: '卸载', say: '卸载时，运行时从最上面撕起：先关端口，再取消监听，最后才关数据库连接。\n\n为什么倒着来？后装的往往要用先装的。要是先关了连接，端口和监听最后那一下就会撞上一个已经关掉的连接。',
+        run: async () => { await undoAll(); setState(plug, 'off', '已卸载'); } },
+      { label: '装到一半失败', say: '再装一次，这回网页端口 8080 被别的程序占了，第三件事做不成。\n\n运行时只撤已经做成的那两件，照样倒着撤。提醒插件停在「失败」，原因写在卡片上；隔壁的天气插件全程没被惊动。',
+        run: async () => {
+          setState(plug, 'on', '安装中'); await nudge(plug);
+          for (const f of FX.slice(0, 2)) await doFx(f);
+          await wait(260);
+          await shake(plug);
+          setState(plug, 'fail', '失败');
+          why.textContent = '端口 8080 已被占用';
+          const st = make('<span class="stamp dark" hidden>端口被占</span>'); plug.append(st); await stamp(st);
+          await wait(500);
+          await undoAll();
+        } },
+    ], { reset, done: '要点只有一个：撤销办法是做事时当场交出来的，不是事后另写的。所以不管是正常卸载还是半路失败，运行时手里永远有一份准确的清单。' });
+  });
+</script>

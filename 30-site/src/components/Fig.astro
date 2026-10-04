@@ -1,0 +1,12 @@
+---
+interface Props { img: string; kicker: string; title: string; }
+const { img, kicker, title } = Astro.props;
+---
+<figure class="split wide">
+  <div class="split-img"><img src={img} alt="" width="900" height="1200" loading="lazy" /></div>
+  <figcaption class="split-note">
+    <span class="kicker">{kicker}</span>
+    <h3>{title}</h3>
+    <slot />
+  </figcaption>
+</figure>

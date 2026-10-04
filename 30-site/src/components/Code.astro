@@ -1,0 +1,14 @@
+---
+interface Props { cap: string; tag?: string; code: string; good?: boolean; }
+const { cap, tag = '', code, good = false } = Astro.props;
+const lines = code.replace(/^\n+|\s+$/g, '').split('\n').map((raw) => {
+  if (raw.startsWith('+ ')) return { cls: 'add', text: raw.slice(2) };
+  if (raw.startsWith('- ')) return { cls: 'bad', text: raw.slice(2) };
+  return { cls: raw.trim().startsWith('//') ? 'c' : '', text: raw };
+});
+---
+<div class:list={['code', { 'is-good': good }]}>
+  <div class="code-cap"><span>{cap}</span><span>{tag}</span></div>
+  <pre><code>{lines.map((l) => <span class:list={['ln', l.cls]}>{l.text || ' '}</span>)}</code></pre>
+  {Astro.slots.has('default') && <div class="code-note"><slot /></div>}
+</div>

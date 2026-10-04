@@ -1,0 +1,57 @@
+---
+---
+<figure class="tw wide" data-tw data-order="a">
+  <div class="tw-head">
+    <div><span class="kicker">演示 6.2 · 可以点</span><div class="tw-title">两个发号窗口</div></div>
+    <div class="tw-sw" role="group" aria-label="来的顺序">
+      <button type="button" class="btn btn-sm is-solid" data-o="a" aria-pressed="true">小王先来</button>
+      <button type="button" class="btn btn-sm" data-o="b" aria-pressed="false">小李先来</button>
+    </div>
+  </div>
+  <p class="tw-pool">两个窗口手里的空号都是：<span class="mono">2 · 5 · 7</span>。小王和小李各来领一个号。</p>
+  <div class="tw-rows">
+    <div class="tw-row">
+      <div class="tw-rule"><b>窗口 A</b><span>承诺：发最小的空号</span></div>
+      <div class="tw-out"><span data-show="a">小王 <b>2</b> · 小李 <b>5</b></span><span data-show="b">小李 <b>2</b> · 小王 <b>5</b></span></div>
+      <div class="tw-v"><span class="chip bad">次序有讲究</span><span class="tw-why">换个顺序，小王拿到的号就变了</span></div>
+    </div>
+    <div class="tw-row">
+      <div class="tw-rule"><b>窗口 B</b><span>承诺：发一个空号，不说是哪个</span></div>
+      <div class="tw-out"><span>两人各拿到一个空号，互不重复</span></div>
+      <div class="tw-v"><span class="chip on">随便乱序</span><span class="tw-why">谁先谁后，外面看不出区别</span></div>
+    </div>
+  </div>
+  <figcaption class="tw-cap">窗口 A 多承诺了一句「最小」，别人就能拿这句话来检验谁先谁后，于是两次领号不能交换。窗口 B 少承诺一点，反而换来了自由。POSIX 里，open 是窗口 A（必须返回最小的空闲描述符），mmap 是窗口 B（任意空闲地址都行）。</figcaption>
+</figure>
+
+<style>
+  .tw { padding: 20px 22px; border: 2px solid var(--ink); box-shadow: var(--shadow); background: var(--paper); }
+  .tw-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; padding-bottom: 14px; border-bottom: 2px solid var(--ink); }
+  .tw-title { margin-top: 5px; font: 900 19px/1.35 var(--serif); }
+  .tw-sw { display: flex; gap: 8px; }
+  .tw-pool { margin: 14px 0; font-size: 15.5px; }
+  .tw-pool .mono { color: var(--ink); font-weight: 500; }
+  .tw-rows { border-top: 1px solid var(--ink-30); }
+  .tw-row { display: grid; grid-template-columns: 1.1fr 1.2fr 1.3fr; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--ink-30); }
+  .tw-rule b { display: block; font: 900 17px/1.4 var(--serif); color: var(--ink); }
+  .tw-rule span { font-size: 14px; color: var(--text-2); }
+  .tw-out { font-size: 15px; }
+  .tw-out b { font: 700 18px/1 var(--mono); color: var(--ink); padding: 0 2px; }
+  .tw-v { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+  .tw-why { font-size: 13.5px; color: var(--text-2); }
+  .tw[data-order="a"] [data-show="b"], .tw[data-order="b"] [data-show="a"] { display: none; }
+  .tw[data-order="b"] .tw-row:first-child .tw-out { animation: tw-flip 0.4s var(--ease-out); }
+  @keyframes tw-flip { from { opacity: 0; transform: translateY(-6px); } }
+  .tw-cap { margin-top: 14px; font-size: 14px; line-height: 1.75; color: var(--text-2); }
+  @media (max-width: 760px) { .tw-row { grid-template-columns: 1fr; gap: 8px; } }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-tw]').forEach((root) => {
+    const btns = [...root.querySelectorAll<HTMLButtonElement>('[data-o]')];
+    btns.forEach((b) => b.addEventListener('click', () => {
+      root.dataset.order = b.dataset.o;
+      btns.forEach((x) => { const on = x === b; x.classList.toggle('is-solid', on); x.setAttribute('aria-pressed', String(on)); });
+    }));
+  });
+</script>

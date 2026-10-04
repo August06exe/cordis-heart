@@ -1,34 +1,39 @@
 # 30-site
 
-DSH 的心脏 · Cordis 思想图鉴，Astro 静态站工程（PRD 里程碑 M4 脚手架）。
+「DSH 的心脏」站点工程：把 Cordis 论文（arXiv:2608.25512）讲成一本 12 页的网页书。Astro 静态站，文稿即 `src/pages/*.mdx`。
 
 ## 命令
 
 ```text
 npm install
-npm run dev       # 本地开发
-npm run build     # 构建到 dist/
-npm run preview   # 预览构建产物
+npm run dev                  # 本地开发（后台运行：npx astro dev --background）
+npm run build                # 构建到 dist/
+npm run build:cordis         # 同上，并把所有路径加 /cordis 前缀（发布到 域名/cordis 子路径用）
+npx astro check              # 类型检查
+node scripts/probe-ux.mjs    # 交互回归（先起 dev；用系统 Edge + playwright-core）
 ```
 
 ## 结构
 
 ```text
 src/
-  content/pages/    九页文稿（collection: pages，schema 见 src/content.config.ts）
-  content.config.ts 内容管线配置
-  data/site.ts      站名、九页导航、时效声明的唯一数据源
-  layouts/          BaseLayout.astro（报头、导航、页脚横幅、进度条、主题、ClientRouter）
-  components/       Badge、Takeaway、SceneControls、ThemeToggle、HeroScene
-  scripts/          motion.ts（GSAP 基建）、hero-motion.ts（首页五拍）
-  styles/global.css 全站令牌与共享样式（定案来源 10-docs/11-深色令牌定案.md）
-  pages/            index.astro、map.json.ts、og/[slug].svg.ts
-public/images/      插图占位目录（插图管线后续填入）
+  pages/            落地页 index.astro + 十章与术语表 *.mdx（路由即文件名）
+  layouts/          Base（报头、进度条、版心、页脚）、Chapter（章首图版、侧栏目录、本页目录、翻页）
+  components/       正文零件 T（术语）R（出处）Fig Cmp Case Code Rule；Stage 演示外壳；
+                    TermList 术语表、StealBoard 抄作业生成器、FitCheck 自查五问
+    demos/          八个演示：七个套 Stage 逐拍播放，TwoWindows 是单步对照
+    figs/           四张程序化图：Lineage、PaperMap、TwoAxes、Lines
+  data/             book.ts 章节表、terms.ts 术语、refs.ts 论文摘句、steal.ts 十五招、snippets.ts 代码对照
+  scripts/            probe-ux.mjs 交互回归；build-cordis.mjs + rebase.mjs 子路径发布；m47-、m5- 两个补图脚本留作出处
+  styles/           tokens 令牌、base 正文、shell 版心、stage 演示、parts 零件
+public/images/web/  插图 web 档（母本在 40-assets，不入 git）
+scripts/            probe-ux.mjs 交互回归；m47-、m5- 两个补图脚本留作出处
 ```
 
 ## 约定
 
-- 单墨：全页唯一墨色钴蓝 #2148B8，深色主题基墨 #A0B4EE 为待对账推导值，令牌表见 global.css 注释。
-- 动效：只动画 transform 与 opacity（SVG 描边的 stroke-dashoffset 除外）；场景统一经 `registerScene` 暴露播放、暂停、重播；强度 8 页（首页、沙盒）必须过 gsap.matchMedia 的 prefers-reduced-motion 降级。
-- 页面实现员写 `src/pages/<slug>.astro`，slug 取 `src/data/site.ts` 的 SITE_PAGES；内容从 `getCollection('pages')` 取。
-- 端点：`/map.json` 知识库地图；`/og/<slug>.svg` 每页 OG 图（M6 可升级 satori+resvg 出 PNG）。
+- 单墨：纸 #FAFAF7，钴蓝 #2148B8 是唯一强调色。状态语言统一：实印 = 在岗，网屏 = 待命，虚线 = 已撤，盖章 = 失败。
+- 术语和出处只用 `<T id>`、`<R id>` 引用，数据各自只在 terms.ts、refs.ts 一处维护；id 写错，构建直接报错。
+- 演示只动 transform、opacity、clip-path；`prefers-reduced-motion` 下等待归零、瞬切。
+- 演示的断点看舞台和画布自身宽度（container query），不看窗口：有侧栏时舞台可能只剩 700px。
+- 改完跑 `astro check`、`build`、`probe-ux`。

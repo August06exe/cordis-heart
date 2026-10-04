@@ -1,0 +1,79 @@
+---
+const QS = [
+  { q: '你的组件需要在运行中装上、卸下、替换吗？', no: '组件常年不动，就没有要撤的东西。这套机制在你这里是纯开销。' },
+  { q: '共享状态能全部登记进一个统一入口吗？', no: '有一条绕行（全局单例、模块级缓存），保证就漏一块。一半进门一半不进，比完全不用更危险：你会以为自己受保护。' },
+  { q: '热路径上的操作，能承受一层登记和代理吗？', no: 'intercept、isolate 都有成本，论文没量化。拿到你自己的实测数字之前，别把「应该不大」当结论。' },
+  { q: '要跑的代码都是你信得过的吗？', no: '依赖声明能管住「能拿到什么」，管不住恶意代码绕过它。不可信的代码需要独立的沙箱，这套范式替代不了。' },
+  { q: '团队能长期守住「所有交互都走同一扇门」吗？', no: '纪律一松，保证就只停在纸面上。这一条最难，也最要紧。' },
+];
+---
+<section class="fit wide" data-fit>
+  <div class="fit-head"><span class="kicker">采用前自查 · 五个问题</span><span class="fit-score" data-score>还没答</span></div>
+  <ol class="fit-list">
+    {QS.map((x, i) => (
+      <li class="fit-q" data-q={i}>
+        <div class="fit-row">
+          <span class="fit-n mono">{String(i + 1).padStart(2, '0')}</span>
+          <span class="fit-t">{x.q}</span>
+          <span class="fit-btns" role="group" aria-label={`第 ${i + 1} 题`}>
+            <button type="button" class="btn btn-sm" data-a="y" aria-pressed="false">是</button>
+            <button type="button" class="btn btn-sm" data-a="n" aria-pressed="false">否</button>
+          </span>
+        </div>
+        <p class="fit-no" hidden>{x.no}</p>
+      </li>
+    ))}
+  </ol>
+  <div class="fit-verdict" data-verdict hidden></div>
+</section>
+
+<style>
+  .fit { border: 2px solid var(--ink); box-shadow: var(--shadow); background: var(--paper); }
+  .fit-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 2px solid var(--ink); }
+  .fit-score { font: 500 12.5px/1 var(--mono); color: var(--text-2); }
+  .fit-list { list-style: none; padding: 0; margin: 0; }
+  .fit-q { padding: 12px 18px; }
+  .fit-q + .fit-q { margin-top: 0; border-top: 1px solid var(--ink-30); }
+  .fit-row { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+  .fit-n { font-size: 13px; color: var(--ink); }
+  .fit-t { font-weight: 700; font-size: 16px; line-height: 1.6; }
+  .fit-btns { display: flex; gap: 8px; }
+  .fit-btns .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .fit-no { margin: 10px 0 2px 44px; padding: 8px 12px; border-left: 3px solid var(--text); background: rgba(35, 38, 46, 0.04); font-size: 14.5px; line-height: 1.75; }
+  .fit-verdict { padding: 16px 18px 18px; border-top: 2px solid var(--ink); background: var(--ink-04); font-size: 16px; line-height: 1.8; }
+  .fit-verdict b { font: 900 19px/1.5 var(--serif); color: var(--ink); display: block; margin-bottom: 4px; }
+  @media (max-width: 640px) {
+    .fit-row { grid-template-columns: 26px minmax(0, 1fr); }
+    .fit-btns { grid-column: 2; }
+    .fit-no { margin-left: 38px; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-fit]').forEach((root) => {
+    const qs = [...root.querySelectorAll<HTMLElement>('.fit-q')];
+    const verdict = root.querySelector<HTMLElement>('[data-verdict]')!;
+    const score = root.querySelector<HTMLElement>('[data-score]')!;
+    const ans: (string | undefined)[] = [];
+    const paint = () => {
+      const done = ans.filter(Boolean).length;
+      const nos = ans.filter((a) => a === 'n').length;
+      score.textContent = done ? `已答 ${done} / 5 · ${nos} 个「否」` : '还没答';
+      if (done < qs.length) { verdict.hidden = true; return; }
+      verdict.hidden = false;
+      verdict.innerHTML = nos === 0
+        ? '<b>值得试。</b>从第 09 章的「给老项目体检」开始，先让 AI 列出问题，再挑一块小的改。'
+        : ans[0] === 'n'
+          ? '<b>先别用。</b>组件既然不用换，这套机制只会增加负担。把第 04 章的「当场交回执」当成写代码的好习惯就够了。'
+          : nos <= 2
+            ? '<b>可以局部借。</b>别整套搬。先把上面答「否」的那几条想清楚，只在需要热插拔的那一块用这些规矩。'
+            : '<b>现在不合适。</b>「否」太多，硬上的代价会超过收益。等条件变了，再回来答一遍。';
+    };
+    qs.forEach((li, i) => li.querySelectorAll<HTMLButtonElement>('[data-a]').forEach((b) => b.addEventListener('click', () => {
+      ans[i] = b.dataset.a;
+      li.querySelectorAll<HTMLButtonElement>('[data-a]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      li.querySelector<HTMLElement>('.fit-no')!.hidden = b.dataset.a !== 'n';
+      paint();
+    })));
+  });
+</script>

@@ -1,0 +1,103 @@
+---
+import Stage from '../Stage.astro';
+---
+<Stage demo="deps" kicker="演示 5.1 · 可以点" title="断供即歇业，来电即开张"
+  intro="提醒插件要用数据库；统计面板要读提醒插件的数据；天气插件谁都不靠。三个插件都已经写好了需求清单。按「开始」，先在没有数据库的时候把它们装上。">
+  <div class="cols dc-cols">
+    <div class="dc-chain">
+      <div class="nd" data-n="db" data-s="off">
+        <div class="nd-top"><span class="nd-name">数据库</span><span class="chip off">没有</span></div>
+        <div class="nd-sub" data-db>还没有谁提供</div>
+      </div>
+      <div class="dc-link" aria-hidden="true">↓ 被需要</div>
+      <div class="nd" data-n="rem" data-s="off">
+        <div class="nd-top"><span class="nd-name">提醒插件</span><span class="chip off">未装</span></div>
+        <div class="nd-sub">需求清单：<span class="need" data-need="rem">数据库</span></div>
+      </div>
+      <div class="dc-link" aria-hidden="true">↓ 被需要</div>
+      <div class="nd" data-n="sta" data-s="off">
+        <div class="nd-top"><span class="nd-name">统计面板</span><span class="chip off">未装</span></div>
+        <div class="nd-sub">需求清单：<span class="need" data-need="sta">提醒插件</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="nd" data-n="wea" data-s="off">
+        <div class="nd-top"><span class="nd-name">天气插件</span><span class="chip off">未装</span></div>
+        <div class="nd-sub">需求清单：（空）</div>
+      </div>
+      <div class="cap dc-logcap">运行时的分类记录</div>
+      <div class="log zone" data-log><div class="empty">（环境还没变过）</div></div>
+    </div>
+  </div>
+</Stage>
+
+<style>
+  .dc-cols { grid-template-columns: 1fr 1fr; gap: 22px; }
+  .dc-chain { display: flex; flex-direction: column; }
+  .dc-link { padding: 5px 0 5px 18px; font: 400 11.5px/1.4 var(--mono); color: var(--text-2); }
+  .need { display: inline-block; padding: 0 6px; border: 1px dashed var(--ink-50); color: var(--text-2); transition: background-color 0.2s, color 0.2s; }
+  .need.is-met { border-style: solid; border-color: var(--ink); background: var(--ink-14); color: var(--ink); }
+  .dc-logcap { margin-top: 18px; }
+  .log.zone { margin-top: 0; min-height: 120px; }
+  @container canvas (max-width: 520px) { .dc-cols { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  import { mount, stage } from '../../scripts/stage';
+  import { make, show, nudge, setState, stamp, wait } from '../../scripts/motion';
+
+  mount('deps', (root) => {
+    const n = (k: string) => root.querySelector<HTMLElement>(`[data-n="${k}"]`)!;
+    const need = (k: string) => root.querySelector<HTMLElement>(`[data-need="${k}"]`)!;
+    const dbLine = root.querySelector<HTMLElement>('[data-db]')!;
+    const log = root.querySelector<HTMLElement>('[data-log]')!;
+    const write = async (title: string, rows: string[]) => {
+      log.querySelector('.empty')?.remove();
+      log.querySelectorAll('div').forEach((d) => (d.style.opacity = '0.45'));
+      const box = make(`<div hidden><b>${title}</b>${rows.map((r) => `<br />　${r}`).join('')}</div>`);
+      log.prepend(box);
+      [...log.children].slice(2).forEach((d) => d.remove());
+      await show(box, 'translateY(-8px)');
+    };
+    const db = (s: 'on' | 'off', label: string, sub: string) => { setState(n('db'), s, label); dbLine.textContent = sub; };
+    const up = async (k: string) => { need(k).classList.add('is-met'); setState(n(k), 'on'); await nudge(n(k)); };
+    const down = async (k: string, text = '待命') => { await nudge(n(k)); setState(n(k), 'wait', text); need(k).classList.remove('is-met'); };
+    const reset = () => {
+      ['rem', 'sta', 'wea'].forEach((k) => setState(n(k), 'off'));
+      ['rem', 'sta'].forEach((k) => need(k).classList.remove('is-met'));
+      db('off', '没有', '还没有谁提供');
+      log.replaceChildren(make('<div class="empty">（环境还没变过）</div>'));
+      root.querySelectorAll('.stamp').forEach((s) => s.remove());
+    };
+
+    stage(root, [
+      { label: '先装插件', say: '数据库还没来，三个插件就都装上了。\n\n提醒和统计没有报错，也不反复去试，只是安静地待命。天气不需要任何东西，直接上岗。',
+        run: async () => {
+          setState(n('rem'), 'wait', '缺数据库'); setState(n('sta'), 'wait', '缺提醒');
+          setState(n('wea'), 'on'); await nudge(n('wea'));
+          await write('装上三个插件', ['提醒：清单不齐 → 待命', '统计：清单不齐 → 待命', '天气：清单为空 → 上岗']);
+        } },
+      { label: '数据库上线', say: '数据库一上线，运行时拿每份需求清单对照这次变化，分成三类。\n\n提醒：从缺到齐，激活。统计：等提醒到岗后也齐了，跟着激活。天气：和这次变化无关，不理。',
+        run: async () => {
+          db('on', '在岗', '主库 · 编号 #17'); await nudge(n('db'));
+          await up('rem'); await wait(220); await up('sta');
+          await write('变化：数据库上线（#17）', ['提醒：从缺到齐 → 激活', '统计：从缺到齐 → 激活', '天气：无关 → 不理']);
+        } },
+      { label: '换成备用库', say: '运维把主库换成了备用库，连接地址一模一样。\n\n运行时照样让提醒和统计重新上岗一遍：它认的是「供货的是谁」（编号从 #17 变成 #18），不是「货长什么样」。天气依旧不受影响。',
+        run: async () => {
+          await nudge(n('db')); db('on', '在岗', '备用库 · 编号 #18');
+          await down('sta', '重接中'); await down('rem', '重接中');
+          await wait(450);
+          await up('rem'); await up('sta');
+          await write('变化：数据库换人（#17 → #18）', ['提醒：供货的换了人 → 重新上岗', '统计：上游重来了 → 重新上岗', '天气：无关 → 不理']);
+        } },
+      { label: '数据库下线', say: '数据库要走了。它先挂出停工告示，依赖它的按顺序撤：统计先停（它靠提醒），提醒再停，各自把回执撕干净，数据库最后离场。\n\n两个插件回到待命，等下一个数据库。天气全程在岗。',
+        run: async () => {
+          const s = make('<span class="stamp dark" hidden>停工告示</span>'); n('db').append(s); await stamp(s);
+          await down('sta'); await wait(200); await down('rem');
+          await wait(250); s.remove(); db('off', '没有', '还没有谁提供');
+          await write('变化：数据库下线', ['统计：从齐到缺 → 停用（先走）', '提醒：从齐到缺 → 停用', '天气：无关 → 不理']);
+        } },
+    ], { reset, done: '整个过程里，没有一个插件写过「检查数据库在不在」的代码。它们只交了一份清单，剩下的全由运行时按清单安排。' });
+  });
+</script>

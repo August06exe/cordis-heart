@@ -1,0 +1,35 @@
+:root {
+  --paper: #fafaf7;
+  --desk: #efeee8;
+  --ink: #2148b8;
+  --ink-78: rgba(33, 72, 184, 0.78);
+  --ink-50: rgba(33, 72, 184, 0.5);
+  --ink-30: rgba(33, 72, 184, 0.3);
+  --ink-20: rgba(33, 72, 184, 0.2);
+  --ink-14: rgba(33, 72, 184, 0.14);
+  --ink-08: rgba(33, 72, 184, 0.08);
+  --ink-04: rgba(33, 72, 184, 0.04);
+  --text: #23262e;
+  --text-2: #4a4f5c;
+  --rule: rgba(35, 38, 46, 0.13);
+  --rule-2: rgba(35, 38, 46, 0.24);
+
+  --serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
+  --sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+  --mono: "IBM Plex Mono", "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+
+  --shadow: 8px 8px 0 var(--ink-14);
+  --shadow-sm: 5px 5px 0 var(--ink-14);
+  /* 半调网点：印刷里「网屏」的灰，用来表示待命/未激活，不是色彩渐变 */
+  --screen: radial-gradient(var(--ink-30) 0.9px, transparent 1.2px) 0 0 / 5px 5px;
+
+  --measure: 720px;
+  --wide: 960px;
+  --side-w: 236px;
+  --toc-w: 188px;
+  --top-h: 56px;
+  --gutter: clamp(20px, 4vw, 64px);
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}

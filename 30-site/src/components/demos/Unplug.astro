@@ -1,0 +1,123 @@
+---
+import Stage from '../Stage.astro';
+interface Props { kicker?: string; }
+const { kicker = '十秒看懂 · 可以点' } = Astro.props;
+---
+<Stage demo="unplug" kicker={kicker} title="拔掉一个插件，会发生什么？"
+  intro="小周的机器人上，要装一个「天气」插件。左边是插件，中间是机器人系统本身，右边是运行时替它保管的东西。按「开始」装上它。">
+  <div class="cols up-cols">
+    <div>
+      <div class="cap">插件</div>
+      <div class="nd" data-plug data-s="off">
+        <div class="nd-top"><span class="nd-name" data-pname>天气插件</span><span class="chip off">未装</span></div>
+        <div class="nd-sub">每小时刷新一次天气</div>
+      </div>
+    </div>
+    <div>
+      <div class="cap">系统里多出来的东西</div>
+      <div class="zone up-env" data-env><div class="empty" data-empty>（空：还什么都没有）</div></div>
+    </div>
+    <div>
+      <div class="cap" data-rcap>回执串 · 新的压在上面</div>
+      <div class="stack" data-rcs><div class="empty">（空）</div></div>
+    </div>
+  </div>
+</Stage>
+
+<style>
+  .up-cols { grid-template-columns: 0.9fr 1.15fr 1fr; }
+  .up-env { min-height: 150px; display: flex; flex-direction: column; gap: 8px; }
+  @container canvas (max-width: 560px) { .up-cols { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  import { mount, stage } from '../../scripts/stage';
+  import { make, show, hide, drop, stamp, nudge, setState, wait } from '../../scripts/motion';
+
+  const FX = [
+    { kind: '定时', slot: '每小时刷新天气', undo: '取消「每小时刷新」' },
+    { kind: '命令', slot: '/天气 命令', undo: '注销 /天气' },
+    { kind: '菜单', slot: '菜单里的天气卡片', undo: '移除天气卡片' },
+  ];
+
+  mount('unplug', (root) => {
+    const q = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const plug = q('[data-plug]'), env = q('[data-env]'), rcs = q('[data-rcs]'), rcap = q('[data-rcap]');
+    let ghostTimer = 0;
+    const slots: HTMLElement[] = [];
+
+    const clear = (box: HTMLElement, text = '（空）') => { box.replaceChildren(make(`<div class="empty">${text}</div>`)); };
+    const reset = () => {
+      clearInterval(ghostTimer);
+      slots.length = 0;
+      clear(env, '（空：还什么都没有）');
+      clear(rcs);
+      rcap.textContent = '回执串 · 新的压在上面';
+      q('[data-pname]').textContent = '天气插件';
+      setState(plug, 'off');
+      root.querySelectorAll('.stamp').forEach((s) => s.remove());
+    };
+    const addSlot = async (f: (typeof FX)[number]) => {
+      env.querySelector('.empty')?.remove();
+      const s = make(`<div class="slot" hidden><span class="chip">${f.kind}</span>${f.slot}</div>`);
+      env.append(s); slots.push(s);
+      await show(s);
+    };
+
+    stage(root, [
+      { label: '装上', say: '天气插件装上时，往系统里做了三件事：挂一个定时任务、注册一条命令、加一张菜单卡片。\n\n每做一件，它都当场交出一张「怎么撤回这件事」的回执，运行时替它收着。新的压在最上面。',
+        run: async () => {
+          setState(plug, 'on'); await nudge(plug);
+          for (const f of FX) {
+            await addSlot(f);
+            rcs.querySelector('.empty')?.remove();
+            const r = make(`<div class="rc" hidden>${f.undo}</div>`);
+            rcs.prepend(r);
+            await show(r, 'translateY(-14px)');
+            await wait(160);
+          }
+        } },
+      { label: '拔掉', say: '现在把插件拔掉。运行时从最上面那张回执开始，倒着一张张执行：后做的先撤。\n\n三件事全部消失，系统回到装它之前的样子。插件作者一行卸载代码都没写。',
+        run: async () => {
+          const list = [...rcs.querySelectorAll<HTMLElement>('.rc')];
+          for (let k = 0; k < list.length; k++) {
+            list[k].classList.add('is-used');
+            const s = slots[slots.length - 1 - k];
+            await nudge(s); await hide(s); await drop(list[k], 'translateX(30px)');
+          }
+          slots.length = 0;
+          setState(plug, 'off', '已拔掉');
+          clear(env, '（空：和装之前一模一样）'); clear(rcs);
+          const st = make('<span class="stamp" hidden>干干净净</span>'); env.append(st); await stamp(st);
+        } },
+      { label: '换老办法装', say: '同一个插件，换成很多框架里的老写法：装的时候不留回执，卸载靠作者另写一个「卸载函数」。\n\n作者写了两行。你看出漏了哪一件吗？',
+        run: async () => {
+          root.querySelectorAll('.stamp').forEach((s) => s.remove());
+          q('[data-pname]').textContent = '天气插件（老写法）';
+          clear(env); clear(rcs);
+          rcap.textContent = '作者手写的卸载函数';
+          setState(plug, 'on'); await nudge(plug);
+          env.querySelector('.empty')?.remove();
+          for (const f of FX) await addSlot(f);
+          rcs.querySelector('.empty')?.remove();
+          for (const f of FX.slice(1)) { const r = make(`<div class="rc is-hand" hidden>${f.undo}</div>`); rcs.append(r); await show(r); }
+        } },
+      { label: '再拔掉', say: '卸载函数照着写好的两行执行：命令和菜单没了。可那个每小时一次的定时任务，没人记得取消。\n\n它会一直在后台空转，直到下次重启。这就是「幽灵任务」，也是很多软件卸载插件时要你重启的原因。',
+        run: async () => {
+          const hand = [...rcs.querySelectorAll<HTMLElement>('.rc')];
+          for (let k = 0; k < hand.length; k++) {
+            hand[k].classList.add('is-used');
+            const s = slots[k + 1];
+            await nudge(s); await hide(s); await wait(80);
+          }
+          setState(plug, 'off', '已卸载');
+          const ghost = slots[0];
+          ghost.classList.add('is-ghost');
+          const tag = make('<span class="chip bad">幽灵 · 白跑 0 次</span>'); ghost.append(tag);
+          let n = 0;
+          ghostTimer = window.setInterval(() => { tag.textContent = `幽灵 · 白跑 ${++n} 次`; }, 650);
+          const st = make('<span class="stamp dark" hidden>漏了一件</span>'); env.append(st); await stamp(st);
+        } },
+    ], { reset, done: '所以论文的第一条规矩是：撤销办法不许另写，必须在做事的当场一起交出来。这一章的细节在第 04 章。' });
+  });
+</script>

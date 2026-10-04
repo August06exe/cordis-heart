@@ -1,0 +1,37 @@
+---
+import { TERMS } from '../data/terms';
+import { CHAPTERS, href } from '../data/book';
+const groups = CHAPTERS.filter((c) => c.part !== 'X')
+  .map((c) => ({ c, list: Object.entries(TERMS).filter(([, t]) => t.ch === c.slug) }))
+  .filter((g) => g.list.length);
+---
+<div class="tl wide">
+  {groups.map(({ c, list }) => (
+    <section class="tl-g">
+      <h2 id={`ch-${c.slug}`}><a href={href(c.slug)}><span class="mono">{c.no}</span> {c.short}</a></h2>
+      <dl>
+        {list.map(([id, t]) => (
+          <div class="tl-row" id={id}>
+            <dt><b>{t.name}</b>{t.en !== t.name && <span class="mono">{t.en}</span>}</dt>
+            <dd>{t.def}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  ))}
+</div>
+
+<style>
+  .tl-g + .tl-g { margin-top: 40px; }
+  .tl h2 { margin: 0 0 4px; padding: 0 0 10px; border-top: 0; border-bottom: 2px solid var(--ink); font-size: 20px; counter-increment: none; }
+  .tl h2::before { content: none; }
+  .tl h2 a { color: var(--ink); text-decoration: none; }
+  .tl h2 a:hover { text-decoration: underline; text-underline-offset: 5px; }
+  .tl h2 .mono { font-size: 13px; margin-right: 6px; }
+  .tl-row { display: grid; grid-template-columns: minmax(150px, 0.32fr) minmax(0, 1fr); gap: 4px 24px; padding: 12px 0; border-bottom: 1px solid var(--rule); scroll-margin-top: calc(var(--top-h) + 20px); }
+  .tl-row:target { background: var(--ink-08); box-shadow: -10px 0 0 var(--ink-08), 10px 0 0 var(--ink-08); }
+  .tl dt b { display: block; font: 900 17px/1.5 var(--serif); }
+  .tl dt .mono { font-size: 12px; color: var(--text-2); }
+  .tl dd { margin: 0; font-size: 15.5px; line-height: 1.8; }
+  @media (max-width: 640px) { .tl-row { grid-template-columns: 1fr; } }
+</style>

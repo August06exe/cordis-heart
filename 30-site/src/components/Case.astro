@@ -1,0 +1,5 @@
+---
+interface Props { tab?: string; }
+const { tab = '小周的项目' } = Astro.props;
+---
+<aside class="case"><span class="case-tab">{tab}</span><slot /></aside>

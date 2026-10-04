@@ -1,0 +1,94 @@
+---
+import Stage from '../Stage.astro';
+---
+<Stage demo="ghost" kicker="演示 6.1 · 可以点" title="一个计数器，从黑户到转正"
+  intro="小周的管理插件有个「本周命令数」统计。按「开始」，看它把这个数字记在了哪里。">
+  <div class="cols gc-cols">
+    <div>
+      <div class="cap">插件</div>
+      <div class="nd" data-plug data-s="off">
+        <div class="nd-top"><span class="nd-name">管理插件</span><span class="chip off">未装</span></div>
+        <div class="nd-sub">统计本周用了多少次命令</div>
+      </div>
+    </div>
+    <div>
+      <div class="cap">语境 · 运行时看得见的总账</div>
+      <div class="zone gc-zone" data-in-zone><div class="empty">（空）</div></div>
+    </div>
+    <div>
+      <div class="cap">门外 · 运行时看不见</div>
+      <div class="zone is-out gc-zone" data-out-zone><div class="empty">（空）</div></div>
+    </div>
+  </div>
+</Stage>
+
+<style>
+  .gc-cols { grid-template-columns: 0.85fr 1.2fr 1fr; }
+  .gc-zone { min-height: 132px; display: flex; flex-direction: column; gap: 8px; }
+  @container canvas (max-width: 560px) { .gc-cols { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  import { mount, stage } from '../../scripts/stage';
+  import { make, show, hide, drop, stamp, nudge, setState, wait } from '../../scripts/motion';
+
+  mount('ghost', (root) => {
+    const q = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const plug = q('[data-plug]'), inZ = q('[data-in-zone]'), outZ = q('[data-out-zone]');
+    const empty = (z: HTMLElement) => z.replaceChildren(make('<div class="empty">（空）</div>'));
+    const slot = (html: string) => make<HTMLElement>(`<div class="slot" hidden>${html}</div>`);
+    const count = async (el: HTMLElement, from: number, to: number) => {
+      for (let v = from; v <= to; v++) { el.textContent = String(v); await wait(170); }
+    };
+    let counter: HTMLElement | null = null;
+    const reset = () => { empty(inZ); empty(outZ); setState(plug, 'off'); counter = null; root.querySelectorAll('.stamp').forEach((s) => s.remove()); };
+    const install = async (withKey: boolean) => {
+      setState(plug, 'on'); await nudge(plug);
+      inZ.querySelector('.empty')?.remove();
+      const cmd = slot('<span class="chip">命令</span>/统计 <span class="rc gc-r">注销 /统计</span>');
+      inZ.append(cmd); await show(cmd);
+      if (withKey) {
+        const key = slot('<span class="chip on">键</span>命令计数 = <b data-c>0</b> <span class="rc gc-r">删除这个键</span>');
+        inZ.append(key); await show(key);
+        counter = key.querySelector('[data-c]');
+      }
+    };
+
+    stage(root, [
+      { label: '偷偷记数', say: '插件注册了一条 /统计 命令，这一步走的是语境，有回执。\n\n可计数用的那个数字，它自己在门外藏了一个变量。没有回执，运行时根本不知道它存在。',
+        run: async () => {
+          await install(false);
+          outZ.querySelector('.empty')?.remove();
+          const v = slot('<span class="chip off">变量</span>命令计数 = <b data-c>0</b>');
+          outZ.append(v); await show(v);
+          counter = v.querySelector('[data-c]');
+          await count(counter!, 1, 5);
+        } },
+      { label: '卸了重装', say: '卸载：门里的命令按回执撤得干干净净。门外那个变量没人管，还停在 5。\n\n再装回来，它从 6 接着数。数字错了，却没有任何地方报错。',
+        run: async () => {
+          const c = inZ.querySelector<HTMLElement>('.slot')!;
+          await nudge(c); await drop(c); empty(inZ); setState(plug, 'off', '已卸载');
+          const st = make('<span class="stamp dark" hidden>残留</span>'); outZ.append(st); await stamp(st);
+          await wait(500);
+          const left = counter!;
+          await install(false);
+          await count(left, 6, 8);
+        } },
+      { label: '绑成键', say: '修法很简单：把计数器也登记成语境里的一个键。它有了自己的回执，别的插件也能按名字读它。\n\n现在再卸再装，它跟着回执一起清掉，重装后从 0 开始。黑户转正了。',
+        run: async () => {
+          root.querySelectorAll('.stamp').forEach((s) => s.remove());
+          const out = outZ.querySelector<HTMLElement>('.slot');
+          if (out) { await hide(out); } empty(outZ);
+          empty(inZ); setState(plug, 'off');
+          await install(true);
+          await count(counter!, 1, 3);
+          await wait(300);
+          for (const s of [...inZ.querySelectorAll<HTMLElement>('.slot')].reverse()) { await nudge(s); await drop(s); }
+          empty(inZ); setState(plug, 'off', '已卸载');
+          await wait(300);
+          await install(true);
+          const st = make('<span class="stamp" hidden>从 0 开始</span>'); inZ.append(st); await stamp(st);
+        } },
+    ], { reset, done: '论文原话是：从语境外的计数器取号不合规；把计数器绑成一个键，就合规了。整套保证，只对走这扇门的东西有效。' });
+  });
+</script>

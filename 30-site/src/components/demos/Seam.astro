@@ -1,0 +1,98 @@
+---
+import Stage from '../Stage.astro';
+const USERS = [
+  { k: 'sh', name: 'Bash 命令' },
+  { k: 'pty', name: '终端' },
+  { k: 'lsp', name: '代码补全' },
+  { k: 'rw', name: '读写文件工具' },
+];
+---
+<Stage demo="seam" kicker="演示 8.1 · 可以点" title="换掉插座背后的电源"
+  intro="这是 dsh 里文件系统这个能力的样子：中间是插座（ctx.fs），左边是给插座供电的提供者，右边是插在上面的四个工具。按「开始」，看现在谁在供电。">
+  <div class="sm-patch" data-patch>
+    <span class="cap">配置 · cordis.patch.yml（示意）</span>
+    <code>fs: <b data-pv>local</b><span data-pc>　# 本机磁盘</span></code>
+  </div>
+  <div class="sm-grid">
+    <div class="sm-col">
+      <div class="cap">提供者</div>
+      <div class="nd" data-p="local" data-s="on"><div class="nd-top"><span class="nd-name">本机磁盘</span><span class="chip on">供电中</span></div></div>
+      <div class="nd" data-p="box" data-s="off"><div class="nd-top"><span class="nd-name">远程沙箱 #b7</span><span class="chip off">备用</span></div></div>
+    </div>
+    <div class="sm-ar" aria-hidden="true">→</div>
+    <div class="sm-col sm-mid">
+      <div class="cap">插座</div>
+      <div class="nd sm-socket" data-socket data-s="on">
+        <div class="nd-top"><span class="nd-name">ctx.fs</span><span class="chip on">接口不变</span></div>
+        <div class="nd-sub">文件系统</div>
+      </div>
+    </div>
+    <div class="sm-ar" aria-hidden="true">→</div>
+    <div class="sm-col">
+      <div class="cap">插在上面的工具</div>
+      {USERS.map((u) => (
+        <div class="nd sm-u" data-u={u.k} data-s="on">
+          <div class="nd-top"><span class="nd-name">{u.name}</span><span class="chip on">在岗</span></div>
+          <div class="nd-sub">跑在：<span data-where>本机</span></div>
+        </div>
+      ))}
+    </div>
+  </div>
+</Stage>
+
+<style>
+  .sm-patch { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin-bottom: 18px; padding: 10px 14px; border: 1.5px dashed var(--ink-30); background: var(--paper); transition: border-color 0.25s, background-color 0.25s; }
+  .sm-patch .cap { margin: 0; }
+  .sm-patch code { font: 500 14px/1.6 var(--mono); color: var(--text); }
+  .sm-patch b { color: var(--ink); }
+  .sm-patch span[data-pc] { color: var(--text-2); }
+  .sm-patch.is-set { border-style: solid; border-color: var(--ink); background: var(--ink-08); }
+  .sm-grid { display: grid; grid-template-columns: 1fr 34px 0.9fr 34px 1.1fr; align-items: center; }
+  .sm-col { display: flex; flex-direction: column; gap: 10px; }
+  .sm-col .cap { margin-bottom: -2px; }
+  .sm-ar { text-align: center; font: 700 20px/1 var(--sans); color: var(--ink); }
+  .sm-socket { border-width: 3px; padding-block: 18px; }
+  .sm-u .nd-sub { font-size: 12px; }
+  @container canvas (max-width: 560px) {
+    .sm-grid { grid-template-columns: 1fr; gap: 6px; }
+    .sm-ar { transform: rotate(90deg); padding: 4px 0; }
+  }
+</style>
+
+<script>
+  import { mount, stage } from '../../scripts/stage';
+  import { make, nudge, setState, stamp, wait } from '../../scripts/motion';
+
+  mount('seam', (root) => {
+    const q = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const users = [...root.querySelectorAll<HTMLElement>('[data-u]')];
+    const local = q('[data-p="local"]'), box = q('[data-p="box"]'), socket = q('[data-socket]'), patch = q('[data-patch]');
+    const where = (u: HTMLElement, t: string) => (u.querySelector('[data-where]')!.textContent = t);
+    const reset = () => {
+      setState(local, 'on', '供电中'); setState(box, 'off', '备用');
+      users.forEach((u) => { setState(u, 'on'); where(u, '本机'); });
+      q('[data-pv]').textContent = 'local'; q('[data-pc]').textContent = '　# 本机磁盘';
+      patch.classList.remove('is-set');
+      root.querySelectorAll('.stamp').forEach((s) => s.remove());
+    };
+
+    stage(root, [
+      { label: '现在', say: '插座 ctx.fs 现在由本机磁盘供电。四个工具读文件、跑命令、做补全，全在你自己的机器上。\n\n注意：四个工具只认「ctx.fs」这个名字，谁都不知道背后是本机磁盘。',
+        run: async () => { await nudge(local); await nudge(socket); for (const u of users) await nudge(u); } },
+      { label: '改一行配置', say: '你想让 agent 去一个隔离的沙箱里干活，免得它误删你的文件。要改的只有配置里的一行：fs 从 local 换成 sandbox。\n\n四个工具的代码，一个字都不用动。',
+        run: async () => {
+          patch.classList.add('is-set'); await nudge(patch);
+          q('[data-pv]').textContent = 'sandbox'; q('[data-pc]').textContent = '　# 远程沙箱';
+        } },
+      { label: '整体搬家', say: '加载器发现配置变了，按第 07 章的规矩办：先让四个工具停下，本机磁盘离场，远程沙箱接上插座，四个工具再重新上岗。\n\n从这一刻起，命令、终端、补全、读写文件，全在沙箱里跑。',
+        run: async () => {
+          for (const u of [...users].reverse()) { setState(u, 'wait', '停下'); await wait(110); }
+          await nudge(local); setState(local, 'off', '已离场');
+          await wait(250);
+          setState(box, 'on', '供电中'); await nudge(box); await nudge(socket);
+          for (const u of users) { setState(u, 'on'); where(u, '沙箱 #b7'); await nudge(u); }
+          const st = make('<span class="stamp" hidden>换了世界</span>'); socket.append(st); await stamp(st);
+        } },
+    ], { reset, done: 'dsh 的文档就举了这个例子：文件系统和子进程共用一个「执行世界」，把文件系统的提供者指向远程沙箱，Bash、终端、LSP 全体跟着搬过去。换一个零件，整机换了世界。' });
+  });
+</script>

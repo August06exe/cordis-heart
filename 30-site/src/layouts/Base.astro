@@ -1,0 +1,55 @@
+---
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
+import '@fontsource/noto-sans-sc/400.css';
+import '@fontsource/noto-sans-sc/500.css';
+import '@fontsource/noto-sans-sc/700.css';
+import '@fontsource/noto-serif-sc/600.css';
+import '@fontsource/noto-serif-sc/900.css';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/shell.css';
+import '../styles/parts.css';
+import '../styles/stage.css';
+import { PAPER_URL, SNAPSHOT } from '../data/book';
+
+interface Props { title: string; description?: string; where?: string; }
+const { title, description = '把 DeepSeek dsh 背后的 Cordis 论文，拆成不写代码的人也能读懂、能直接用的一本小书。', where } = Astro.props;
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/images/web/I-01.jpg" />
+    <meta name="theme-color" content="#fafaf7" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- 字体自托管：@fontsource（Noto / IBM Plex 均为 SIL OFL，免费商用），见 src/layouts/Base.astro 的 import -->
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+  <body>
+    <div class="progress" aria-hidden="true"></div>
+    <div class="sheet">
+      <header class="topbar">
+        <button class="menu-btn" type="button" data-menu aria-expanded="false" aria-controls="side"><i></i>目录</button>
+        <a class="brand" href="/"><b>CORDIS</b><span>DSH 的心脏</span></a>
+        {where && <span class="top-where">{where}</span>}
+        <span class="spacer"></span>
+        <a class="top-link" href="/#toc">全书目录</a>
+        <a class="top-link" href="/terms/">术语表</a>
+        <a class="top-link is-frame" href={PAPER_URL} target="_blank" rel="noopener">读论文原文 ↗</a>
+      </header>
+      <slot />
+      <footer class="foot">
+        <span>CORDIS · DSH 的心脏 —— 一本拆论文的小书。论文 arXiv:2608.25512（北京大学 &amp; DeepSeek-AI）</span>
+        <span>dsh 处于 developer preview，书中数字为 {SNAPSHOT} 快照</span>
+        <span>非官方研读笔记，与 DeepSeek、Cordis、Koishi 项目无隶属关系；站内插图由 AI 生成</span>
+      </footer>
+    </div>
+    <script>import '../scripts/ui.ts';</script>
+  </body>
+</html>

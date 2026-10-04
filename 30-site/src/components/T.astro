@@ -1,0 +1,9 @@
+---
+import { TERMS } from '../data/terms';
+interface Props { id: string; }
+const { id } = Astro.props;
+const t = TERMS[id];
+if (!t) throw new Error(`未知术语 id：${id}`);
+const has = Astro.slots.has('default');
+---
+<a class="term" href={`/terms/#${id}`} data-term={id}>{has ? <slot /> : t.name}</a>

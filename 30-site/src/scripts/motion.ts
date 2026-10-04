@@ -1,78 +1,67 @@
-/**
- * 全站动效基建。所有页面动画统一从这里取 gsap 与 ScrollTrigger。
- *
- * 铁律 1：只动画 transform 与 opacity；SVG 描边动画的 stroke-dashoffset 是唯一例外。
- *         禁止 window scroll 监听，滚动只走 GSAP ScrollTrigger / IntersectionObserver /
- *         CSS 滚动动画。
- * 铁律 2：MOTION_INTENSITY 高于 3 的动效必须用 gsap.matchMedia 包裹
- *         prefers-reduced-motion 降级（大位移动画降为轻交叉淡），内容不缺失。
- * 铁律 5：每个动画场景经 registerScene 暴露 play / pause / restart。
- */
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+const mq = typeof matchMedia === 'undefined' ? null : matchMedia('(prefers-reduced-motion: reduce)');
+export const reduced = () => !!mq?.matches;
+export const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, reduced() ? 0 : ms));
 
-let pluginsReady = false;
+const EASE = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
 
-/** 首次调用时注册 ScrollTrigger，重复调用无副作用 */
-export function ensureGsap(): typeof gsap {
-  if (!pluginsReady) {
-    gsap.registerPlugin(ScrollTrigger);
-    pluginsReady = true;
-  }
-  return gsap;
+function play(el: Element, frames: Keyframe[], o: KeyframeAnimationOptions = {}) {
+  if (reduced()) return Promise.resolve();
+  return el.animate(frames, { duration: 340, easing: EASE, ...o }).finished.then(() => {}, () => {});
 }
 
-export { gsap, ScrollTrigger };
-
-/** 单个动画场景对外暴露的控制接口（铁律 5） */
-export interface SceneHandle {
-  play(): void;
-  pause(): void;
-  restart(): void;
-  /** ClientRouter 换页前清理，由 destroyScenes 统一调用 */
-  destroy(): void;
+/** 显影：从微偏移淡入到原位（结束于自然样式，不留内联残值） */
+export async function show(el: HTMLElement, from = 'translateY(8px)') {
+  el.hidden = false;
+  await play(el, [{ opacity: 0, transform: from }, { opacity: 1, transform: 'none' }]);
 }
 
-const scenes = new Map<string, SceneHandle>();
-
-export function registerScene(id: string, scene: SceneHandle): void {
-  scenes.get(id)?.destroy();
-  scenes.set(id, scene);
+/** 退场：淡出后隐藏，并清掉动画留下的 fill */
+export async function hide(el: HTMLElement, to = 'translateY(-6px) scale(0.96)') {
+  await play(el, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: to }], { fill: 'forwards', duration: 280 });
+  el.hidden = true;
+  el.getAnimations().forEach((a) => a.cancel());
 }
 
-export function destroyScenes(): void {
-  for (const scene of scenes.values()) scene.destroy();
-  scenes.clear();
+export async function drop(el: HTMLElement, to?: string) {
+  await hide(el, to);
+  el.remove();
 }
 
-/**
- * [data-reveal]：进视口一次性显影，给 4-5 档页的默认入场。
- * IntersectionObserver 实现，无 window scroll 监听；
- * prefers-reduced-motion 下直接显影，内容不缺失。
- */
-let revealObserver: IntersectionObserver | null = null;
+/** 盖章：放大落下，略带回弹 */
+export async function stamp(el: HTMLElement) {
+  el.hidden = false;
+  await play(el, [
+    { opacity: 0, transform: 'rotate(-6deg) scale(1.9)' },
+    { opacity: 1, transform: 'rotate(-6deg) scale(1)' },
+  ], { duration: 240, easing: 'cubic-bezier(0.3, 1.5, 0.5, 1)' });
+}
 
-export function initReveals(): void {
-  const els = document.querySelectorAll<HTMLElement>('[data-reveal]:not([data-reveal-done])');
-  if (els.length === 0) return;
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/** 被点名：短暂抬起 */
+export async function nudge(el: HTMLElement) {
+  el.classList.add('is-hot');
+  await play(el, [{ transform: 'none' }, { transform: 'translate(-3px, -3px)' }, { transform: 'none' }], { duration: 420 });
+  el.classList.remove('is-hot');
+}
 
-  for (const el of els) {
-    el.dataset.revealDone = '1';
-    if (reduced || typeof IntersectionObserver === 'undefined') {
-      el.classList.add('is-revealed');
-      continue;
-    }
-    revealObserver ??= new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          entry.target.classList.add('is-revealed');
-          revealObserver?.unobserve(entry.target);
-        }
-      },
-      { threshold: 0.15, rootMargin: '0px 0px -8% 0px' },
-    );
-    revealObserver.observe(el);
-  }
+export async function shake(el: HTMLElement) {
+  await play(el, [
+    { transform: 'none' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' },
+    { transform: 'translateX(-3px)' }, { transform: 'none' },
+  ], { duration: 360 });
+}
+
+/** 由 HTML 模板生成一个元素 */
+export function make<T extends HTMLElement = HTMLElement>(html: string): T {
+  const t = document.createElement('template');
+  t.innerHTML = html.trim();
+  return t.content.firstElementChild as T;
+}
+
+/** 设置节点状态：on 在岗 / wait 待命 / off 离场 / fail 失败 */
+export function setState(nd: HTMLElement, s: 'on' | 'wait' | 'off' | 'fail', text?: string) {
+  nd.dataset.s = s;
+  const chip = nd.querySelector<HTMLElement>('.chip');
+  if (!chip) return;
+  chip.className = 'chip ' + ({ on: 'on', wait: 'wait', off: 'off', fail: 'bad' } as const)[s];
+  chip.textContent = text ?? ({ on: '在岗', wait: '待命', off: '未装', fail: '失败' } as const)[s];
 }

@@ -1,0 +1,13 @@
+---
+interface Props { line: string; prompt: string; label?: string; }
+const { line, prompt, label = '带走这一句' } = Astro.props;
+const id = 'p-' + Math.random().toString(36).slice(2, 8);
+---
+<section class="rule-box">
+  <div class="rule-head">
+    <span class="kicker">{label}</span>
+    <button class="btn btn-sm" type="button" data-copy={id}>复制给 AI</button>
+  </div>
+  <p class="rule-line">{line}</p>
+  <pre class="rule-prompt" id={id}>{prompt}</pre>
+</section>

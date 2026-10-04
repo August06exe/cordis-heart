@@ -1,0 +1,122 @@
+---
+import Stage from '../Stage.astro';
+const COMPS = [
+  { k: 'db', name: '数据库', need: [] as string[] },
+  { k: 'rem', name: '提醒', need: ['db'] },
+  { k: 'sta', name: '统计', need: ['rem'] },
+  { k: 'wea', name: '天气', need: [] },
+  { k: 'web', name: '网页面板', need: ['db', 'wea'] },
+];
+const NAME = Object.fromEntries(COMPS.map((c) => [c.k, c.name]));
+---
+<Stage demo="life" kicker="演示 7.1 · 可以点，最后可以随便按" title="乱按也不怕"
+  intro="左边是配置：你只说想要哪些组件。右边是系统的真实状态，由运行时按依赖自己安排。按「开始」，先把五个都勾上。"
+  hint="引导播完后，左边的开关可以随便按">
+  <div class="cols lf-cols">
+    <div>
+      <div class="cap">配置 · 你想要的</div>
+      <div class="lf-cfg" data-cfg>
+        {COMPS.map((c) => (
+          <label class="lf-sw"><input type="checkbox" data-want={c.k} disabled /><span>{c.name}</span>{c.need.length > 0 && <em>要 {c.need.map((n) => NAME[n]).join('、')}</em>}</label>
+        ))}
+      </div>
+    </div>
+    <div>
+      <div class="cap">系统 · 实际在跑的</div>
+      <div class="lf-sys">
+        {COMPS.map((c) => (
+          <div class="nd" data-n={c.k} data-s="off"><div class="nd-top"><span class="nd-name">{c.name}</span><span class="chip off">未装</span></div></div>
+        ))}
+      </div>
+      <div class="lf-cmp" data-cmp hidden>
+        <div class="cap">对照 · 按最终配置从零装一遍</div>
+        <div class="lf-row" data-fresh></div>
+      </div>
+      <button class="btn btn-sm lf-check" type="button" data-check hidden>对照一下：从零装一遍</button>
+    </div>
+  </div>
+</Stage>
+
+<style>
+  .lf-cols { grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.4fr); gap: 26px; }
+  .lf-cfg { display: flex; flex-direction: column; gap: 8px; }
+  .lf-sw { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 8px 10px; border: 1.5px solid var(--ink-30); background: var(--paper); font-weight: 700; font-size: 15px; cursor: pointer; }
+  .lf-sw:has(input:checked) { border-color: var(--ink); }
+  .lf-sw:has(input:disabled) { cursor: default; }
+  .lf-sw em { flex-basis: 100%; padding-left: 26px; font: 400 12px/1.4 var(--mono); color: var(--text-2); }
+  .lf-sys { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .lf-cmp { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--ink-30); position: relative; }
+  .lf-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .lf-check { margin-top: 16px; }
+  @container canvas (max-width: 560px) { .lf-cols { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  import { mount, stage } from '../../scripts/stage';
+  import { make, nudge, setState, stamp, wait } from '../../scripts/motion';
+
+  const NEED: Record<string, string[]> = { db: [], rem: ['db'], sta: ['rem'], wea: [], web: ['db', 'wea'] };
+  const ORDER = ['db', 'wea', 'rem', 'sta', 'web'];
+  const NAME: Record<string, string> = { db: '数据库', rem: '提醒', sta: '统计', wea: '天气', web: '网页面板' };
+  type S = 'on' | 'wait' | 'off';
+
+  /** 由配置算出唯一的稳定状态：想要且依赖都在岗 → 在岗；想要但缺依赖 → 待命 */
+  const settle = (want: Set<string>) => {
+    const s: Record<string, S> = {};
+    for (const k of ORDER) s[k] = !want.has(k) ? 'off' : NEED[k].every((d) => s[d] === 'on') ? 'on' : 'wait';
+    return s;
+  };
+
+  mount('life', (root) => {
+    const box = (k: string) => root.querySelector<HTMLElement>(`[data-n="${k}"]`)!;
+    const sw = (k: string) => root.querySelector<HTMLInputElement>(`[data-want="${k}"]`)!;
+    const cmp = root.querySelector<HTMLElement>('[data-cmp]')!, fresh = root.querySelector<HTMLElement>('[data-fresh]')!;
+    const check = root.querySelector<HTMLButtonElement>('[data-check]')!;
+    let cur: Record<string, S> = settle(new Set());
+    let free = false;
+    const want = () => new Set(ORDER.filter((k) => sw(k).checked));
+
+    /** 过渡：先倒序停用（依赖者先走），再正序激活 */
+    const apply = async (fast = false) => {
+      const next = settle(want());
+      for (const k of [...ORDER].reverse()) if (cur[k] === 'on' && next[k] !== 'on') { setState(box(k), 'wait', '停用中'); await wait(fast ? 90 : 240); setState(box(k), next[k] === 'off' ? 'off' : 'wait'); cur[k] = next[k]; }
+      for (const k of ORDER) if (cur[k] !== next[k]) {
+        if (next[k] === 'on') { setState(box(k), 'wait', '激活中'); await wait(fast ? 90 : 240); setState(box(k), 'on'); if (!fast) await nudge(box(k)); }
+        else setState(box(k), next[k]);
+        cur[k] = next[k];
+      }
+    };
+    const compare = async () => {
+      root.querySelectorAll('.stamp').forEach((s) => s.remove());
+      const f = settle(want());
+      fresh.innerHTML = ORDER.map((k) => `<span class="chip ${f[k] === 'on' ? 'on' : f[k] === 'wait' ? 'wait' : 'off'}">${NAME[k]} · ${{ on: '在岗', wait: '待命', off: '未装' }[f[k]]}</span>`).join('');
+      cmp.hidden = false;
+      const same = ORDER.every((k) => f[k] === cur[k]);
+      const st = make(`<span class="stamp${same ? '' : ' dark'}" hidden>${same ? '一模一样' : '不一致'}</span>`);
+      cmp.append(st); await stamp(st);
+    };
+    const lock = (on: boolean) => ORDER.forEach((k) => (sw(k).disabled = on));
+    let queue = Promise.resolve();
+    ORDER.forEach((k) => sw(k).addEventListener('change', () => { if (!free) return; cmp.hidden = true; queue = queue.then(() => apply()); }));
+    check.addEventListener('click', () => void compare());
+
+    const reset = () => {
+      free = false; lock(true); check.hidden = true; cmp.hidden = true;
+      ORDER.forEach((k) => { sw(k).checked = false; setState(box(k), 'off'); });
+      cur = settle(new Set());
+      root.querySelectorAll('.stamp').forEach((s) => s.remove());
+    };
+    const MESS = ['db', 'sta', 'wea', 'rem', 'db', 'rem', 'db', 'sta'];
+
+    stage(root, [
+      { label: '全部勾上', say: '你只勾了五个开关，没说先装谁。\n\n运行时按依赖排顺序：数据库和天气先上岗，提醒等数据库，统计等提醒，网页面板等数据库和天气。',
+        run: async () => { ORDER.forEach((k) => (sw(k).checked = true)); await apply(); } },
+      { label: '关掉数据库', say: '取消勾选数据库。依赖它的组件先走：网页面板、统计、提醒依次停用，各自按回执撕干净，数据库最后离场。\n\n注意它们是「待命」不是「删除」：配置里还想要它们，只是缺了依赖。天气不受影响。',
+        run: async () => { sw('db').checked = false; await apply(); } },
+      { label: '乱按一通', say: '现在模拟一段混乱：八次开关，一次接一次，不等系统喘气。\n\n每一次，运行时都只做「从现状到新配置」需要的那几步。',
+        run: async () => { for (const k of MESS) { sw(k).checked = !sw(k).checked; await apply(true); await wait(120); } } },
+      { label: '对照', say: '最后一步：拿刚才的最终配置，在一个全新的系统里从零装一遍，按依赖顺序各装一次，从不卸载。\n\n两边一模一样。这就是论文说的「汇聚」：中间怎么折腾都不留痕迹，结局只看最终配置。',
+        run: async () => { await compare(); free = true; lock(false); check.hidden = false; } },
+    ], { reset, done: '现在左边的开关归你了。随便按，按完点「对照一下」，结果永远一致。' });
+  });
+</script>
