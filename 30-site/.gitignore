@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# 截图/比对等过程产物（归档在 99-archive/2026-10-12-归拢/30-site-tmp-gen/）
+.tmp-gen/
